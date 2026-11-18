@@ -230,7 +230,8 @@
     .sp-sec h3 { font-weight: 700; font-size: .875rem; margin-bottom: .25rem; }
     .sp-sec p, .sp-sec li { font-size: .8125rem; line-height: 1.85; color: #475569; }
     .dark .sp-sec p, .dark .sp-sec li { color: #94A3B8; }
-  </style>
+  .companion-btn{background:linear-gradient(135deg,#E8B04B,#F08A5D);border:0}.dark .companion-btn{background:linear-gradient(135deg,#C9953A,#D9744A)}
+</style>
 </head>
 <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
 
@@ -1190,7 +1191,7 @@
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <button onclick="openBuyMiccModal()" class="py-2.5 px-3 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('شراء ميك', 'Buy MiCC')}</button>
-              <button onclick="openPeerTransferModal()" class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">${t('تحويل للرفاقة', 'Transfer To Companion')}</button>
+              <button onclick="openPeerTransferModal()" class="companion-btn py-2.5 px-3 rounded-xl text-white text-xs font-semibold">${t('تحويل للرفاقة', 'Transfer To Companions')}</button>
               <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل خارجي', 'External Transfer')}</button>
               <button onclick="handleRefundRequest()" ${canRefund ? '' : 'disabled'} class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${canRefund ? 'text-brand-crimson dark:text-rose-400' : 'opacity-40 cursor-not-allowed'}">${t('استرداد (8 أيام)', 'Refund (8 Days)')}</button>
             </div>
@@ -1665,7 +1666,7 @@
       const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
       const maxSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
       const maxUnits = Math.floor(maxSar / MICC_SAR_VALUE);
-      openModal(t('تحويل رصيد', 'Transfer Balance'), `
+      openModal(t('تحويل خارجي', 'External Transfer'), `
         <p class="text-xs text-slate-500 mb-3">${t(`الحد الأدنى 50 ميك (250 ريال) · المتاح: ${maxUnits} ميك`, `Min 50 MiCC (250 SAR) · Available: ${maxUnits} MiCC`)}</p>
         <input id="to-safe-amt" type="number" min="50" max="${maxUnits}" value="${Math.min(50, maxUnits)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
         <button id="do-to-safe" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تنفيذ التحويل', 'Transfer')}</button>
@@ -1675,7 +1676,7 @@
         if (units < 50 || units > maxUnits) { showToast(t('القيمة خارج النطاق المسموح', 'Out of range')); return; }
         state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; state.user.usedOrTransferred = true;
         state.safe.micc += units; state.safe.capitalSar = (state.safe.capitalSar || 0) + units * MICC_SAR_VALUE;
-        state.walletLogs.unshift({ ar: 'تحويل رصيد', en: 'Transfer Balance', amount: `-${units} MiCC` });
+        state.walletLogs.unshift({ ar: 'تحويل خارجي', en: 'External Transfer', amount: `-${units} MiCC` });
         state.safe.logs.unshift({ ar: 'استلام من محفظة ميك', en: 'From MiCC Wallet', amount: `+${units} MiCC` });
         closeModal(); render(); showToast(t('تم التحويل', 'Transferred'));
       });
@@ -1702,7 +1703,7 @@
     }
 
     function openPeerTransferModal() {
-      openModal(t('تحويل لعميل في محفظة ميك', 'Transfer to MiCC Wallet Peer'), `
+      openModal(t('تحويل للرفاقة', 'Transfer To Companions'), `
         <input id="peer-id" type="text" placeholder="${t('رقم الجوال أو البريد', 'Mobile or email')}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3" />
         <input id="peer-amt" type="number" min="1" max="${state.user.walletMicc}" value="20" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
         <button id="do-peer-tr" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('إرسال مجاناً', 'Send Free')}</button>
@@ -1711,7 +1712,7 @@
         const amt = Number(document.getElementById('peer-amt').value) || 0;
         if (amt <= 0 || amt > state.user.walletMicc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         state.user.walletMicc -= amt; state.user.usedOrTransferred = true;
-        state.walletLogs.unshift({ ar: 'تحويل لعميل', en: 'Peer Transfer', amount: `-${amt} MiCC` });
+        state.walletLogs.unshift({ ar: 'تحويل للرفاقة', en: 'Transfer To Companions', amount: `-${amt} MiCC` });
         closeModal(); render(); showToast(t('تم التحويل وسقط حق الاسترداد', 'Transferred'));
       });
     }
