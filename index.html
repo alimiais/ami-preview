@@ -107,14 +107,54 @@
     .tier-card.tg-card.is-current { box-shadow: 0 0 0 2px #34D399, 0 10px 24px -8px rgba(52,211,153,.55); }
     .tier-diamond.tg-card { box-shadow: 0 -4px 14px -6px rgba(0,0,0,.5), 0 10px 26px -8px rgba(127,199,238,.6), inset 0 1px 0 rgba(255,255,255,.7); }
     /* Inline tier guide grid (v8) */
-    .tg-grid { display: flex; flex-direction: column; align-items: stretch; gap: 14px; width: 100%; max-width: 360px; margin-inline: auto; }
-    .tg-grid .tier-card.tg-card { width: 100%; aspect-ratio: 1.586 / 1; border-radius: 16px; padding: 16px 18px; cursor: default; box-shadow: 0 8px 18px -10px rgba(15,23,42,.55), inset 0 1px 0 rgba(255,255,255,.22); }
+    .tg-grid { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 100%; margin-inline: auto; }
+    .tg-grid .tier-card.tg-card { flex: none; width: 170px; aspect-ratio: 1.586 / 1; border-radius: 11px; padding: 9px 11px; cursor: default; box-shadow: 0 8px 18px -10px rgba(15,23,42,.55), inset 0 1px 0 rgba(255,255,255,.22); }
     .tg-grid .tier-card.tg-card.is-current { box-shadow: 0 0 0 3px #dc2626, 0 0 18px 2px rgba(220,38,38,.45), 0 10px 22px -10px rgba(15,23,42,.55); }
     .dark .tg-grid .tier-card.tg-card.is-current { box-shadow: 0 0 0 3px #ef4444, 0 0 20px 3px rgba(239,68,68,.45), 0 10px 22px -10px rgba(0,0,0,.6); }
-    .tg-grid .tc-chip { width: 38px; height: 28px; border-radius: 6px; }
-    .tg-grid .tg-logo { width: 32px; height: 32px; }
-    .tg-grid .tc-badge { padding: 2px 10px; font-size: 11px; }
-    .tg-grid .tc-bar { height: 5px; }
+    .tg-grid .tc-chip { width: 22px; height: 16px; border-radius: 4px; }
+    .tg-grid .tg-logo { width: 18px; height: 18px; }
+    .tg-grid .tc-badge { padding: 1px 6px; font-size: 8.5px; gap: 2px; white-space: nowrap; }
+    .tg-grid .tc-bar { height: 3px; }
+    .tg-grid .tier-card.tg-card > * { position: relative; z-index: 1; }
+    /* Safe card actions (v10): three equal gold-framed tiles */
+    .safe-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+    .safe-act { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 5px; min-height: 96px; padding: 10px 4px 9px; border-radius: 14px; text-align: center; color: #fff; border: 1px solid transparent; background: linear-gradient(160deg, rgba(31,59,102,.92), rgba(10,26,49,.94)) padding-box, linear-gradient(135deg, #F3D98B 0%, #B8912A 45%, #F3D98B 100%) border-box; box-shadow: 0 8px 18px -12px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08); transition: transform .15s ease, box-shadow .15s ease; }
+    .safe-act:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -12px rgba(212,175,55,.55), inset 0 1px 0 rgba(255,255,255,.1); }
+    .safe-act:active { transform: translateY(0); }
+    .safe-act .sa-ic { width: 32px; height: 32px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #0A1A31; background: linear-gradient(135deg, #F3D98B 0%, #D4AF37 55%, #B8912A 100%); box-shadow: 0 0 0 3px rgba(212,175,55,.15); }
+    .safe-act .sa-ic svg { width: 17px; height: 17px; }
+    .safe-act .sa-lb { font-size: 11.5px; font-weight: 700; line-height: 1.25; }
+    .safe-act .sa-sub { margin-top: auto; font-size: 9.5px; font-weight: 600; line-height: 1.2; color: #E9C46A; }
+    /* Footers (v10) */
+    .ami-footer { background: linear-gradient(180deg, #0B3D2E 0%, #062A1F 100%); border-top: 2px solid #D4AF37; }
+    .safe-footer { background: #1E3A5F; border-top: 0; }
+    .dark .ami-footer { background: linear-gradient(180deg, #08301F 0%, #04231A 100%); }
+    /* Support chat (v10) */
+    .sc-wrap { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; background: rgba(2,6,23,.55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+    .sc-panel { width: 100%; max-width: 420px; height: min(78vh, 600px); display: flex; flex-direction: column; overflow: hidden; border-radius: 20px 20px 0 0; background: #fff; box-shadow: 0 -12px 40px -12px rgba(0,0,0,.5); }
+    @media (min-width: 640px) { .sc-wrap { align-items: center; } .sc-panel { border-radius: 20px; } }
+    .dark .sc-panel { background: #0F172A; }
+    .sc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: #fff; border-bottom: 2px solid #D4AF37; }
+    .sc-safe .sc-head { background: linear-gradient(135deg, #0A1A31 0%, #13294B 60%, #1E3A5F 100%); }
+    .sc-ami .sc-head { background: linear-gradient(135deg, #04231A 0%, #0B3D2E 60%, #0E4A37 100%); }
+    .sc-av { width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #0A1A31; background: linear-gradient(135deg, #F3D98B, #D4AF37 55%, #B8912A); }
+    .sc-av svg { width: 19px; height: 19px; }
+    .sc-x { margin-inline-start: auto; width: 32px; height: 32px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); color: #fff; font-size: 18px; line-height: 1; }
+    .sc-list { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #F8FAFC; }
+    .dark .sc-list { background: #020617; }
+    .sc-msg { max-width: 82%; padding: 8px 11px; border-radius: 14px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .sc-msg .sc-time { display: block; margin-top: 3px; font-size: 9.5px; opacity: .65; }
+    .sc-user { align-self: flex-end; color: #fff; border-end-end-radius: 4px; }
+    .sc-safe .sc-user { background: #13294B; }
+    .sc-ami .sc-user { background: #0B3D2E; }
+    .sc-bot { align-self: flex-start; color: #0F172A; background: #fff; border: 1px solid #E5E7EB; border-end-start-radius: 4px; }
+    .dark .sc-bot { color: #E2E8F0; background: #1E293B; border-color: #334155; }
+    .sc-form { display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #E5E7EB; background: #fff; }
+    .dark .sc-form { background: #0F172A; border-color: #1E293B; }
+    .sc-in { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; font-size: 13px; border: 1px solid #CBD5E1; background: #fff; color: #0F172A; }
+    .dark .sc-in { background: #020617; border-color: #334155; color: #E2E8F0; }
+    .sc-in:focus { outline: none; border-color: #D4AF37; box-shadow: 0 0 0 3px rgba(212,175,55,.2); }
+    .sc-send { flex: none; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 700; color: #0A1A31; background: linear-gradient(135deg, #F3D98B 0%, #D4AF37 55%, #B8912A 100%); }
     /* Gold Bitcoin coin logo (v9) */
     .btc-coin { flex-shrink: 0; border-radius: 999px; object-fit: cover; box-shadow: 0 0 0 1px rgba(212,175,55,.55), 0 6px 14px -6px rgba(0,0,0,.5); }
     .safe-dash-total.on-navy .pl-up { color: #34D399; } .safe-dash-total.on-navy .pl-down { color: #F87171; }
@@ -243,7 +283,7 @@
   <main id="main-content" class="flex-1 max-w-6xl w-full mx-auto px-4 py-4 sm:py-6 min-h-[60vh]"></main>
 
   <!-- Footer -->
-  <footer id="app-footer" class="bg-brand-navy text-slate-200 mt-8">
+  <footer id="app-footer" class="ami-footer text-slate-200 mt-8">
     <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
       <div id="footer-name" class="font-semibold text-sm text-white"></div>
       <nav id="footer-links" class="flex items-center gap-5 font-medium"></nav>
@@ -644,9 +684,11 @@
       const links = document.getElementById('footer-links');
       const copy = document.getElementById('footer-copy');
       const lk = 'class="hover:text-white underline-offset-4 hover:underline"';
+      const ft = document.getElementById('app-footer');
+      if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); }
       if (isSafe) {
         name.textContent = 'MiCC Safe';
-        links.innerHTML = `<button ${lk} onclick="document.getElementById('safe-terms') && document.getElementById('safe-terms').scrollIntoView({ behavior: 'smooth' })">${t('الخصوصية والشروط', 'Privacy & Terms')}</button><button ${lk} onclick="accelerateSupport()">${t('تواصل معنا', 'Contact')}</button>`;
+        links.innerHTML = `<button ${lk} onclick="document.getElementById('safe-terms') && document.getElementById('safe-terms').scrollIntoView({ behavior: 'smooth' })">${t('الخصوصية والشروط', 'Privacy & Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
         copy.textContent = `© 2026 MiCC Safe`;
         document.title = 'MiCC Safe';
       } else {
@@ -661,6 +703,7 @@
       openModal(t('تواصل معنا', 'Contact Us'), `
         <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('لأي استفسار، أرسل طلبك عبر نموذج الاستشارة المجانية وسيتواصل معك فريق AMi.', 'For any inquiry, send your request through the free consultation form and the AMi team will reach out.')}</p>
         <button onclick="closeModal(); setView('consulting')" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">${t('الذهاب إلى نموذج الاستشارة', 'Go to Consultation Form')}</button>
+        <button onclick="closeModal(); openSupportChat('ami')" class="w-full mt-2 py-2.5 rounded-xl border border-brand-emerald text-brand-emerald dark:text-emerald-300 dark:border-emerald-700 text-sm font-semibold">${t('تواصل مع الدعم (محادثة)', 'Chat with Support')}</button>
       `);
     }
 
@@ -1293,10 +1336,10 @@
               </div>
               <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-11 h-11 shrink-0" />
             </div>
-            <button onclick="openReceiveUsdtModal()" class="btn-gold w-full py-2.5 rounded-xl text-[13px] font-bold leading-tight">${t('استقبال USDT', 'Receive USDT')}<span class="block text-[10px] font-semibold opacity-75">${t('يتحول تلقائيًا إلى MiCC · Polygon', 'Auto-converts to MiCC · Polygon')}</span></button>
-            <div class="grid grid-cols-2 gap-2 mt-2">
-              <button onclick="openWithdrawUsdtModal()" class="btn-ghost-gold py-1.5 px-1.5 rounded-xl text-[11px] leading-tight font-semibold">${t('سحب <bdi dir="ltr">USDT (2%)</bdi>', 'Withdraw USDT (2%)')}</button>
-              <button onclick="openReturnToWalletModal()" class="btn-ghost-gold py-1.5 px-1.5 rounded-xl text-[11px] leading-tight font-semibold">${t('إلى <bdi dir="ltr">MiCC Wallet (0%)</bdi>', 'To MiCC Wallet (0%)')}</button>
+            <div class="safe-acts">
+              <button onclick="openReceiveUsdtModal()" class="safe-act"><span class="sa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg></span><span class="sa-lb">${t('استقبال <bdi dir="ltr">USDT</bdi>', 'Receive USDT')}</span><span class="sa-sub">${t('يتحول إلى MiCC', 'Converts to MiCC')}</span></button>
+              <button onclick="openWithdrawUsdtModal()" class="safe-act"><span class="sa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 19h16"/></svg></span><span class="sa-lb">${t('سحب <bdi dir="ltr">USDT</bdi>', 'Withdraw USDT')}</span><span class="sa-sub">${t('رسوم 2%', '2% fee')}</span></button>
+              <button onclick="openReturnToWalletModal()" class="safe-act"><span class="sa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M15 14.5h3"/><path d="M7 3.5h8l-2-1.5M15 3.5l-2 1.5"/></svg></span><span class="sa-lb">${t('تحويل إلى <bdi dir="ltr" class="whitespace-nowrap">MiCC Wallet</bdi>', 'Transfer to <span class="whitespace-nowrap">MiCC Wallet</span>')}</span><span class="sa-sub">${t('بدون رسوم', 'No fee')}</span></button>
             </div>
           </div>
 
@@ -1332,7 +1375,7 @@
               <li>${t('رسوم السحب الخارجي (USDT Polygon): 2% موحدة للجميع.', 'External USDT (Polygon) withdrawal fee: flat 2%.')}</li>
               <li>${t('عند البيع بخسارة وتطبيق تعويض الـ 10%، يُقفل الشراء الجديد حتى عودة السعر لمستوى الشراء الأول أو أعلى.', 'If 10% protection applies on sell, new buys lock until price recovers.')}</li>
             </ul>
-            <button onclick="accelerateSupport()" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
+            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
           </div>
           <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
             <h3 class="font-bold text-sm mb-2">${t('سجل عمليات MiCC Safe', 'MiCC Safe Log')}</h3>
@@ -1455,18 +1498,14 @@
       const nxt = TIERS[idx + 1];
       const c = state.user.walletProgressMicc;
       const range = nxt ? t(`من <bdi dir="ltr">${fmt(tr.min)} MiCC</bdi>`, `From ${fmt(tr.min)} MiCC`) : t(`من <bdi dir="ltr">${fmt(tr.min)} MiCC</bdi> فأكثر`, `${fmt(tr.min)}+ MiCC`);
-      const bar = isCur ? `<div class="tc-bar flex-1"><div style="width:${nxt ? Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100)) : 100}%"></div></div>` : '';
       return `<div class="tier-card tg-card ${tr.cls} ${isCur ? 'is-current' : ''}">
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1">
           <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin tg-logo shrink-0" />
-          <span class="text-[18px] font-bold leading-tight truncate">${t(tr.ar, tr.en)}</span>
-          <span class="tc-chip ms-auto shrink-0"></span>
+          <span class="text-[12px] font-bold leading-tight truncate min-w-0">${t(tr.ar, tr.en)}</span>
+          ${isCur ? `<span class="tc-badge ms-auto shrink-0">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : `<span class="tc-chip ms-auto shrink-0"></span>`}
         </div>
-        <div class="mt-3 leading-none"><span class="text-[30px] font-bold tabular-nums">${fmt(capSar(tr))}</span> <span class="text-[13px] font-semibold opacity-90">${t('ريال', 'SAR')}</span></div>
-        <div class="mt-auto">
-          <div class="text-[12.5px] opacity-85 tabular-nums leading-tight truncate">${range}</div>
-          ${isCur ? `<div class="flex items-center gap-2 mt-2"><span class="tc-badge shrink-0">✓ ${t('مستواك الحالي', 'Your tier')}</span>${bar}</div>` : ''}
-        </div>
+        <div class="mt-2 leading-none whitespace-nowrap"><span class="text-[19px] font-bold tabular-nums">${fmt(capSar(tr))}</span> <span class="text-[9.5px] font-semibold opacity-90">${t('ريال', 'SAR')}</span></div>
+        <div class="mt-auto text-[9px] opacity-85 tabular-nums leading-tight truncate">${range}</div>
       </div>`;
     }
     function renderTierGuideInline() {
@@ -1722,7 +1761,80 @@
       }
     }
 
-    function accelerateSupport() { showToast(t('تم فتح طلب تسريع السحب للمراجعة اليدوية', 'Withdrawal acceleration ticket opened')); }
+    function accelerateSupport() { openSupportChat('safe'); }
+
+    // ---------- Support chat (v10) ----------
+    // Messages are stored in localStorage['supportMessages'] as an array of
+    // { id, ts, source: 'safe'|'ami', from: 'user'|'support', user, text, status }.
+    // sendSupportMessage() is the single entry point; later it can POST to the admin dashboard backend.
+    const SUPPORT_KEY = 'supportMessages';
+    let supportChatSource = null;
+    function loadSupportMessages() {
+      try { const a = JSON.parse(localStorage.getItem(SUPPORT_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+    }
+    function saveSupportMessages(list) {
+      try { localStorage.setItem(SUPPORT_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+    function supportUserName() {
+      return state.loggedIn ? t(state.user.nameAr, state.user.nameEn) : null;
+    }
+    function sendSupportMessage(text, source) {
+      text = String(text || '').trim();
+      if (!text) return null;
+      const src = source === 'safe' ? 'safe' : 'ami';
+      const list = loadSupportMessages();
+      const msg = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: new Date().toISOString(), source: src, from: 'user', user: supportUserName(), loggedIn: !!state.loggedIn, view: state.view, text, status: 'new' };
+      list.push(msg);
+      list.push({ id: msg.id + '-r', ts: new Date().toISOString(), source: src, from: 'support', user: null, text: t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.'), auto: true });
+      saveSupportMessages(list);
+      // TODO(admin dashboard): forward `msg` to backend here, e.g. fetch('/api/support', { method: 'POST', body: JSON.stringify(msg) })
+      return msg;
+    }
+    function escSupport(x) { return String(x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function renderSupportChatList() {
+      const box = document.getElementById('sc-list');
+      if (!box) return;
+      const src = supportChatSource;
+      const msgs = loadSupportMessages().filter(m => m.source === src);
+      const welcome = src === 'safe'
+        ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وبنرد عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
+        : t('أهلًا بك في الدعم. اكتب استفسارك وبنرد عليك.', 'Welcome to Support. Type your question and we will get back to you.');
+      const tm = iso => { try { return new Date(iso).toLocaleTimeString(state.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+      box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+    function openSupportChat(source) {
+      supportChatSource = source === 'safe' ? 'safe' : 'ami';
+      closeSupportChat();
+      const isSafe = supportChatSource === 'safe';
+      const wrap = document.createElement('div');
+      wrap.id = 'support-chat';
+      wrap.className = 'sc-wrap ' + (isSafe ? 'sc-safe' : 'sc-ami');
+      wrap.setAttribute('dir', state.lang === 'ar' ? 'rtl' : 'ltr');
+      wrap.setAttribute('role', 'dialog');
+      wrap.innerHTML = `<div class="sc-panel">
+        <div class="sc-head">
+          <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
+          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('نرد عليك في أقرب وقت', 'We reply as soon as possible')}</div></div>
+          <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
+        </div>
+        <div id="sc-list" class="sc-list"></div>
+        <form id="sc-form" class="sc-form">
+          <input id="sc-input" class="sc-in" type="text" maxlength="1000" autocomplete="off" placeholder="${t('اكتب رسالتك...', 'Type your message...')}" />
+          <button id="sc-send" type="submit" class="sc-send">${t('إرسال', 'Send')}</button>
+        </form>
+      </div>`;
+      wrap.addEventListener('click', e => { if (e.target === wrap) closeSupportChat(); });
+      document.body.appendChild(wrap);
+      document.getElementById('sc-form').addEventListener('submit', e => {
+        e.preventDefault();
+        const inp = document.getElementById('sc-input');
+        if (sendSupportMessage(inp.value, supportChatSource)) { inp.value = ''; renderSupportChatList(); }
+        inp.focus();
+      });
+      renderSupportChatList();
+    }
+    function closeSupportChat() { const el = document.getElementById('support-chat'); if (el) el.remove(); }
 
     // =========================================================
     // 6. MAIN RENDER & EVENT BINDINGS
