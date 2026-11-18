@@ -686,7 +686,7 @@
       const copy = document.getElementById('footer-copy');
       const lk = 'class="hover:text-white underline-offset-4 hover:underline"';
       const ft = document.getElementById('app-footer');
-      if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); ft.style.marginTop = (state.view === 'home') ? '0' : ''; }
+      if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); ft.style.marginTop = (state.view === 'home' || state.view === 'store') ? '0' : ''; }
       if (isSafe) {
         name.textContent = 'MiCC Safe';
         links.innerHTML = `<button ${lk} onclick="setView('safeprivacy')">${t('الخصوصية', 'Privacy')}</button><button ${lk} onclick="openSafeTerms()">${t('الشروط', 'Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
@@ -720,9 +720,9 @@
           accent: 'border-t-brand-emerald',
           badgeCls: 'text-brand-emerald dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950',
           titleAr: 'الرعاية التعاطفية والحركية',
-          titleEn: 'Empathetic Kinetic Care',
-          subAr: 'الرعاية الحركية عن بُعد (EKC)',
-          subEn: 'Remote Empathic Kinetic Care',
+          titleEn: 'Empathic Kinetic Care',
+          subAr: 'جلسات متخصصة عن بُعد',
+          subEn: 'Specialized Tele-Sessions',
           icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.2h4l1.8-3.4 3 6.6 1.9-3.2h6.3"/><path d="M2.8 15.3l2.6-.6c1.5-.4 2.9-.2 4.1.5l1.4.8h3.1c.8 0 1.3.9.8 1.5-.3.4-.7.6-1.2.6h-3.6"/><path d="M9.8 18.4l5.6-.2 3-1.9c.8-.5 1.8-.1 2.1.7.2.5 0 1-.4 1.4l-3.9 2.7c-.6.4-1.3.6-2 .6H9.2c-1 0-1.9-.3-2.7-.8l-3.7-2.4"/></svg>`, tone: 'emerald'
         },
         {
@@ -770,7 +770,7 @@
           </div>
           <div>
             <h2 class="text-[12px] sm:text-base font-bold text-slate-900 dark:text-slate-100 mb-1 leading-tight">${t(c.titleAr, c.titleEn)}</h2>
-            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-snug">${t(c.subAr, c.subEn)}</p>
+            <p class="${state.lang === 'en' ? 'text-[8.5px] tracking-tighter' : 'text-[11px]'} sm:text-xs sm:tracking-normal text-slate-500 dark:text-slate-400 leading-snug whitespace-nowrap">${t(c.subAr, c.subEn)}</p>
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-semibold text-brand-emerald dark:text-emerald-400">
             <span>${c.ctaAr ? t(c.ctaAr, c.ctaEn) : t('الدخول للخدمة', 'Open Service')}</span>
@@ -792,7 +792,7 @@
         memBody = `<div class="inline-flex items-center gap-2 mb-1.5"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/15">${t('عضوية مفعّلة', 'Membership Active')}</span></div><p class="text-sm font-semibold">${t('مستواك الحالي:', 'Your current tier:')} <strong class="text-base">${t(tr.ar, tr.en)}</strong></p>`;
         memBtn = `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('محفظتي', 'My Wallet')} ${arrow}</span>`;
       } else {
-        memBody = `<p class="text-xs sm:text-sm leading-relaxed opacity-95">${t('قوة شرائية مضاعفة للخدمات الصحية.', 'Doubled purchasing power for health services.')}</p>`;
+        memBody = `<p class="${state.lang === 'en' ? 'text-[9.5px]' : 'text-xs'} sm:text-sm leading-relaxed opacity-95">${t('قوة شرائية مضاعفة للخدمات الصحية.', 'Doubled purchasing power for health services.')}</p>`;
         memBtn = state.loggedIn
           ? `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('تفعيل العضوية', 'Activate Membership')}</span>`
           : `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('سجّل وانضم', 'Sign up & join')}</span>`;
@@ -977,7 +977,7 @@
     function renderStore() {
       return `
         <div class="mb-4">
-          <h1 class="text-2xl font-bold mb-1">${t('متجر AMi', 'AMi Store')}</h1>
+          <h1 class="text-2xl font-bold mb-1">${t('المتجر', 'Store')}</h1>
           <p class="text-xs text-slate-500 dark:text-slate-400">${t('منتجات متنوعة من متاجر مختارة.', 'Diverse products from selected stores.')}</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -997,6 +997,7 @@
             </button>
           `).join('')}
         </div>
+        <div class="flex items-center justify-center pt-5"><img src="${STORE_BANNER_IMG}" alt="${t('المتجر', 'Store')}" class="w-44 sm:w-56 max-w-[60%] object-contain" /></div>
       `;
     }
 
@@ -1954,7 +1955,7 @@
       renderFooter();
       const main = document.getElementById('main-content');
       const views = { home: renderHome, about: renderAboutUs, aboutus: renderAboutUs, consulting: renderConsulting, ekc: renderEkc, booking: renderBooking, store: renderStore, category: renderCategory, product: renderProduct, goodguest: renderGoodGuest, wallet: renderWallet, safe: renderSafe, safeprivacy: renderSafePrivacy, privacy: renderPrivacy };
-      main.classList.toggle('main-home', state.view === 'home' || !views[state.view]);
+      main.classList.toggle('main-home', state.view === 'home' || state.view === 'store' || !views[state.view]);
       main.innerHTML = (views[state.view] || renderHome)();
 
       const fcForm = document.getElementById('free-consult-form');
