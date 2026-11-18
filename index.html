@@ -1399,28 +1399,30 @@
       showToast(t('تمت تعبئة النموذج التجريبي', 'Demo form populated'));
     }
 
-    // v11 payment options: Apple Pay / Samsung Pay / cards via Neoleap gateway; Tamara & Emkan via direct integration.
-    // We only redirect the customer to the provider to pay; no payment data is stored here.
+    // Payment options: «البطاقة» / «تمارا» / «إمكان». Customers are only redirected to the provider; no payment data is stored here.
     const PAY_PROVIDERS = [
-      { id: 'applepay', group: 'neoleap', ar: 'Apple Pay', en: 'Apple Pay' },
-      { id: 'samsungpay', group: 'neoleap', ar: 'Samsung Pay', en: 'Samsung Pay' },
-      { id: 'card', group: 'neoleap', ar: 'بطاقة مدى / فيزا / ماستركارد', en: 'mada / Visa / Mastercard' },
-      { id: 'tamara', group: 'direct', ar: 'تمارا — قسّمها', en: 'Tamara — split payments' },
-      { id: 'emkan', group: 'direct', ar: 'إمكان — تمويل', en: 'Emkan — financing' },
+      { id: 'card', ar: 'البطاقة', en: 'Card' },
+      { id: 'tamara', ar: 'تمارا', en: 'Tamara' },
+      { id: 'emkan', ar: 'إمكان', en: 'Emkan' },
     ];
     function payOptionsHtml(name, opts) {
       opts = opts || {};
       const list = PAY_PROVIDERS.filter(p => !opts.only || opts.only.includes(p.id));
-      const row = (p, i) => `<label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer text-xs"><input type="radio" name="${name}" value="${p.id}" ${i === 0 && !opts.noDefault ? 'checked' : ''} /><span class="font-semibold">${t(p.ar, p.en)}</span></label>`;
-      const grp = (g, ar, en) => { const items = list.filter(p => p.group === g); return items.length ? `<div class="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 mt-1">${t(ar, en)}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">${items.map(p => row(p, list.indexOf(p))).join('')}</div>` : ''; };
-      return `<div class="space-y-1.5 pay-options">
-        ${opts.extraTop || ''}
-        ${grp('neoleap', 'عبر بوابة نيوليب (Neoleap)', 'Via Neoleap payment gateway')}
-        ${grp('direct', 'عبر الربط المباشر', 'Via direct integration')}
-        <p class="text-[10.5px] text-slate-500 dark:text-slate-400 leading-relaxed pt-1">${t('يتم تحويلك إلى مزوّد الدفع لإتمام الدفع لديه، ولا نحتفظ بأي بيانات دفع.', 'You will be redirected to the payment provider to pay there; we do not store any payment data.')}</p>
-      </div>`;
+      const sel = opts.selected !== undefined ? opts.selected : (opts.noDefault ? '' : list[0].id);
+      const row = p => `<label class="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer text-xs"><input type="radio" name="${name}" value="${p.id}" ${p.id === sel ? 'checked' : ''} class="accent-[#0B5C4A]" /><span class="font-semibold">${t(p.ar, p.en)}</span></label>`;
+      return `<div class="space-y-1.5 pay-options">${opts.extraTop || ''}<div class="grid grid-cols-1 gap-1.5">${list.map(row).join('')}</div></div>`;
     }
     const payProviderName = id => { const p = PAY_PROVIDERS.find(x => x.id === id); return p ? t(p.ar, p.en) : ''; };
+    // Legacy gateway list (Buy-MiCC modal only; not part of the checkout).
+    const PAY_PROVIDERS_GW = [
+      { id: 'applepay', ar: 'Apple Pay', en: 'Apple Pay' },
+      { id: 'samsungpay', ar: 'Samsung Pay', en: 'Samsung Pay' },
+      { id: 'card', ar: 'بطاقة مدى / فيزا / ماستركارد', en: 'mada / Visa / Mastercard' },
+    ];
+    function payOptionsGwHtml(name) {
+      const row = (p, i) => `<label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer text-xs"><input type="radio" name="${name}" value="${p.id}" ${i === 0 ? 'checked' : ''} /><span class="font-semibold">${t(p.ar, p.en)}</span></label>`;
+      return `<div class="space-y-1.5 pay-options"><div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">${PAY_PROVIDERS_GW.map(row).join('')}</div></div>`;
+    }
 
     function addToCart(prodId) {
       if (!state.loggedIn) { openLoginGateModal(state.view); return; }
@@ -1440,34 +1442,72 @@
         return;
       }
       const totalSar = state.cart.reduce((s, i) => s + i.priceSar * i.qty, 0);
-      const maxMiccUsable = Math.min(state.user.walletMicc, Math.floor(totalSar / MICC_SAR_VALUE));
-      openModal(t('إتمام الطلب والدفع المرن', 'Checkout & Split Payment'), `
-        <div class="space-y-2 mb-4">${state.cart.map(i => `<div class="flex justify-between text-xs py-1.5 border-b border-brand-border dark:border-slate-800"><span>${t(i.nameAr, i.nameEn)} × ${i.qty}</span><span class="font-bold tabular-nums">${fmt(i.priceSar * i.qty)} ${t('ريال', 'SAR')}</span></div>`).join('')}</div>
-        <div class="flex justify-between font-bold text-sm mb-4"><span>${t('الإجمالي:', 'Total:')}</span><span class="tabular-nums">${fmt(totalSar)} ${t('ريال', 'SAR')}</span></div>
-        <div class="rounded-xl bg-slate-50 dark:bg-slate-950 p-3 mb-4 text-xs space-y-2">
-          <div class="font-semibold">${t('تقسيم الدفع برصيد ميك (بدون مضاعفة):', 'Split with MiCC (Face Value):')}</div>
-          <div class="flex items-center justify-between gap-2"><span>${t(`المتاح: ${maxMiccUsable} ميك`, `Available: ${maxMiccUsable} MiCC`)}</span><input id="split-micc" type="number" min="0" max="${maxMiccUsable}" value="0" class="w-24 px-2 py-1 rounded-lg border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 tabular-nums" /></div>
-          <div id="split-rem" class="text-slate-600 dark:text-slate-400 tabular-nums">${t('المتبقي:', 'Remaining:')} <strong>${fmt(totalSar)} ${t('ريال', 'SAR')}</strong></div>
-        </div>
-        <div class="mb-4"><div class="font-semibold text-xs mb-1">${t('طريقة دفع المتبقي:', 'Pay the remainder with:')}</div>${payOptionsHtml('cart-pay')}</div>
-        <button id="confirm-cart-btn" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تأكيد وإتمام الشراء', 'Confirm & Pay')}</button>
-      `);
-      const splitInput = document.getElementById('split-micc');
-      splitInput.addEventListener('input', () => {
-        const val = Math.max(0, Math.min(maxMiccUsable, Number(splitInput.value) || 0));
-        document.getElementById('split-rem').innerHTML = `${t('المتبقي:', 'Remaining:')} <strong>${fmt(Math.max(0, totalSar - val * MICC_SAR_VALUE))} ${t('ريال', 'SAR')}</strong>`;
-      });
-      document.getElementById('confirm-cart-btn').addEventListener('click', () => {
-        const usedMicc = Math.max(0, Math.min(maxMiccUsable, Number(splitInput.value) || 0));
-        if (usedMicc > 0) {
-          state.user.walletMicc -= usedMicc; state.user.walletProgressMicc += usedMicc; state.user.usedOrTransferred = true;
-          state.walletLogs.unshift({ ar: 'شراء من متجر AMi', en: 'AMi Store Purchase', amount: `-${usedMicc} MiCC` });
+      const mf = n => fmt(Math.round(n * 100) / 100, Math.abs(Math.round(n * 100) / 100 % 1) > 0 ? 2 : 0);
+      const co = { micc: false, step: 1, method: 'card', card: 'applepay' };
+      const calc = () => {
+        const need = totalSar / MICC_SAR_VALUE;
+        const deduct = co.micc ? Math.round(Math.min(state.user.walletMicc, need) * 100) / 100 : 0;
+        const remainSar = Math.max(0, Math.round((totalSar - deduct * MICC_SAR_VALUE) * 100) / 100);
+        return { deduct, remainSar, covers: co.micc && remainSar <= 0 };
+      };
+      const finish = () => {
+        const { deduct } = calc();
+        if (deduct > 0) {
+          state.user.walletMicc = Math.round((state.user.walletMicc - deduct) * 100) / 100;
+          state.user.walletProgressMicc += deduct; state.user.usedOrTransferred = true;
+          state.walletLogs.unshift({ ar: 'شراء من متجر AMi', en: 'AMi Store Purchase', amount: `-${mf(deduct)} MiCC` });
         }
-        const remainSar = Math.max(0, totalSar - usedMicc * MICC_SAR_VALUE);
-        const prov = (document.querySelector('input[name="cart-pay"]:checked') || {}).value;
         state.cart = []; closeModal(); render();
-        showToast(remainSar > 0 && prov ? t(`تم تأكيد طلبك — جارٍ تحويلك إلى ${payProviderName(prov)} لإتمام الدفع`, `Order confirmed — redirecting you to ${payProviderName(prov)} to pay`) : t('تم تأكيد طلبك من متجر AMi بنجاح', 'AMi Store order confirmed'));
-      });
+        showToast(t('تم تأكيد طلبك من متجر AMi بنجاح', 'AMi Store order confirmed'));
+      };
+      const head = () => `
+        <div class="space-y-2 mb-4">${state.cart.map(i => `<div class="flex justify-between text-xs py-1.5 border-b border-brand-border dark:border-slate-800"><span>${t(i.nameAr, i.nameEn)} × ${i.qty}</span><span class="font-bold tabular-nums">${fmt(i.priceSar * i.qty)} ${t('ريال', 'SAR')}</span></div>`).join('')}</div>
+        <div class="flex justify-between font-bold text-sm mb-4"><span>${t('الإجمالي:', 'Total:')}</span><span class="tabular-nums">${fmt(totalSar)} ${t('ريال', 'SAR')}</span></div>`;
+      const btn = (id, label, cls) => `<button id="${id}" class="w-full py-2.5 rounded-xl ${cls || 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} text-xs font-semibold">${label}</button>`;
+      const draw = () => {
+        const body = document.getElementById('modal-body');
+        const c = calc();
+        if (co.step === 1) {
+          body.innerHTML = head() + `
+            <label class="flex items-center gap-3 rounded-xl border ${co.micc ? 'border-brand-emerald bg-emerald-50/60 dark:bg-emerald-950/30' : 'border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900'} px-3 py-3 mb-3 cursor-pointer">
+              <input id="co-micc" type="checkbox" ${co.micc ? 'checked' : ''} class="w-5 h-5 rounded accent-[#0B5C4A] shrink-0" />
+              <span class="font-bold text-sm">${t('الدفع بميك', 'Pay with MiCC')}</span>
+              ${co.micc ? `<span class="ms-auto text-brand-emerald dark:text-emerald-400 font-bold text-xs tabular-nums">${t(`يخصم ${mf(c.deduct)} ميك`, `Deducts ${mf(c.deduct)} MiCC`)}</span>` : ''}
+            </label>
+            ${c.covers ? btn('co-continue', t('متابعة الشراء', 'Continue Purchase')) : `
+              <div class="flex justify-between font-bold text-sm mb-3"><span>${t('المتبقي:', 'Remaining:')}</span><span class="tabular-nums">${mf(c.remainSar)} ${t('ريال', 'SAR')}</span></div>
+              <div class="mb-4"><div class="font-semibold text-xs mb-1.5">${t('طريقة الدفع:', 'Payment method:')}</div>${payOptionsHtml('cart-pay', { selected: co.method })}</div>
+              ${btn('co-next', t('التالي', 'Next'))}`}`;
+          document.getElementById('co-micc').addEventListener('change', e => { co.micc = e.target.checked; draw(); });
+          const cont = document.getElementById('co-continue'); if (cont) cont.addEventListener('click', finish);
+          body.querySelectorAll('input[name="cart-pay"]').forEach(r => r.addEventListener('change', () => { co.method = r.value; }));
+          const nx = document.getElementById('co-next'); if (nx) nx.addEventListener('click', () => {
+            const ch = body.querySelector('input[name="cart-pay"]:checked'); if (ch) co.method = ch.value;
+            co.step = 2; draw();
+          });
+          return;
+        }
+        // step 2: provider demo screen (nothing real is collected)
+        const back = `<button id="co-back" class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3 inline-flex items-center gap-1">${state.lang === 'ar' ? '→' : '←'} ${t('رجوع', 'Back')}</button>`;
+        const amt = `<div class="flex justify-between font-bold text-sm mb-4"><span>${t('المبلغ المطلوب:', 'Amount due:')}</span><span class="tabular-nums">${mf(c.remainSar)} ${t('ريال', 'SAR')}</span></div>`;
+        let inner = '';
+        if (co.method === 'card') {
+          const cards = [['applepay', 'Apple Pay', 'Apple Pay'], ['samsungpay', 'Samsung Pay', 'Samsung Pay'], ['card', 'بطاقة مدى / فيزا / ماستركارد', 'mada / Visa / Mastercard']];
+          inner = `<div class="font-bold text-sm mb-2">${t('البطاقة', 'Card')}</div><div class="space-y-1.5 mb-4">${cards.map(([id, ar, en]) => `<div role="button" tabindex="0" data-card="${id}" class="pay-card-opt w-full text-start cursor-pointer px-3 py-3 rounded-xl border-2 text-xs font-bold ${co.card === id ? 'border-brand-emerald bg-emerald-50/60 dark:bg-emerald-950/30' : 'border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900'}">${t(ar, en)}</div>`).join('')}</div>`;
+        } else if (co.method === 'tamara') {
+          const q = c.remainSar / 4;
+          inner = `<div class="font-bold text-sm mb-2">${t('تمارا', 'Tamara')}</div><div class="rounded-xl border border-brand-border dark:border-slate-700 p-3 mb-4 text-xs"><div class="font-semibold mb-2">${t('قسّمها على 4 دفعات بدون فوائد', 'Split in 4 interest-free payments')}</div><div class="grid grid-cols-4 gap-1.5 text-center">${[0, 1, 2, 3].map(i => `<div class="rounded-lg bg-slate-50 dark:bg-slate-950 py-2"><div class="text-[10px] text-slate-500">${i === 0 ? t('اليوم', 'Today') : t(`+${i} شهر`, `+${i} mo`)}</div><div class="font-bold tabular-nums">${mf(q)}</div></div>`).join('')}</div></div>`;
+        } else {
+          const m = c.remainSar / 12;
+          inner = `<div class="font-bold text-sm mb-2">${t('إمكان', 'Emkan')}</div><div class="rounded-xl border border-brand-border dark:border-slate-700 p-3 mb-4 text-xs"><div class="font-semibold mb-2">${t('تمويل على 12 شهرًا', 'Financing over 12 months')}</div><div class="flex justify-between"><span>${t('القسط الشهري', 'Monthly installment')}</span><strong class="tabular-nums">${mf(m)} ${t('ريال', 'SAR')}</strong></div></div>`;
+        }
+        body.innerHTML = back + amt + inner + btn('co-confirm', t('تأكيد الدفع', 'Confirm Payment'));
+        document.getElementById('co-back').addEventListener('click', () => { co.step = 1; draw(); });
+        body.querySelectorAll(".pay-card-opt").forEach(b => b.addEventListener('click', () => { co.card = b.dataset.card; draw(); }));
+        document.getElementById('co-confirm').addEventListener('click', finish);
+      };
+      openModal(t('إتمام الطلب والدفع المرن', 'Checkout & Split Payment'), '');
+      draw();
     }
 
     function tierCardHtml(tr, open) {
@@ -1589,7 +1629,7 @@
         <p class="text-xs text-slate-500 mb-1">${t(`${MICC_SAR_VALUE} ريال/وحدة · المتبقي: ${fmt(remSar)} ريال`, `${MICC_SAR_VALUE} SAR/unit · Remaining: ${fmt(remSar)} SAR`)}</p>
         <p class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3">${t(`أقل كمية للشراء: ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase: ${MIN_PURCHASE_MICC} MiCC`)}</p>
         <input id="buy-micc-amt" type="number" min="${MIN_PURCHASE_MICC}" step="1" max="${Math.floor(remSar / MICC_SAR_VALUE)}" value="100" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
-        <div class="mb-4">${payOptionsHtml('buy-pay', { only: ['applepay', 'samsungpay', 'card'] })}</div>
+        <div class="mb-4">${payOptionsGwHtml('buy-pay')}</div>
         <button id="do-buy-micc" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تأكيد الشراء', 'Confirm Purchase')}</button>
       `);
       document.getElementById('do-buy-micc').addEventListener('click', () => {
