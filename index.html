@@ -1190,8 +1190,8 @@
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <button onclick="openBuyMiccModal()" class="py-2.5 px-3 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('شراء ميك', 'Buy MiCC')}</button>
-              <button onclick="openPeerTransferModal()" class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">${t('تحويل لعميل', 'Transfer to Peer')}</button>
-              <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل رصيد', 'Transfer Balance')}</button>
+              <button onclick="openPeerTransferModal()" class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">${t('تحويل للرفاقة', 'Transfer To Companion')}</button>
+              <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل خارجي', 'External Transfer')}</button>
               <button onclick="handleRefundRequest()" ${canRefund ? '' : 'disabled'} class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${canRefund ? 'text-brand-crimson dark:text-rose-400' : 'opacity-40 cursor-not-allowed'}">${t('استرداد (8 أيام)', 'Refund (8 Days)')}</button>
             </div>
 
