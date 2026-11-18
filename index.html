@@ -37,11 +37,27 @@
     .tabular-nums {
       font-variant-numeric: tabular-nums;
     }
-    .tier-black { background: linear-gradient(135deg, #111827 0%, #1F2937 100%); color: #F9FAFB; }
-    .tier-silver { background: linear-gradient(135deg, #475569 0%, #94A3B8 100%); color: #FFFFFF; }
-    .tier-gold { background: linear-gradient(135deg, #92400E 0%, #D97706 100%); color: #FFFFFF; }
-    .tier-green { background: linear-gradient(135deg, #065F46 0%, #059669 100%); color: #FFFFFF; }
-    .tier-blue { background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); color: #FFFFFF; }
+    /* Tier cards (bank-card style) */
+    .tier-card { position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 6px 18px -8px rgba(15,23,42,.45), inset 0 1px 0 rgba(255,255,255,.18); }
+    .tier-card::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 55%), repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 9px); }
+    .tier-card > * { position: relative; z-index: 1; }
+    .tier-black { background: linear-gradient(135deg, #0B0F14 0%, #27303B 55%, #111827 100%); color: #F8FAFC; }
+    .tier-silver { background: linear-gradient(135deg, #F1F3F6 0%, #B4BCC8 50%, #E1E5EA 100%); color: #111827; }
+    .tier-gold { background: linear-gradient(135deg, #F8E08E 0%, #D4A12A 55%, #F3CF6B 100%); color: #3A2705; }
+    .tier-green { background: linear-gradient(135deg, #064E3B 0%, #047857 55%, #059669 100%); color: #FFFFFF; }
+    .tier-blue { background: linear-gradient(135deg, #0B1E4B 0%, #1D4ED8 70%, #2563EB 100%); color: #FFFFFF; }
+    .tier-silver .bg-black\/20, .tier-gold .bg-black\/20 { background: rgba(255,255,255,.5); }
+    .tier-silver .bg-white, .tier-gold .bg-white { background: #1E293B; }
+    .tier-silver .bg-white\/15, .tier-gold .bg-white\/15, .tier-silver .bg-white\/20, .tier-gold .bg-white\/20 { background: rgba(15,23,42,.14); }
+    .tc-chip { width: 34px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.25)); border: 1px solid rgba(0,0,0,.18); }
+    .tier-silver .tc-chip, .tier-gold .tc-chip { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(120,90,20,.25)); }
+    .tc-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); }
+    .tier-silver .tc-badge, .tier-gold .tc-badge { background: rgba(15,23,42,.12); border-color: rgba(15,23,42,.25); }
+    .tc-bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }
+    .tc-bar > div { height: 100%; border-radius: 999px; background: currentColor; }
+    .tier-silver .tc-bar, .tier-gold .tc-bar { background: rgba(15,23,42,.15); }
+    .tier-card.is-current { box-shadow: 0 0 0 2px #fff, 0 0 0 5px #10B981, 0 10px 24px -8px rgba(16,185,129,.55); }
+    .dark .tier-card.is-current { box-shadow: 0 0 0 2px #0F172A, 0 0 0 5px #34D399, 0 10px 24px -8px rgba(52,211,153,.4); }
 
     /* Institutional Banking Card Styling */
     .svc-badge svg { width: 1.5rem !important; height: 1.5rem !important; }
@@ -178,7 +194,7 @@
         membershipActive: false,
         annualPurchasedSar: 2500,
         walletMicc: 500,
-        walletConsumedMicc: 180,
+        walletProgressMicc: 180,
         transferredToSafeSar: 0,
         daysSincePurchase: 2,
         usedOrTransferred: false,
@@ -311,9 +327,12 @@
     const fmt = (n, d = 0) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 
     function getCurrentTier() {
-      const c = state.user.walletConsumedMicc;
+      const c = state.user.walletProgressMicc;
       return TIERS.find(tr => c >= tr.min && c <= tr.max) || TIERS[0];
     }
+
+    const SAR_PER_USD = 3.75;
+    const capSar = tr => Math.round(tr.safeCapUsdt * SAR_PER_USD);
 
     function getNextTier() {
       const cur = getCurrentTier();
@@ -358,6 +377,7 @@
         showToast(t('تم تسجيل الدخول التجريبي بنجاح', 'Signed in to demo account'));
         if (pendingView) state.view = pendingView;
         render();
+        if (pendingView === 'safe') { window.scrollTo({ top: 0 }); history.replaceState(null, '', '#safe'); }
       });
     }
 
@@ -525,8 +545,8 @@
           badgeCls: 'text-violet-800 dark:text-violet-300 bg-violet-50 dark:bg-violet-950',
           titleAr: 'GoodGuest',
           titleEn: 'GoodGuest',
-          subAr: 'تقييم نزلاء الفنادق والضيافة',
-          subEn: 'Hotel Guest Risk & Evaluation',
+          subAr: 'برنامج تميز الضيوف',
+          subEn: 'Guest Excellence Program',
           ctaAr: 'فتح GoodGuest',
           ctaEn: 'Open GoodGuest',
           icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`
@@ -907,7 +927,7 @@
 
     function renderGoodGuest() {
       const pillars = [
-        { titleAr: 'تقييم الضيوف وإدارة المخاطر', titleEn: 'Guest Evaluation & Risk Scoring', descAr: 'سجل تحقق مهني يساعد الفنادق على تقييم موثوقية النزلاء وحماية المنشأة.', descEn: 'Verified evaluation ledger helping hotels assess guest reliability and protect property.' },
+        { titleAr: 'برنامج تميز الضيوف', titleEn: 'Guest Excellence Program', descAr: 'سجل تحقق مهني يكرّم الضيوف المتميزين ويساعد الفنادق على حماية المنشأة.', descEn: 'Verified ledger that recognizes excellent guests and helps hotels protect property.' },
         { titleAr: 'التكامل مع أنظمة الفنادق (PMS)', titleEn: 'PMS Software Integration', descAr: 'ربط سلس مع أنظمة إدارة الضيافة لتوحيد السجلات عبر السلاسل الفندقية.', descEn: 'Seamless sync with hotel Property Management Systems across hospitality groups.' },
         { titleAr: 'مؤشرات أداء واضحة للفنادق', titleEn: 'Hospitality Performance Metrics', descAr: 'تقارير تشغيلية دقيقة لقياس انخفاض الأضرار وتحسن جودة الإشغال.', descEn: 'Operational metrics tracking damage reduction and occupancy quality.' },
       ];
@@ -919,9 +939,9 @@
 
         <div class="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-slate-950 via-violet-950/60 to-slate-900 text-white p-6 mb-5">
           <div class="inline-block px-3 py-1 rounded-full text-[11px] font-semibold bg-violet-500/20 text-violet-200 border border-violet-400/30 mb-3">GoodGuest.me</div>
-          <h1 class="text-2xl sm:text-3xl font-bold mb-2">${t('GoodGuest لتقييم الضيوف وحماية قطاع الضيافة', 'GoodGuest Hospitality & Guest Evaluation')}</h1>
+          <h1 class="text-2xl sm:text-3xl font-bold mb-2">${t('GoodGuest — برنامج تميز الضيوف', 'GoodGuest — Guest Excellence Program')}</h1>
           <p class="text-sm text-slate-300 max-w-3xl leading-relaxed">
-            ${t('أحد المسارات الاستراتيجية ضمن منظومة AMi، صُممت لتمكين الفنادق ومشغلي الضيافة من تقييم سجل النزلاء وتقليل المخاطر التشغيلية عبر تكامل مباشر مع أنظمة الفنادق.', 'A strategic pillar within the AMi ecosystem, built to empower hotels and hospitality operators with verified guest evaluation and PMS-integrated risk management.')}
+            ${t('أحد المسارات الاستراتيجية ضمن منظومة AMi، صُممت لتمكين الفنادق ومشغلي الضيافة من تكريم الضيوف المتميزين وتقليل المخاطر التشغيلية عبر تكامل مباشر مع أنظمة الفنادق.', 'A strategic pillar within the AMi ecosystem, built to empower hotels and hospitality operators with a Guest Excellence Program and PMS-integrated risk management.')}
           </p>
         </div>
 
@@ -956,10 +976,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
           <div class="lg:col-span-2 space-y-4">
-            <div class="rounded-2xl p-6 shadow-sm ${tier.cls}">
+            <div class="tier-card p-6 ${tier.cls}">
               <div class="flex items-start justify-between gap-3 mb-5">
                 <div>
-                  <div class="text-xs opacity-80 mb-1">${t('الرفاقة · مستوى', 'Companionship · Tier')} ${t(tier.ar, tier.en)}</div>
+                  <div class="flex items-center gap-2 mb-2"><span class="tc-chip"></span><span class="text-xs font-semibold opacity-90">${t('الرفاقة · مستوى', 'Companionship · Tier')} ${t(tier.ar, tier.en)}</span></div>
                   <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(state.user.walletMicc, 2)} <span class="text-lg font-medium opacity-90">MiCC</span></div>
                   <div class="text-base opacity-90 tabular-nums mt-1">${t('القيمة:', 'Value:')} ${fmt(walletSar, 2)} ${t('ريال', 'SAR')}</div>
                 </div>
@@ -967,10 +987,10 @@
               </div>
               <div class="bg-black/20 rounded-xl p-3 text-xs">
                 <div class="flex justify-between mb-1.5">
-                  <span>${t('الاستهلاك:', 'Consumed:')} <strong class="tabular-nums">${fmt(state.user.walletConsumedMicc, 2)} MiCC</strong></span>
-                  <span>${nextTier ? t(`متبقي ${fmt(nextTier.min - state.user.walletConsumedMicc)} MiCC لمستوى ${nextTier.ar}`, `${fmt(nextTier.min - state.user.walletConsumedMicc)} MiCC to ${nextTier.en}`) : t('أعلى مستوى', 'Top Tier')}</span>
+                  <span><strong class="tabular-nums">${fmt(state.user.walletProgressMicc, 2)}</strong>${nextTier ? ` ${t('من', 'of')} <span class="tabular-nums">${fmt(nextTier.min)}</span>` : ''} MiCC</span>
+                  <span>${nextTier ? t(`متبقي ${fmt(nextTier.min - state.user.walletProgressMicc)} MiCC للمستوى ${nextTier.ar}`, `${fmt(nextTier.min - state.user.walletProgressMicc)} MiCC to ${nextTier.en}`) : t('أعلى مستوى', 'Top Tier')}</span>
                 </div>
-                <div class="w-full h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white rounded-full" style="width:${nextTier ? Math.min(100, ((state.user.walletConsumedMicc - tier.min) / (nextTier.min - tier.min)) * 100) : 100}%"></div></div>
+                <div class="w-full h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white rounded-full" style="width:${nextTier ? Math.min(100, ((state.user.walletProgressMicc - tier.min) / (nextTier.min - tier.min)) * 100) : 100}%"></div></div>
               </div>
             </div>
 
@@ -1001,6 +1021,13 @@
               ${state.user.membershipActive ? `<div class="text-xs font-semibold text-brand-emerald dark:text-emerald-400">${t('✓ العضوية مفعّلة', '✓ Active')}</div>` : `<button onclick="openMembershipModal()" class="w-full py-2 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تفعيل العضوية (360 ريال)', 'Activate (360 SAR)')}</button>`}
             </div>
           </div>
+        </div>
+
+        <div class="mt-5 rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/80 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <div class="font-bold text-sm">${t('الانتقال إلى MiCC Safe', 'Go to MiCC Safe')}</div>
+          </div>
+          <button onclick="openLoginGateModal('safe')" class="px-4 py-2 rounded-xl bg-brand-navy text-white text-xs font-semibold whitespace-nowrap">${t('فتح MiCC Safe ←', 'Open MiCC Safe →')}</button>
         </div>
       `;
     }
@@ -1033,7 +1060,7 @@
             </div>
             <div class="text-xs text-slate-500">
               <div>${t('مستوى العضوية:', 'Tier:')} <strong>${t(tier.ar, tier.en)}</strong></div>
-              <div>${t('حد السحب والتسوية:', 'Withdrawal Cap & Cycle:')} <strong>$${fmt(tier.safeCapUsdt)} · ${t(tier.cycleAr, tier.cycleEn)}</strong></div>
+              <div>${t('حد السحب والتسوية:', 'Withdrawal Cap & Cycle:')} <strong>${fmt(capSar(tier))} ${t('ريال', 'SAR')} · ${t(tier.cycleAr, tier.cycleEn)}</strong></div>
             </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1159,7 +1186,7 @@
       document.getElementById('confirm-cart-btn').addEventListener('click', () => {
         const usedMicc = Math.max(0, Math.min(maxMiccUsable, Number(splitInput.value) || 0));
         if (usedMicc > 0) {
-          state.user.walletMicc -= usedMicc; state.user.walletConsumedMicc += usedMicc; state.user.usedOrTransferred = true;
+          state.user.walletMicc -= usedMicc; state.user.walletProgressMicc += usedMicc; state.user.usedOrTransferred = true;
           state.walletLogs.unshift({ ar: 'شراء من متجر AMi', en: 'AMi Store Purchase', amount: `-${usedMicc} MiCC` });
         }
         state.cart = []; closeModal(); render();
@@ -1167,10 +1194,33 @@
       });
     }
 
+    function tierCardHtml(tr) {
+      const cur = getCurrentTier();
+      const isCur = tr.id === cur.id;
+      const idx = TIERS.findIndex(x => x.id === tr.id);
+      const nxt = TIERS[idx + 1];
+      const c = state.user.walletProgressMicc;
+      const range = nxt ? t(`من ${fmt(tr.min)} MiCC`, `From ${fmt(tr.min)} MiCC`) : t(`من ${fmt(tr.min)} MiCC فأكثر`, `${fmt(tr.min)} MiCC and above`);
+      const progress = isCur ? (nxt ? `<div class="mt-3"><div class="tc-bar"><div style="width:${Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100))}%"></div></div><div class="text-[11px] mt-1.5 opacity-90">${t(`متبقي ${fmt(nxt.min - c)} MiCC للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`)}</div></div>` : `<div class="text-[11px] mt-2 opacity-90">${t('أعلى مستوى', 'Top Tier')}</div>`) : '';
+      return `<div class="tier-card ${tr.cls} ${isCur ? 'is-current' : ''} p-4">
+        <div class="flex items-center justify-between gap-2">
+          <span class="tc-chip"></span>
+          ${isCur ? `<span class="tc-badge">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : ''}
+        </div>
+        <div class="mt-3 text-2xl font-bold leading-tight">${t(tr.ar, tr.en)}</div>
+        <div class="text-xs opacity-90 mt-0.5 tabular-nums">${range}</div>
+        <div class="mt-3 pt-3 flex items-end justify-between gap-2" style="border-top:1px solid currentColor;border-top-color:color-mix(in srgb, currentColor 25%, transparent)">
+          <span class="text-[11px] opacity-90">${t('حد السحب', 'Withdrawal cap')}</span>
+          <span class="text-lg font-bold tabular-nums">${fmt(capSar(tr))} <span class="text-xs font-semibold opacity-90">${t('ريال', 'SAR')}</span></span>
+        </div>
+        ${progress}
+      </div>`;
+    }
+
     function openTierGuide() {
       openModal(t('دليل مستويات الرفاقة — MiCC Wallet', 'Companionship Tier Guide — MiCC Wallet'), `
-        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${t('تُحدَّد المستويات في MiCC Wallet حسب استهلاكك.', 'Tiers in MiCC Wallet are determined based on your consumption.')}</p>
-        <div class="space-y-2 text-xs">${TIERS.map(tr => `<div class="rounded-xl border border-brand-border dark:border-slate-800 p-3 flex items-center justify-between"><div><strong>${t(tr.ar, tr.en)}</strong><div class="text-slate-500">${t(`من ${fmt(tr.min)} MiCC استهلاك`, `From ${fmt(tr.min)} MiCC consumed`)}</div></div><div class="text-end"><strong>$${fmt(tr.safeCapUsdt)}</strong></div></div>`).join('')}</div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">${t('يرتقي مستواك تلقائياً مع نشاطك في MiCC Wallet، ويرتفع معه حد السحب.', 'Your tier rises automatically with your activity in MiCC Wallet, and your withdrawal cap rises with it.')}</p>
+        <div class="space-y-4 px-1 pb-1">${TIERS.map(tierCardHtml).join('')}</div>
       `);
     }
 
@@ -1247,7 +1297,7 @@
         const mode = document.getElementById('mem-pay').value;
         if (mode === 'micc') {
           if (state.user.walletMicc < MEMBERSHIP_FEE_MICC) { showToast(t('مطلوب 72 MiCC', 'Need 72 MiCC')); return; }
-          state.user.walletMicc -= MEMBERSHIP_FEE_MICC; state.user.walletConsumedMicc += MEMBERSHIP_FEE_MICC; state.user.usedOrTransferred = true;
+          state.user.walletMicc -= MEMBERSHIP_FEE_MICC; state.user.walletProgressMicc += MEMBERSHIP_FEE_MICC; state.user.usedOrTransferred = true;
           state.walletLogs.unshift({ ar: 'تفعيل عضوية الرفاقة', en: 'Membership', amount: '-72 MiCC' });
         } else {
           state.walletLogs.unshift({ ar: 'تفعيل عضوية الرفاقة (360 ريال)', en: 'Membership (360 SAR)', amount: '360 SAR' });
@@ -1274,7 +1324,7 @@
     function openWithdrawUsdtModal() {
       const tier = getCurrentTier();
       openModal(t('سحب USDT خارجي (رسوم 2%)', 'External USDT Withdrawal (2% Fee)'), `
-        <p class="text-xs text-slate-500 mb-3">${t(`الحد: $${fmt(tier.safeCapUsdt)} · ${tier.cycleAr}`, `Cap: $${fmt(tier.safeCapUsdt)} · ${tier.cycleEn}`)}</p>
+        <p class="text-xs text-slate-500 mb-3">${t(`الحد: ${fmt(capSar(tier))} ريال · ${tier.cycleAr}`, `Cap: ${fmt(capSar(tier))} SAR · ${tier.cycleEn}`)}</p>
         <input id="wd-micc" type="number" min="10" max="${Math.floor(state.safe.micc)}" value="${Math.min(50, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
         <input id="wd-addr" type="text" placeholder="0x..." class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4" />
         <button id="do-wd-usdt" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تأكيد السحب', 'Confirm Withdrawal')}</button>
@@ -1397,7 +1447,7 @@
           if (payMode === 'micc') {
             const miccNeeded = Math.ceil(offer.opt.priceSar / (MICC_SAR_VALUE * 2));
             if (state.user.walletMicc < miccNeeded) { showToast(t('رصيد MiCC غير كافٍ', 'Insufficient MiCC')); return; }
-            state.user.walletMicc -= miccNeeded; state.user.walletConsumedMicc += miccNeeded; state.user.usedOrTransferred = true;
+            state.user.walletMicc -= miccNeeded; state.user.walletProgressMicc += miccNeeded; state.user.usedOrTransferred = true;
             state.walletLogs.unshift({ ar: `حجز ${offer.track.titleAr}`, en: `Booked ${offer.track.titleEn}`, amount: `-${miccNeeded} MiCC` });
           }
           showToast(t('تم تأكيد الموعد بنجاح', 'Appointment confirmed'));
