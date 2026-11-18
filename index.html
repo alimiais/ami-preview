@@ -1499,10 +1499,10 @@
         if (deduct > 0) {
           state.user.walletMicc = Math.round((state.user.walletMicc - deduct) * 100) / 100;
           state.user.walletProgressMicc += deduct; state.user.usedOrTransferred = true;
-          state.walletLogs.unshift({ ar: 'شراء من متجر AMi', en: 'AMi Store Purchase', amount: `-${mf(deduct)} MiCC` });
+          state.walletLogs.unshift({ ar: 'شراء من المتجر', en: 'Store Purchase', amount: `-${mf(deduct)} MiCC` });
         }
         state.cart = []; closeModal(); render();
-        showToast(t('تم تأكيد طلبك من متجر AMi بنجاح', 'AMi Store order confirmed'));
+        showToast(t('تم تأكيد طلبك بنجاح', 'Order confirmed'));
       };
       const head = () => `
         <div class="space-y-2 mb-4">${state.cart.map(i => `<div class="flex justify-between text-xs py-1.5 border-b border-brand-border dark:border-slate-800"><span>${t(i.nameAr, i.nameEn)} × ${i.qty}</span><span class="font-bold tabular-nums">${fmt(i.priceSar * i.qty)} ${t('ريال', 'SAR')}</span></div>`).join('')}</div>
