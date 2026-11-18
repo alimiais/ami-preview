@@ -1855,6 +1855,7 @@
       const fcForm = document.getElementById('free-consult-form');
       if (fcForm) fcForm.addEventListener('submit', e => {
         e.preventDefault();
+        if (!state.loggedIn) { openLoginGateModal(state.view); return; }
         const val = id => (document.getElementById(id).value || '').trim();
         const errEl = document.getElementById('fc-error');
         const checks = [
