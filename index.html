@@ -691,18 +691,6 @@
 
     function renderHome() {
       const cards = [
-        // Row 1
-        {
-          id: 'consulting',
-          code: '01',
-          accent: 'border-t-brand-emerald',
-          badgeCls: 'text-brand-emerald dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950',
-          titleAr: 'الخدمات المهنية',
-          titleEn: 'Professional Services',
-          subAr: 'الاستشارات الإدارية والتسويق',
-          subEn: 'Management & Brand Advisory',
-          icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
-        },
         {
           id: 'ekc',
           code: '02',
@@ -714,30 +702,17 @@
           subEn: 'Remote Empathic Kinetic Care',
           icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>`
         },
-        // Row 2
         {
-          id: 'wallet',
-          code: '03',
-          accent: 'border-t-brand-navy dark:border-t-sky-500',
-          badgeCls: 'text-brand-navy dark:text-sky-300 bg-sky-50 dark:bg-sky-950',
-          titleAr: 'محفظة ميك',
-          titleEn: 'MiCC Wallet',
-          subAr: 'برنامج الرفاقة والقوة المضاعفة',
-          subEn: 'Companionship & Doubled Power',
-          icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`
+          id: 'consulting',
+          code: '01',
+          accent: 'border-t-brand-emerald',
+          badgeCls: 'text-brand-emerald dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950',
+          titleAr: 'الخدمات المهنية',
+          titleEn: 'Professional Services',
+          subAr: 'الاستشارات الإدارية والتسويق',
+          subEn: 'Management & Brand Advisory',
+          icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
         },
-        {
-          id: 'store',
-          code: '04',
-          accent: 'border-t-teal-700 dark:border-t-teal-400',
-          badgeCls: 'text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950',
-          titleAr: 'المتجر',
-          titleEn: 'AMi Store',
-          subAr: 'منتجات منتقاة',
-          subEn: 'Curated Goods',
-          icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`
-        },
-        // Row 3
         {
           id: 'goodguest',
           href: 'https://goodguest.me',
@@ -753,15 +728,15 @@
           icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`
         },
         {
-          id: 'aboutus',
-          code: '06',
-          accent: 'border-t-slate-700 dark:border-t-slate-400',
-          badgeCls: 'bg-brand-emerald/10 dark:bg-emerald-950 border border-brand-emerald/20',
-          titleAr: 'من نحن',
-          titleEn: 'About Us',
-          subAr: 'تعرّف على شركة AMi',
-          subEn: 'Get to know AMi',
-          icon: `<svg viewBox="0 0 180 180" class="w-6 h-6" aria-label="AMi"><path d="M 30 124 A 66 66 0 1 1 138 56" fill="none" stroke="#0B5C4A" stroke-width="8" stroke-linecap="round"/><circle cx="142" cy="52" r="10" fill="#0B5C4A"/><text x="90" y="114" text-anchor="middle" fill="#0B5C4A" font-family="Inter, sans-serif" font-weight="800" font-size="50" letter-spacing="-2">AMi</text></svg>`
+          id: 'wallet',
+          code: '03',
+          accent: 'border-t-brand-navy dark:border-t-sky-500',
+          badgeCls: 'text-brand-navy dark:text-sky-300 bg-sky-50 dark:bg-sky-950',
+          titleAr: 'محفظة ميك',
+          titleEn: 'MiCC Wallet',
+          subAr: 'برنامج الرفاقة والقوة المضاعفة',
+          subEn: 'Companionship & Doubled Power',
+          icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`
         }
       ];
 
@@ -786,24 +761,46 @@
         return `<button onclick="setView('${c.id}')" class="${cls}">${inner}</button>`;
       };
 
-      return `
-        <!-- Simple Institutional Intro Banner -->
-        <section class="rounded-xl border border-brand-border dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/80 px-4 py-4 mb-4">
-          <h1 class="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mb-1.5">
-            ${t('شركة AMi', 'AMi Company')}
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            ${t(
-              'تقدم شركة AMi منظومة متكاملة من الاستشارات الإدارية والتسويقية، والرعاية الحركية عن بُعد، إلى جانب حلول الضيافة الرقمية والمتجر المنتقى. تجمع AMi بين الخبرة المهنية المباشرة وأدوات القيمة المستدامة لخدمة الأفراد والمنشآت.',
-              'AMi provides an integrated suite of management and marketing advisory, remote Empathic Kinetic Care, digital hospitality solutions, and curated goods. AMi combines direct expert consultation with sustainable value tools for individuals and enterprises.'
-            )}
-          </p>
-        </section>
+      const arrow = state.lang === 'ar' ? '←' : '→';
+      const u = state.user || {};
+      let memBody, memBtn;
+      if (state.loggedIn && u.membershipActive) {
+        const tr = getCurrentTier();
+        memBody = `<div class="inline-flex items-center gap-2 mb-1.5"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/15">${t('عضوية مفعّلة', 'Membership Active')}</span></div><p class="text-sm font-semibold">${t('مستواك الحالي:', 'Your current tier:')} <strong class="text-base">${t(tr.ar, tr.en)}</strong></p>`;
+        memBtn = `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('محفظتي', 'My Wallet')} ${arrow}</span>`;
+      } else {
+        memBody = `<p class="text-xs sm:text-sm leading-relaxed opacity-95">${t('قوة شرائية مضاعفة للخدمات الصحية. 360 ريال/سنة، قابلة للاسترداد خلال 8 أيام.', 'Doubled purchasing power for health services. 360 SAR/year, refundable within 8 days.')}</p>`;
+        memBtn = state.loggedIn
+          ? `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('تفعيل العضوية', 'Activate Membership')}</span>`
+          : `<span class="shrink-0 px-4 py-2 rounded-xl bg-white text-brand-emerald text-xs font-bold whitespace-nowrap">${t('سجّل وانضم', 'Sign up & join')}</span>`;
+      }
+      const memAction = (state.loggedIn && u.membershipActive) ? "setView('wallet')" : (state.loggedIn ? 'openMembershipModal()' : 'openLoginGateModal()');
+      const storeImg = (STORE_CATEGORIES[0] || {}).img || '';
 
-        <!-- Unified 6-Card Grid (2x3 on Mobile, 3x2 on Desktop) -->
-        <section class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      return `
+        <!-- Rafaqa Membership (wide) -->
+        <button onclick="${memAction}" class="home-member w-full text-start rounded-xl bg-gradient-to-br from-brand-emerald to-emerald-900 text-white p-4 sm:p-5 mb-3 sm:mb-4 flex items-center justify-between gap-3 focus:outline-none">
+          <div class="min-w-0">
+            <h2 class="text-base sm:text-lg font-bold mb-1.5">${t('عضوية الرفاقة', 'Rafaqa Membership')}</h2>
+            ${memBody}
+          </div>
+          ${memBtn}
+        </button>
+
+        <!-- 2x2 service grid -->
+        <section class="grid grid-cols-2 gap-3 sm:gap-4">
           ${cards.map(renderCard).join('')}
         </section>
+
+        <!-- Store banner -->
+        <button onclick="setView('store')" class="home-store-banner w-full mt-3 sm:mt-4 text-start rounded-xl border border-brand-border dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden flex items-stretch h-[76px] sm:h-[84px] focus:outline-none hover:border-brand-emerald transition">
+          <div class="w-24 sm:w-32 shrink-0 bg-slate-100 dark:bg-slate-800"><img src="${storeImg}" alt="${t('متجر AMi', 'AMi Store')}" class="w-full h-full object-cover" /></div>
+          <div class="flex-1 min-w-0 px-3 sm:px-4 flex flex-col justify-center">
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">${t('متجر AMi', 'AMi Store')}</h2>
+            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">${t('منتجات متنوعة', 'Diverse products')}</p>
+          </div>
+          <div class="shrink-0 flex items-center pe-3 sm:pe-4"><span class="px-3 py-1.5 rounded-lg bg-brand-emerald text-white text-[11px] font-semibold whitespace-nowrap">${t('تصفّح المتجر', 'Browse Store')} ${arrow}</span></div>
+        </button>
       `;
     }
 
@@ -944,10 +941,18 @@
       `;
     }
 
+    // Product source line: only where the product title itself names the brand (no invented stores)
+    const PRODUCT_SOURCE = {
+      p1: ['العربية للعود', 'Arabian Oud'], p3: ['العربية للعود', 'Arabian Oud'], p4: ['العربية للعود', 'Arabian Oud'],
+      p2: ['بربري', 'Burberry'], b1: ['Calvin Klein', 'Calvin Klein'], b2: ['Samsonite', 'Samsonite']
+    };
+    const productSourceHtml = (prod) => { const sc = prod.source ? [prod.source, prod.source] : PRODUCT_SOURCE[prod.id]; return sc ? `<div class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">${t('المصدر: ', 'From: ')}<bdi>${t(sc[0], sc[1])}</bdi></div>` : ''; };
+
     function renderStore() {
       return `
         <div class="mb-4">
           <h1 class="text-2xl font-bold mb-1">${t('متجر AMi', 'AMi Store')}</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">${t('منتجات متنوعة من متاجر مختارة.', 'Diverse products from selected stores.')}</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           ${STORE_CATEGORIES.map(cat => `
@@ -1038,6 +1043,7 @@
             <div>
               <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 mb-2">${t(foundCat.nameAr, foundCat.nameEn)}</span>
               <h1 class="text-xl sm:text-2xl font-bold mb-2">${t(foundProd.nameAr, foundProd.nameEn)}</h1>
+              ${productSourceHtml(foundProd)}
               <div class="text-2xl font-bold text-brand-emerald dark:text-emerald-400 tabular-nums mb-1">${fmt(foundProd.priceSar)} ${t('ريال', 'SAR')}</div>
               <div class="text-xs text-slate-500 dark:text-slate-400 mb-4">${t(`أو ما يعادل ${miccEq} ميك عبر محفظة الرفاقة (بدون مضاعفة للمنتجات)`, `Or ${miccEq} MiCC via MiCC Wallet (standard 1:1 rate for store items)`)}</div>
               <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5">${t(foundProd.descAr, foundProd.descEn)}</p>
