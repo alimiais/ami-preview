@@ -44,6 +44,8 @@
     .tier-blue { background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); color: #FFFFFF; }
 
     /* Institutional Banking Card Styling */
+    .svc-badge svg { width: 1.5rem !important; height: 1.5rem !important; }
+    .cat-chip svg { width: 1.25rem; height: 1.25rem; }
     .bank-card {
       position: relative;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -121,7 +123,16 @@
   </div>
 
   <!-- Main Content Container -->
-  <main id="main-content" class="flex-1 max-w-6xl w-full mx-auto px-4 py-4 sm:py-6"></main>
+  <main id="main-content" class="flex-1 max-w-6xl w-full mx-auto px-4 py-4 sm:py-6 min-h-[60vh]"></main>
+
+  <!-- Footer -->
+  <footer id="app-footer" class="bg-brand-navy text-slate-200 mt-8">
+    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div id="footer-name" class="font-semibold text-sm text-white"></div>
+      <nav id="footer-links" class="flex items-center gap-5 font-medium"></nav>
+      <div id="footer-copy" class="text-slate-300"></div>
+    </div>
+  </footer>
 
   <!-- Reusable Modal -->
   <div id="modal-backdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -251,6 +262,15 @@
       },
     ];
 
+
+    const CAT_ICONS = {
+      perfumes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v3H9z"/><path d="M8 6h8l1 4v9a2 2 0 01-2 2H9a2 2 0 01-2-2v-9z"/><path d="M10 13h4"/></svg>',
+      dates: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-3.5 0-6-3-6-7 0-3 2-6 6-8 4 2 6 5 6 8 0 4-2.5 7-6 7z"/><path d="M12 6c0-1.5.7-2.5 2-3"/></svg>',
+      apparel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l-5 3 2 4 3-1v12h8V9l3 1 2-4-5-3a4 4 0 01-8 0z"/></svg>',
+      digital: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 012-2h12v16H6a2 2 0 00-2 2z"/><path d="M4 19V5"/><path d="M9 8h6M9 12h6"/></svg>',
+      bags: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v4H4z"/><path d="M5 12v8h14v-8"/><path d="M12 8v12"/><path d="M12 8c-2-3-5-3-5-1s3 1 5 1zm0 0c2-3 5-3 5-1s-3 1-5 1z"/></svg>'
+    };
+
     const EKC_TRACKS = [
       {
         id: 'pt', titleAr: 'استشارة علاج طبيعي عن بُعد', titleEn: 'Remote Physiotherapy Consultation',
@@ -326,7 +346,7 @@
     function openLoginGateModal(pendingView) {
       openModal(t('تسجيل الدخول مطلوب', 'Sign In Required'), `
         <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">
-          ${t('للوصول إلى خدمات AMi وحجز المواعيد والمتجر والمحفظة، يرجى تسجيل الدخول أولاً. (صفحة عن الشركة والأصول متاحة للجميع).', 'Please sign in to access AMi services, consultations, store, and wallet. (About & Reserves is publicly available).')}
+          ${pendingView === 'safe' ? t('يرجى تسجيل الدخول للمتابعة.', 'Please sign in to continue.') : t('للوصول إلى خدمات AMi وحجز المواعيد والمتجر والمحفظة، يرجى تسجيل الدخول أولاً. (صفحة عن الشركة والأصول متاحة للجميع).', 'Please sign in to access AMi services, consultations, store, and wallet. (About & Reserves is publicly available).')}
         </p>
         <button id="gate-login-btn" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">
           ${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}
@@ -372,7 +392,7 @@
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
         brandTitle.textContent = 'MiCC Safe';
-        brandSub.textContent = t('منصة رقمية مستقلة', 'Independent Digital Platform');
+        brandSub.textContent = t('شبكة Polygon', 'Polygon Network');
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
         sideMenuBtn.classList.add('hidden');
@@ -421,6 +441,33 @@
     // =========================================================
     // 4. VIEW RENDERERS
     // =========================================================
+
+    function renderFooter() {
+      const isSafe = state.view === 'safe';
+      const name = document.getElementById('footer-name');
+      const links = document.getElementById('footer-links');
+      const copy = document.getElementById('footer-copy');
+      const lk = 'class="hover:text-white underline-offset-4 hover:underline"';
+      if (isSafe) {
+        name.textContent = 'MiCC Safe';
+        links.innerHTML = `<button ${lk} onclick="document.getElementById('safe-terms') && document.getElementById('safe-terms').scrollIntoView({ behavior: 'smooth' })">${t('الخصوصية والشروط', 'Privacy & Terms')}</button><button ${lk} onclick="accelerateSupport()">${t('تواصل معنا', 'Contact')}</button>`;
+        copy.textContent = `© 2026 MiCC Safe`;
+        document.title = 'MiCC Safe';
+      } else {
+        name.textContent = t('شركة AMi', 'AMi Company');
+        links.innerHTML = `<button ${lk} onclick="setView('privacy')">${t('سياسة الخصوصية', 'Privacy Policy')}</button><button ${lk} onclick="openContactModal()">${t('تواصل معنا', 'Contact')}</button>`;
+        copy.textContent = `© 2026 ${t('شركة AMi', 'AMi Company')}`;
+        document.title = 'AMi | المنصة الرسمية للخدمات والاستشارات والمتجر ونظام الرفاقة';
+      }
+    }
+
+    function openContactModal() {
+      openModal(t('تواصل معنا', 'Contact Us'), `
+        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('لأي استفسار، أرسل طلبك عبر نموذج الاستشارة المجانية وسيتواصل معك فريق AMi.', 'For any inquiry, send your request through the free consultation form and the AMi team will reach out.')}</p>
+        <button onclick="closeModal(); setView('consulting')" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">${t('الذهاب إلى نموذج الاستشارة', 'Go to Consultation Form')}</button>
+      `);
+    }
+
     function renderHome() {
       const cards = [
         // Row 1
@@ -500,8 +547,7 @@
       const renderCard = (c) => {
         const inner = `
           <div class="flex items-center justify-between gap-2 mb-3">
-            <span class="w-8 h-8 rounded-lg ${c.badgeCls} flex items-center justify-center shrink-0">${c.icon}</span>
-            <span class="text-[11px] font-semibold tabular-nums text-slate-400 dark:text-slate-500">${c.code}</span>
+            <span class="svc-badge w-11 h-11 rounded-xl ${c.badgeCls} flex items-center justify-center shrink-0">${c.icon}</span>
           </div>
           <div>
             <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mb-1">${t(c.titleAr, c.titleEn)}</h2>
@@ -729,12 +775,16 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           ${STORE_CATEGORIES.map(cat => `
             <button onclick="openCategory('${cat.id}')" class="group text-start rounded-2xl border border-brand-border dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 hover:border-brand-emerald transition">
-              <div class="h-28 sm:h-32 overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <div class="relative h-28 sm:h-32 overflow-hidden bg-gradient-to-br from-emerald-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
                 <img src="${cat.img}" alt="${t(cat.nameAr, cat.nameEn)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <span class="cat-chip absolute bottom-2 start-2 w-9 h-9 rounded-xl bg-white/95 dark:bg-slate-900/90 text-brand-emerald dark:text-emerald-400 shadow flex items-center justify-center">${CAT_ICONS[cat.id] || ''}</span>
               </div>
               <div class="p-3">
                 <div class="font-bold text-sm">${t(cat.nameAr, cat.nameEn)}</div>
-                <div class="text-[11px] text-slate-500 dark:text-slate-400">${cat.products.length} ${t('منتجات', 'items')}</div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  <span class="tabular-nums">${cat.products.length} ${t('منتجات', 'items')}</span>
+                  <span class="font-semibold text-brand-emerald dark:text-emerald-400 tabular-nums">${t('من', 'From')} ${fmt(Math.min(...cat.products.map(p => p.priceSar)))} ${t('ريال', 'SAR')}</span>
+                </div>
               </div>
             </button>
           `).join('')}
@@ -892,7 +942,6 @@
       const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
       const capUsedPct = Math.min(100, (state.user.annualPurchasedSar / ANNUAL_PURCHASE_CAP_SAR) * 100);
       const remainingCapSar = Math.max(0, ANNUAL_PURCHASE_CAP_SAR - state.user.annualPurchasedSar);
-      const maxSafeAllowanceSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
       const canRefund = !state.user.usedOrTransferred && state.user.daysSincePurchase <= 8 && state.user.walletMicc > 0;
 
       return `
@@ -910,39 +959,37 @@
               <div class="flex items-start justify-between gap-3 mb-5">
                 <div>
                   <div class="text-xs opacity-80 mb-1">${t('الرفاقة · مستوى', 'Companionship · Tier')} ${t(tier.ar, tier.en)}</div>
-                  <div class="text-3xl font-bold tabular-nums">${fmt(state.user.walletMicc)} <span class="text-base font-medium opacity-90">MiCC</span></div>
-                  <div class="text-sm opacity-90 tabular-nums mt-0.5">${t('القيمة:', 'Value:')} ${fmt(walletSar)} ${t('ريال', 'SAR')}</div>
+                  <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(state.user.walletMicc, 2)} <span class="text-lg font-medium opacity-90">MiCC</span></div>
+                  <div class="text-base opacity-90 tabular-nums mt-1">${t('القيمة:', 'Value:')} ${fmt(walletSar, 2)} ${t('ريال', 'SAR')}</div>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/15">${state.user.membershipActive ? t('عضوية مفعّلة', 'Membership Active') : t('بدون عضوية', 'No Membership')}</span>
               </div>
               <div class="bg-black/20 rounded-xl p-3 text-xs">
                 <div class="flex justify-between mb-1.5">
-                  <span>${t('الاستهلاك:', 'Consumed:')} <strong class="tabular-nums">${fmt(state.user.walletConsumedMicc)} MiCC</strong></span>
+                  <span>${t('الاستهلاك:', 'Consumed:')} <strong class="tabular-nums">${fmt(state.user.walletConsumedMicc, 2)} MiCC</strong></span>
                   <span>${nextTier ? t(`متبقي ${fmt(nextTier.min - state.user.walletConsumedMicc)} MiCC لمستوى ${nextTier.ar}`, `${fmt(nextTier.min - state.user.walletConsumedMicc)} MiCC to ${nextTier.en}`) : t('أعلى مستوى', 'Top Tier')}</span>
                 </div>
                 <div class="w-full h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white rounded-full" style="width:${nextTier ? Math.min(100, ((state.user.walletConsumedMicc - tier.min) / (nextTier.min - tier.min)) * 100) : 100}%"></div></div>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="grid grid-cols-3 gap-2.5">
               <button onclick="openBuyMiccModal()" class="py-2.5 px-3 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('شراء MiCC', 'Buy MiCC')}</button>
               <button onclick="openPeerTransferModal()" class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">${t('تحويل لعميل', 'Transfer to Peer')}</button>
-              <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل إلى Safe', 'Transfer to Safe')}</button>
               <button onclick="handleRefundRequest()" ${canRefund ? '' : 'disabled'} class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${canRefund ? 'text-brand-crimson dark:text-rose-400' : 'opacity-40 cursor-not-allowed'}">${t('استرداد (8 أيام)', 'Refund (8 Days)')}</button>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
               <h2 class="font-bold text-sm mb-2">${t('سجل عمليات المحفظة', 'Wallet Log')}</h2>
-              ${state.walletLogs.length === 0 ? `<p class="text-xs text-slate-500">${t('لا توجد عمليات مسجلة بعد.', 'No transactions yet.')}</p>` : `<div class="space-y-1.5">${state.walletLogs.map(l => `<div class="text-xs py-1.5 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${t(l.ar, l.en)}</span><span class="tabular-nums font-semibold">${l.amount}</span></div>`).join('')}</div>`}
+              ${state.walletLogs.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5">${state.walletLogs.map(l => `<div class="text-xs py-1.5 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${t(l.ar, l.en)}</span><span class="tabular-nums font-semibold">${l.amount}</span></div>`).join('')}</div>`}
             </div>
           </div>
 
           <div class="space-y-4">
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
               <h3 class="font-bold text-sm mb-2">${t('السقف السنوي (30,000 ريال)', 'Annual Cap (30,000 SAR)')}</h3>
-              <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span>${fmt(state.user.annualPurchasedSar)} ${t('ريال', 'SAR')}</span><span>${fmt(remainingCapSar)} ${t('متبقي', 'left')}</span></div>
+              <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span class="tabular-nums">${fmt(state.user.annualPurchasedSar, 2)} ${t('ريال', 'SAR')}</span><span class="tabular-nums">${fmt(remainingCapSar, 2)} ${t('ريال', 'SAR')} ${t('متبقي', 'left')}</span></div>
               <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3"><div class="h-full bg-brand-emerald rounded-full" style="width:${capUsedPct}%"></div></div>
-              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتاح للتحويل إلى Safe (50% — من 250 إلى 15,000 ريال):', 'Available for Safe (50% — 250 to 15,000 SAR):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} MiCC)</strong></div>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60">
@@ -951,14 +998,6 @@
               ${state.user.membershipActive ? `<div class="text-xs font-semibold text-brand-emerald dark:text-emerald-400">${t('✓ العضوية مفعّلة', '✓ Active')}</div>` : `<button onclick="openMembershipModal()" class="w-full py-2 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تفعيل العضوية (360 ريال)', 'Activate (360 SAR)')}</button>`}
             </div>
           </div>
-        </div>
-
-        <!-- Only place where MiCC Safe link appears -->
-        <div class="rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/80 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <div class="font-bold text-sm">${t('الانتقال إلى منصة MiCC Safe المستقلة', 'Open Independent MiCC Safe Platform')}</div>
-          </div>
-          <button onclick="setView('safe')" class="px-4 py-2 rounded-xl bg-brand-navy text-white text-xs font-semibold whitespace-nowrap">${t('فتح MiCC Safe ←', 'Open MiCC Safe →')}</button>
         </div>
       `;
     }
@@ -977,7 +1016,7 @@
       return `
         <div class="rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/70 p-4 mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('منصة MiCC Safe المستقلة · شبكة Polygon', 'Independent MiCC Safe Platform · Polygon Network')}</div>
+            <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('MiCC Safe · شبكة Polygon', 'MiCC Safe · Polygon Network')}</div>
           </div>
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية الهبوط 10% مفعّلة', '10% Downside Protection Active')}</span>
         </div>
@@ -986,8 +1025,8 @@
           <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div>
               <div class="text-xs text-slate-500 mb-1">${t('الرصيد الرسمي في الخزنة', 'Official Safe Balance')}</div>
-              <div class="text-3xl font-bold tabular-nums text-brand-navy dark:text-sky-400">${fmt(s.micc, 2)} <span class="text-base font-medium">MiCC</span></div>
-              <div class="text-sm text-slate-600 dark:text-slate-300 tabular-nums">USDT : $${fmt(totalUsdt, 2)}</div>
+              <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight text-brand-navy dark:text-sky-400">${fmt(s.micc, 2)} <span class="text-lg font-medium">MiCC</span></div>
+              <div class="text-base text-slate-600 dark:text-slate-300 tabular-nums mt-1">USDT : $${fmt(totalUsdt, 2)}</div>
             </div>
             <div class="text-xs text-slate-500">
               <div>${t('مستوى العضوية:', 'Tier:')} <strong>${t(tier.ar, tier.en)}</strong></div>
@@ -998,15 +1037,6 @@
             <button onclick="openReceiveUsdtModal()" class="py-2.5 px-4 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('استقبال USDT (Polygon)', 'Receive USDT (Polygon)')}</button>
             <button onclick="openWithdrawUsdtModal()" class="py-2.5 px-4 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('سحب USDT (رسوم 2%)', 'Withdraw USDT (2% Fee)')}</button>
             <button onclick="openReturnToWalletModal()" class="py-2.5 px-4 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('تحويل إلى MiCC Wallet (0%)', 'Transfer to MiCC Wallet (0%)')}</button>
-          </div>
-        </div>
-
-        <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 mb-5 bg-slate-50/70 dark:bg-slate-900/50 flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xs font-semibold">${t('اختبار حركة السوق:', 'Market Simulation:')}</span>
-          <div class="flex gap-2">
-            <button onclick="simulateMarket(-0.08)" class="px-3 py-1 rounded-lg border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">-8%</button>
-            <button onclick="simulateMarket(-0.20)" class="px-3 py-1 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950 text-brand-crimson dark:text-rose-300 text-xs font-semibold">-20%</button>
-            <button onclick="simulateMarket(0.25)" class="px-3 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950 text-brand-emerald dark:text-emerald-300 text-xs font-semibold">+25%</button>
           </div>
         </div>
 
@@ -1032,18 +1062,18 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-          <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية المستقلة لـ MiCC Safe', 'MiCC Safe Independent Withdrawal & Privacy Terms')}</h3>
-            <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-1 mb-3 list-disc list-inside">
+          <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
+            <h3 class="font-bold text-base mb-2">${t('شروط السحب والخصوصية لـ MiCC Safe', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
+            <ul class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
               <li>${t('رسوم السحب الخارجي (USDT Polygon): 2% موحدة للجميع.', 'External USDT (Polygon) withdrawal fee: flat 2%.')}</li>
               <li>${t('المستوى والتسوية: تنتقل مستوياتك تلقائياً من MiCC Wallet إلى Safe، والتسوية فورية وتلقائية دون فترة انتظار.', 'Tier & Settlement: Tiers sync automatically from MiCC Wallet to Safe with instant settlement and no waiting period.')}</li>
               <li>${t('عند البيع بخسارة وتطبيق تعويض الـ 10%، يُقفل الشراء الجديد حتى عودة السعر لمستوى الشراء الأول أو أعلى.', 'If 10% protection applies on sell, new buys lock until price recovers.')}</li>
             </ul>
-            <button onclick="accelerateSupport()" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-xs font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
+            <button onclick="accelerateSupport()" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
           </div>
           <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
             <h3 class="font-bold text-sm mb-2">${t('سجل عمليات MiCC Safe', 'MiCC Safe Log')}</h3>
-            ${s.logs.length === 0 ? `<p class="text-xs text-slate-500">${t('لا توجد عمليات بعد.', 'No transactions yet.')}</p>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${s.logs.map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${t(l.ar, l.en)}</span><span class="tabular-nums font-semibold">${l.amount}</span></div>`).join('')}</div>`}
+            ${s.logs.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${s.logs.map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${t(l.ar, l.en)}</span><span class="tabular-nums font-semibold">${l.amount}</span></div>`).join('')}</div>`}
           </div>
         </div>
 
@@ -1054,14 +1084,13 @@
     }
 
     function renderPrivacy() {
-      // AMi privacy & terms — sole place disclosing AMi Reserve & Safe governance
+      // AMi privacy & terms
       return `
         <div class="max-w-3xl mx-auto rounded-2xl border border-brand-border dark:border-slate-800 p-6 sm:p-8 bg-white dark:bg-slate-900">
           <h1 class="text-xl font-bold mb-4">${t('سياسة الخصوصية والشروط — شركة AMi', 'Privacy Policy & Terms — AMi Company')}</h1>
           <div class="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <p>${t('تلتزم شركة AMi بحماية خصوصية بيانات العملاء والحجوزات والإفصاح الطبي بسرية تامة، ولا تُستخدم هذه البيانات إلا لأغراض تقديم الاستشارات والرعاية الحركية وتنفيذ طلبات المتجر.', 'AMi Company protects client personal, booking, and medical disclosure data in strict confidence, using it solely for consulting, kinetic care, and store fulfillment.')}</p>
             <p>${t('تُباع وحدات الرفاقة (MiCC) بسعر ثابت 5 ريالات للوحدة وبحد أقصى 30,000 ريال سنوياً، وتُخصص القوة الشرائية المضاعفة للخدمات الصحية فقط، بينما تخضع عضوية الرفاقة السنوية (360 ريال) لعدم القابلية للاسترجاع، ويُتاح الاسترداد النقدي لرصيد الوحدات غير المستخدم خلال 8 أيام من الشراء.', 'Companionship units (MiCC) are priced at 5 SAR/unit up to 30,000 SAR/year, doubled purchasing power applies strictly to health services, the 360 SAR annual membership is non-refundable, and unused purchased units qualify for an 8-day cash refund.')}</p>
-            <p>${t('تعود ملكية الأصول والاحتياطيات المساندة (AMi Reserve) وإدارتها إلى شركة AMi، وتُحتسب مستويات الرفاقة في MiCC Wallet بناءً على استهلاك العميل في المنظومة وتنتقل تلقائياً إلى منصة Safe المستقلة دون عرض هوية AMi داخل واجهات Safe.', 'Underlying reserves and assets (AMi Reserve) are owned and governed by AMi Company. Companionship tiers in MiCC Wallet are calculated from client consumption across the ecosystem and sync automatically to the independent Safe interface without displaying AMi branding inside Safe.')}</p>
           </div>
           <button onclick="setView('home')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('العودة للرئيسية', 'Back to Home')}</button>
         </div>
@@ -1175,26 +1204,6 @@
       });
     }
 
-    function openTransferToSafeModal() {
-      const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
-      const maxSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
-      const maxUnits = Math.floor(maxSar / MICC_SAR_VALUE);
-      openModal(t('تحويل إلى MiCC Safe المستقل', 'Transfer to MiCC Safe'), `
-        <p class="text-xs text-slate-500 mb-3">${t(`الحد الأدنى 50 MiCC (250 ريال) · المتاح: ${maxUnits} MiCC`, `Min 50 MiCC (250 SAR) · Available: ${maxUnits} MiCC`)}</p>
-        <input id="to-safe-amt" type="number" min="50" max="${maxUnits}" value="${Math.min(50, maxUnits)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
-        <button id="do-to-safe" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تنفيذ التحويل', 'Transfer')}</button>
-      `);
-      document.getElementById('do-to-safe').addEventListener('click', () => {
-        const units = Number(document.getElementById('to-safe-amt').value) || 0;
-        if (units < 50 || units > maxUnits) { showToast(t('القيمة خارج النطاق المسموح', 'Out of range')); return; }
-        state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; state.user.usedOrTransferred = true;
-        state.safe.micc += units;
-        state.walletLogs.unshift({ ar: 'تحويل إلى MiCC Safe', en: 'To MiCC Safe', amount: `-${units} MiCC` });
-        state.safe.logs.unshift({ ar: 'استلام من MiCC Wallet', en: 'From MiCC Wallet', amount: `+${units} MiCC` });
-        closeModal(); render(); showToast(t('تم التحويل إلى MiCC Safe', 'Transferred to MiCC Safe'));
-      });
-    }
-
     function handleRefundRequest() {
       if (state.user.usedOrTransferred || state.user.daysSincePurchase > 8 || state.user.walletMicc <= 0) return;
       const sar = state.user.walletMicc * MICC_SAR_VALUE;
@@ -1268,7 +1277,7 @@
         if (micc <= 0 || micc > state.safe.micc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         state.safe.micc -= micc; state.user.walletMicc += micc;
         state.safe.logs.unshift({ ar: 'تحويل إلى MiCC Wallet', en: 'To MiCC Wallet', amount: `-${micc} MiCC` });
-        state.walletLogs.unshift({ ar: 'استلام من MiCC Safe', en: 'From MiCC Safe', amount: `+${micc} MiCC` });
+        state.walletLogs.unshift({ ar: 'استلام رصيد', en: 'Balance received', amount: `+${micc} MiCC` });
         closeModal(); render(); showToast(t('تم التحويل إلى MiCC Wallet', 'Transferred'));
       });
     }
@@ -1348,6 +1357,7 @@
     // =========================================================
     function render() {
       renderHeader();
+      renderFooter();
       const main = document.getElementById('main-content');
       const views = { home: renderHome, about: renderAbout, consulting: renderConsulting, ekc: renderEkc, booking: renderBooking, store: renderStore, category: renderCategory, product: renderProduct, goodguest: renderGoodGuest, wallet: renderWallet, safe: renderSafe, privacy: renderPrivacy };
       main.innerHTML = (views[state.view] || renderHome)();
@@ -1387,7 +1397,13 @@
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') closeModal(); });
 
+    function applyHashRoute() {
+      if (location.hash === '#safe') setView('safe');
+    }
+    window.addEventListener('hashchange', applyHashRoute);
+
     render();
+    applyHashRoute();
   </script>
 </body>
 </html>
