@@ -1304,22 +1304,13 @@
             <h3 class="font-bold text-sm text-brand-navy dark:text-sky-300">${t('لوحة الأرصدة', 'Balances Dashboard')}</h3>
             ${liveBadge(false)}
           </div>
-          <div class="safe-dash-total on-navy rounded-xl px-3.5 py-3 mb-2">
+          <div class="safe-dash-total on-navy rounded-xl px-3.5 py-3">
             <div class="flex items-center justify-between gap-2"><span class="text-[11px] font-semibold gold-text">${t('إجمالي قيمة المحفظة', 'Total Portfolio Value')}</span><span class="text-[10px] text-white/60" title="${t('مقارنة برأس المال الفعلي المدفوع', 'vs. actual invested capital')}">${t('مقابل رأس المال', 'vs. capital')}</span></div>
             <div class="flex items-end justify-between gap-2 mb-2">
               <div class="text-2xl font-bold tabular-nums leading-tight">${fmt(total, 2)} <span class="text-sm font-medium gold-text">${t('ريال', 'SAR')}</span></div>
               <div class="safe-gain text-end shrink-0">${gain}</div>
             </div>
             <div class="alloc-bar">${bar}</div>
-          </div>
-          <div>
-            ${rows.map(r => `
-              <div class="safe-dash-row flex items-center gap-3 py-2">
-                ${r.icon}
-                <div class="min-w-0 flex-1"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${r.color}"></span><span class="font-bold text-[13px] leading-tight">${t(r.nameAr, r.nameEn)}</span></div>
-                  <div class="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums leading-tight mt-0.5">${t('من المحفظة', 'of portfolio')} <bdi dir="ltr">${fmt(total > 0 ? r.val / total * 100 : 0, 1)}%</bdi></div></div>
-                <div class="shrink-0 text-end leading-tight"><div class="font-bold text-[13px] tabular-nums">${fmt(r.val, 2)}</div><div class="text-[10px] text-slate-500 dark:text-slate-400">${t('ريال', 'SAR')}</div></div>
-              </div>`).join('')}
           </div>
         </div>`;
     }
@@ -1844,11 +1835,20 @@
       if (side === 'buy') {
         openModal(t('شراء في MiCC Stock (0% رسوم)', 'Buy in MiCC Stock (0% Fee)'), `
           <p class="text-xs text-slate-500 mb-3">${t(`رصيدك: ${fmt(state.safe.micc, 2)} ميك`, `Balance: ${fmt(state.safe.micc, 2)} MiCC`)}</p>
-          <input id="stk-buy-micc" type="number" min="1" max="${Math.floor(state.safe.micc)}" value="${Math.min(100, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
+          <label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('بيتكوين (BTC)', 'Bitcoin (BTC)')}</span><input id="stk-btc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ريال سعودي', 'Saudi Riyal (SAR)')}</span><input id="stk-sar" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('دولار أمريكي', 'US Dollar (USD)')}</span><input id="stk-usd" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><div class="mb-4"><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ميك (المخصوم من رصيدك)', 'MiCC (deducted from your balance)')}</span><input id="stk-buy-micc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label></div>
           <button id="do-stk-buy" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تنفيذ الشراء', 'Buy')}</button>
         `);
+        const F = { btc: document.getElementById('stk-btc'), sar: document.getElementById('stk-sar'), usd: document.getElementById('stk-usd'), micc: document.getElementById('stk-buy-micc') };
+        const r2 = (n, d) => { const m = Math.pow(10, d); return Math.round(n * m) / m; };
+        const fillFromSar = (sar, skip) => {
+          const vals = { btc: r2(sar / unitPriceSar, 8), sar: r2(sar, 2), usd: r2(sar / SAR_PER_USD, 2), micc: r2(sar / MICC_SAR_VALUE, 2) };
+          Object.keys(F).forEach(k => { if (k !== skip) F[k].value = sar > 0 ? vals[k] : ''; });
+        };
+        const toSar = { btc: v => v * unitPriceSar, sar: v => v, usd: v => v * SAR_PER_USD, micc: v => v * MICC_SAR_VALUE };
+        Object.keys(F).forEach(k => F[k].addEventListener('input', () => { const v = parseFloat(F[k].value); fillFromSar(isNaN(v) ? 0 : toSar[k](v), k); }));
+        fillFromSar(Math.min(100, Math.floor(state.safe.micc)) * MICC_SAR_VALUE, null);
         document.getElementById('do-stk-buy').addEventListener('click', () => {
-          const spendMicc = Number(document.getElementById('stk-buy-micc').value) || 0;
+          const spendMicc = Math.round((Number(document.getElementById('stk-buy-micc').value) || 0) * 100) / 100;
           if (spendMicc <= 0 || spendMicc > state.safe.micc) { showToast(t('الرصيد غير كافٍ', 'Insufficient MiCC')); return; }
           const spendSar = spendMicc * MICC_SAR_VALUE;
           const qty = spendSar / unitPriceSar;
