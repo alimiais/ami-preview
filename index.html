@@ -41,23 +41,56 @@
     .tier-card { position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 6px 18px -8px rgba(15,23,42,.45), inset 0 1px 0 rgba(255,255,255,.18); }
     .tier-card::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 55%), repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 9px); }
     .tier-card > * { position: relative; z-index: 1; }
-    .tier-black { background: linear-gradient(135deg, #0B0F14 0%, #27303B 55%, #111827 100%); color: #F8FAFC; }
+    .tier-classic { background: linear-gradient(135deg, #1F2328 0%, #3A4048 55%, #24282E 100%); color: #F8FAFC; }
     .tier-silver { background: linear-gradient(135deg, #F1F3F6 0%, #B4BCC8 50%, #E1E5EA 100%); color: #111827; }
     .tier-gold { background: linear-gradient(135deg, #F8E08E 0%, #D4A12A 55%, #F3CF6B 100%); color: #3A2705; }
-    .tier-green { background: linear-gradient(135deg, #064E3B 0%, #047857 55%, #059669 100%); color: #FFFFFF; }
-    .tier-blue { background: linear-gradient(135deg, #0B1E4B 0%, #1D4ED8 70%, #2563EB 100%); color: #FFFFFF; }
-    .tier-silver .bg-black\/20, .tier-gold .bg-black\/20 { background: rgba(255,255,255,.5); }
-    .tier-silver .bg-white, .tier-gold .bg-white { background: #1E293B; }
-    .tier-silver .bg-white\/15, .tier-gold .bg-white\/15, .tier-silver .bg-white\/20, .tier-gold .bg-white\/20 { background: rgba(15,23,42,.14); }
+    .tier-platinum { background: linear-gradient(135deg, #FFFFFF 0%, #E4E7EB 45%, #C9CED6 75%, #F4F5F7 100%); color: #1F2937; }
+    .tier-diamond { background: linear-gradient(135deg, #0A1F3D 0%, #1B4F7A 55%, #3F8FC2 100%); color: #FFFFFF; }
+    .tier-silver .bg-black\/20, .tier-gold .bg-black\/20, .tier-platinum .bg-black\/20 { background: rgba(255,255,255,.5); }
+    .tier-silver .bg-white, .tier-gold .bg-white, .tier-platinum .bg-white { background: #1E293B; }
+    .tier-silver .bg-white\/15, .tier-gold .bg-white\/15, .tier-platinum .bg-white\/15, .tier-silver .bg-white\/20, .tier-gold .bg-white\/20, .tier-platinum .bg-white\/20 { background: rgba(15,23,42,.14); }
     .tc-chip { width: 34px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.25)); border: 1px solid rgba(0,0,0,.18); }
-    .tier-silver .tc-chip, .tier-gold .tc-chip { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(120,90,20,.25)); }
+    .tier-silver .tc-chip, .tier-gold .tc-chip, .tier-platinum .tc-chip { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(120,90,20,.25)); }
     .tc-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); }
-    .tier-silver .tc-badge, .tier-gold .tc-badge { background: rgba(15,23,42,.12); border-color: rgba(15,23,42,.25); }
+    .tier-silver .tc-badge, .tier-gold .tc-badge, .tier-platinum .tc-badge { background: rgba(15,23,42,.12); border-color: rgba(15,23,42,.25); }
     .tc-bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }
     .tc-bar > div { height: 100%; border-radius: 999px; background: currentColor; }
-    .tier-silver .tc-bar, .tier-gold .tc-bar { background: rgba(15,23,42,.15); }
+    .tier-silver .tc-bar, .tier-gold .tc-bar, .tier-platinum .tc-bar { background: rgba(15,23,42,.15); }
     .tier-card.is-current { box-shadow: 0 0 0 2px #fff, 0 0 0 5px #10B981, 0 10px 24px -8px rgba(16,185,129,.55); }
     .dark .tier-card.is-current { box-shadow: 0 0 0 2px #0F172A, 0 0 0 5px #34D399, 0 10px 24px -8px rgba(52,211,153,.4); }
+
+
+    /* Compact tier guide cards */
+    .tier-card.tier-mini { border-radius: 14px; }
+    .tier-mini .tc-chip { width: 26px; height: 20px; border-radius: 5px; }
+    .tier-mini .tc-badge { padding: 1px 7px; font-size: 9.5px; }
+    .tier-mini .tc-bar { height: 4px; }
+    /* Moving shimmer on progress bars */
+    .tc-bar > div, .tc-shine { position: relative; overflow: hidden; }
+    .tc-bar > div::after, .tc-shine::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.65) 50%, rgba(255,255,255,0) 100%); transform: translateX(-100%); animation: tcShine 2.4s ease-in-out infinite; }
+    .tier-silver .tc-bar > div::after, .tier-gold .tc-bar > div::after, .tier-platinum .tc-bar > div::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%); }
+    @keyframes tcShine { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) { .tc-bar > div::after, .tc-shine::after { animation: none; display: none; } }
+    /* MiCC logo coin */
+    .micc-coin { border-radius: 999px; object-fit: cover; box-shadow: 0 0 0 1.5px rgba(212,175,55,.75), 0 6px 14px -6px rgba(0,0,0,.55); background: #111; }
+    /* MiCC Safe hero (navy + gold) */
+    .safe-hero { position: relative; overflow: hidden; color: #fff; border: 1px solid rgba(212,175,55,.35); background: radial-gradient(110% 80% at 100% 0%, rgba(212,175,55,.30) 0%, rgba(212,175,55,0) 55%), linear-gradient(135deg, #0A1A31 0%, #13294B 55%, #0B1A30 100%); box-shadow: 0 14px 30px -14px rgba(10,26,49,.7); }
+    .safe-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(120deg, rgba(212,175,55,.06) 0 1px, rgba(212,175,55,0) 1px 14px); }
+    .safe-hero::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 999px; inset-inline-end: -70px; bottom: -110px; border: 1px solid rgba(212,175,55,.22); box-shadow: 0 0 0 18px rgba(212,175,55,.04), 0 0 0 40px rgba(212,175,55,.03); pointer-events: none; }
+    .safe-hero > * { position: relative; z-index: 1; }
+    .gold-text { color: #E9C46A; }
+    .btn-gold { background: linear-gradient(135deg, #F3D98B 0%, #D4AF37 55%, #B8912A 100%); color: #0A1A31; }
+    .btn-ghost-gold { border: 1px solid rgba(233,196,106,.45); background: rgba(255,255,255,.05); color: #fff; }
+    /* Asset cards with emblems */
+    .asset-card { position: relative; overflow: hidden; border: 1px solid #E5E7EB; background: #fff; }
+    .asset-card::before { content: ""; position: absolute; top: 0; inset-inline: 0; height: 3px; background: linear-gradient(90deg, #B8912A, #F3D98B, #B8912A); }
+    .dark .asset-card { border-color: #1E293B; background: #0F172A; }
+    .asset-emblem { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #E9C46A; background: radial-gradient(circle at 30% 25%, #1F3B66 0%, #0A1A31 75%); box-shadow: inset 0 0 0 1.5px rgba(212,175,55,.7), 0 6px 14px -8px rgba(10,26,49,.8); }
+    .asset-emblem svg { width: 58%; height: 58%; }
+    .btn-navy { background: #13294B; color: #fff; }
+    .dark .btn-navy { background: #1E3A64; }
+    .btn-outline-gold { border: 1px solid #C9A23A; color: #8A6A16; background: transparent; }
+    .dark .btn-outline-gold { color: #E9C46A; border-color: rgba(233,196,106,.6); }
 
     /* Institutional Banking Card Styling */
     .svc-badge svg { width: 1.5rem !important; height: 1.5rem !important; }
@@ -228,11 +261,11 @@
     };
 
     const TIERS = [
-      { id: 'black',  min: 0,    max: 199,  cls: 'tier-black',  ar: 'الأسود',  en: 'Black',  safeCapUsdt: 200,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
-      { id: 'silver', min: 200,  max: 599,  cls: 'tier-silver', ar: 'الفضي',   en: 'Silver', safeCapUsdt: 500,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
-      { id: 'gold',   min: 600,  max: 1499, cls: 'tier-gold',   ar: 'الذهبي',  en: 'Gold',   safeCapUsdt: 1500, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
-      { id: 'green',  min: 1500, max: 2999, cls: 'tier-green',  ar: 'الأخضر',  en: 'Green',  safeCapUsdt: 3000, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
-      { id: 'blue',   min: 3000, max: Infinity, cls: 'tier-blue', ar: 'الأزرق', en: 'Blue', safeCapUsdt: 5000, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
+      { id: 'classic',  min: 0,    max: 199,  cls: 'tier-classic',  ar: 'كلاسيك',  en: 'Classic',  spendSar: 1000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
+      { id: 'silver', min: 200,  max: 599,  cls: 'tier-silver', ar: 'فضي',   en: 'Silver', spendSar: 3000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
+      { id: 'gold',   min: 600,  max: 1499, cls: 'tier-gold',   ar: 'ذهبي',  en: 'Gold',   spendSar: 6000, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
+      { id: 'platinum',  min: 1500, max: 2999, cls: 'tier-platinum',  ar: 'بلاتيني',  en: 'Platinum',  spendSar: 12000, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
+      { id: 'diamond',   min: 3000, max: Infinity, cls: 'tier-diamond', ar: 'ماسي', en: 'Diamond', spendSar: 24000, cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
     ];
 
     const STORE_CATEGORIES = [
@@ -332,7 +365,13 @@
     }
 
     const SAR_PER_USD = 3.75;
-    const capSar = tr => Math.round(tr.safeCapUsdt * SAR_PER_USD);
+    const capSar = tr => tr.spendSar; // Monthly Spending Limit (SAR)
+    const MICC_LOGO = 'data:image/jpeg;base64,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';
+    const ASSET_EMBLEMS = {
+      btc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13"/><path d="M6.5 5.5h7a3.2 3.2 0 0 1 0 6.4H8"/><path d="M8 11.9h7.6a3.3 3.3 0 0 1 0 6.6H6.5"/><path d="M10 3.5v2M13 3.5v2M10 18.5v2M13 18.5v2"/></svg>',
+      gold: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3.5 18.5 6.4 11h11.2l2.9 7.5z"/><path d="M6.4 11 8.2 7h7.6l1.8 4"/><path d="M8.2 7 9.3 11M15.8 7 14.7 11"/><path d="M9.5 15h5"/></svg>',
+      land: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="M5.5 20.5V9.5L12 4l6.5 5.5v11"/><path d="M9 11.5h2M13 11.5h2M9 14.8h2M13 14.8h2"/><path d="M10.6 20.5v-3h2.8v3"/></svg>',
+    };
 
     function getNextTier() {
       const cur = getCurrentTier();
@@ -622,50 +661,33 @@
           </p>
         </div>
 
-        <div class="rounded-2xl border border-brand-border dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
-          <div class="px-5 py-4 border-b border-brand-border dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/80">
-            <div>
-              <h2 class="font-bold text-base">${t('بيان الأصول المملوكة للشركة (AMi Reserve)', 'Company Assets Statement (AMi Reserve)')}</h2>
-              <p class="text-xs text-slate-500 dark:text-slate-400">${t('أصول مملوكة وممولة من نسبة مقتطعة من إيرادات الشركة التشغيلية', 'Owned assets funded by allocated operating revenue')}</p>
-            </div>
-            <div class="text-end">
-              <div class="text-[11px] text-slate-500 dark:text-slate-400">${t('إجمالي القيمة التقديرية', 'Total Estimated Value')}</div>
-              <div class="font-bold text-lg text-brand-emerald dark:text-emerald-400 tabular-nums">${fmt(totalSar, 0)} ${t('ريال', 'SAR')}</div>
-            </div>
-          </div>
+        <div class="safe-hero rounded-3xl p-5 sm:p-6 mb-4">
+          <h2 class="font-bold text-base">${t('بيان الأصول المملوكة للشركة (AMi Reserve)', 'Company Assets Statement (AMi Reserve)')}</h2>
+          <p class="text-xs text-white/70 mb-4">${t('أصول مملوكة وممولة من نسبة مقتطعة من إيرادات الشركة التشغيلية', 'Owned assets funded by allocated operating revenue')}</p>
+          <div class="text-[11px] font-semibold tracking-wide gold-text mb-1">${t('إجمالي القيمة التقديرية', 'Total Estimated Value')}</div>
+          <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(totalSar, 0)} <span class="text-lg font-medium gold-text">${t('ريال', 'SAR')}</span></div>
+        </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm text-start">
-              <thead class="bg-slate-50/70 dark:bg-slate-800/50 text-xs text-slate-500 dark:text-slate-400 border-b border-brand-border dark:border-slate-800">
-                <tr>
-                  <th class="py-3 px-4 text-start font-semibold">${t('الأصل', 'Asset')}</th>
-                  <th class="py-3 px-4 text-start font-semibold">${t('جهة الحفظ / المرجع', 'Custody / Reference')}</th>
-                  <th class="py-3 px-4 text-start font-semibold">${t('الكمية المملوكة', 'Owned Quantity')}</th>
-                  <th class="py-3 px-4 text-start font-semibold">${t('القيمة السوقية (ريال)', 'Market Value (SAR)')}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-brand-border dark:divide-slate-800">
-                <tr>
-                  <td class="py-3.5 px-4 font-semibold">${t('بيتكوين', 'Bitcoin')}</td>
-                  <td class="py-3.5 px-4 text-slate-600 dark:text-slate-400">${t('محفظة الشركة الباردة', 'Company Cold Custody')}</td>
-                  <td class="py-3.5 px-4 tabular-nums font-medium">${fmt(r.btc, 5)} BTC</td>
-                  <td class="py-3.5 px-4 tabular-nums font-semibold">${fmt(btcValSar, 0)} ${t('ريال', 'SAR')}</td>
-                </tr>
-                <tr>
-                  <td class="py-3.5 px-4 font-semibold">${t('ذهب عيار 24', '24K Gold')}</td>
-                  <td class="py-3.5 px-4 text-slate-600 dark:text-slate-400">${t('محفظة الراجحي باسم الشركة', 'Al Rajhi Company Gold Portfolio')}</td>
-                  <td class="py-3.5 px-4 tabular-nums font-medium">${fmt(r.goldG, 2)} ${t('جم', 'g')}</td>
-                  <td class="py-3.5 px-4 tabular-nums font-semibold">${fmt(goldValSar, 0)} ${t('ريال', 'SAR')}</td>
-                </tr>
-                <tr>
-                  <td class="py-3.5 px-4 font-semibold">${t('أصول عقارية', 'Real Estate')}</td>
-                  <td class="py-3.5 px-4 text-slate-600 dark:text-slate-400">${t('سجل الأصول العقارية للشركة', 'Company Real Estate Registry')}</td>
-                  <td class="py-3.5 px-4 tabular-nums font-medium">${fmt(r.landSqm, 0)} ${t('م²', 'm²')}</td>
-                  <td class="py-3.5 px-4 tabular-nums font-semibold">${fmt(landValSar, 0)} ${t('ريال', 'SAR')}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          ${[
+            { id: 'btc', nameAr: 'بيتكوين', nameEn: 'Bitcoin', refAr: 'محفظة الشركة الباردة', refEn: 'Company Cold Custody', qty: `${fmt(r.btc, 5)} BTC`, val: btcValSar },
+            { id: 'gold', nameAr: 'ذهب عيار 24', nameEn: '24K Gold', refAr: 'محفظة الراجحي باسم الشركة', refEn: 'Al Rajhi Company Gold Portfolio', qty: `${fmt(r.goldG, 2)} ${t('جم', 'g')}`, val: goldValSar },
+            { id: 'land', nameAr: 'أصول عقارية', nameEn: 'Real Estate', refAr: 'سجل الأصول العقارية للشركة', refEn: 'Company Real Estate Registry', qty: `${fmt(r.landSqm, 0)} ${t('م²', 'm²')}`, val: landValSar },
+          ].map(x => `
+            <div class="asset-card rounded-2xl p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="asset-emblem w-12 h-12">${ASSET_EMBLEMS[x.id]}</span>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-[15px] leading-tight">${t(x.nameAr, x.nameEn)}</h3>
+                  <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${t(x.refAr, x.refEn)}</div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('الكمية المملوكة', 'Owned Quantity')}</div><div class="font-bold text-sm tabular-nums">${x.qty}</div></div>
+                <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('القيمة السوقية', 'Market Value')}</div><div class="font-bold text-sm tabular-nums">${fmt(x.val, 0)} <span class="text-[11px] font-medium text-slate-500">${t('ريال', 'SAR')}</span></div></div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       `;
     }
@@ -983,14 +1005,17 @@
                   <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(state.user.walletMicc, 2)} <span class="text-lg font-medium opacity-90">MiCC</span></div>
                   <div class="text-base opacity-90 tabular-nums mt-1">${t('القيمة:', 'Value:')} ${fmt(walletSar, 2)} ${t('ريال', 'SAR')}</div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/15">${state.user.membershipActive ? t('عضوية مفعّلة', 'Membership Active') : t('بدون عضوية', 'No Membership')}</span>
+                <div class="flex flex-col items-end gap-2 shrink-0">
+                  <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-11 h-11 sm:w-12 sm:h-12" />
+                  <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/15 whitespace-nowrap">${state.user.membershipActive ? t('عضوية مفعّلة', 'Membership Active') : t('بدون عضوية', 'No Membership')}</span>
+                </div>
               </div>
               <div class="bg-black/20 rounded-xl p-3 text-xs">
                 <div class="flex justify-between mb-1.5">
                   <span><strong class="tabular-nums">${fmt(state.user.walletProgressMicc, 2)}</strong>${nextTier ? ` ${t('من', 'of')} <span class="tabular-nums">${fmt(nextTier.min)}</span>` : ''} MiCC</span>
                   <span>${nextTier ? t(`متبقي ${fmt(nextTier.min - state.user.walletProgressMicc)} MiCC للمستوى ${nextTier.ar}`, `${fmt(nextTier.min - state.user.walletProgressMicc)} MiCC to ${nextTier.en}`) : t('أعلى مستوى', 'Top Tier')}</span>
                 </div>
-                <div class="w-full h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white rounded-full" style="width:${nextTier ? Math.min(100, ((state.user.walletProgressMicc - tier.min) / (nextTier.min - tier.min)) * 100) : 100}%"></div></div>
+                <div class="w-full h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-white rounded-full tc-shine" style="width:${nextTier ? Math.min(100, ((state.user.walletProgressMicc - tier.min) / (nextTier.min - tier.min)) * 100) : 100}%"></div></div>
               </div>
             </div>
 
@@ -1038,9 +1063,9 @@
       const totalUsdt = s.micc * MICC_USDT_RATE;
       const btcPriceSar = s.prices.btcUsd * 3.75;
       const assets = [
-        { id: 'btc', code: 'MBC', nameAr: 'بيتكوين (MBC)', nameEn: 'Bitcoin (MBC)', unit: 'BTC', priceLabel: `$${fmt(s.prices.btcUsd)} (${fmt(btcPriceSar)} ${t('ريال', 'SAR')})`, reserveQty: fmt(s.companyReserve.btc, 5), availQty: fmt(s.availableStock.btc, 5), heldQty: fmt(s.holdings.btc.qty, 5), heldValSar: s.holdings.btc.qty * btcPriceSar, holding: s.holdings.btc, lockMsg: s.holdings.btc.locked ? t(`مقفل حتى عودة السعر إلى $${fmt(s.holdings.btc.lockTargetUsd)} أو أعلى`, `Locked until $${fmt(s.holdings.btc.lockTargetUsd)}+`) : '' },
-        { id: 'gold', code: 'MGC', nameAr: 'ذهب عيار 24 (MGC)', nameEn: '24K Gold (MGC)', unit: t('جم', 'g'), priceLabel: `${fmt(s.prices.goldSarPerG, 2)} ${t('ريال/جم', 'SAR/g')}`, reserveQty: fmt(s.companyReserve.goldG, 2), availQty: fmt(s.availableStock.goldG, 2), heldQty: fmt(s.holdings.gold.qty, 2), heldValSar: s.holdings.gold.qty * s.prices.goldSarPerG, holding: s.holdings.gold, lockMsg: s.holdings.gold.locked ? t(`مقفل حتى ${fmt(s.holdings.gold.lockTargetSar, 2)} ريال/جم`, `Locked until ${fmt(s.holdings.gold.lockTargetSar, 2)} SAR/g`) : '' },
-        { id: 'land', code: 'MHC', nameAr: 'عقار (MHC)', nameEn: 'Real Estate (MHC)', unit: t('م²', 'm²'), priceLabel: `${fmt(s.prices.landSarPerSqm, 0)} ${t('ريال/م²', 'SAR/m²')}`, reserveQty: fmt(s.companyReserve.landSqm, 0), availQty: fmt(s.availableStock.landSqm, 0), heldQty: fmt(s.holdings.land.qty, 2), heldValSar: s.holdings.land.qty * s.prices.landSarPerSqm, holding: s.holdings.land, lockMsg: s.holdings.land.locked ? t(`مقفل حتى ${fmt(s.holdings.land.lockTargetSar)} ريال/م²`, `Locked until ${fmt(s.holdings.land.lockTargetSar)} SAR/m²`) : '' }
+        { id: 'btc', code: 'MBC', nameAr: 'بيتكوين', nameEn: 'Bitcoin', unit: 'BTC', priceLabel: `$${fmt(s.prices.btcUsd)} (${fmt(btcPriceSar)} ${t('ريال', 'SAR')})`, reserveQty: fmt(s.companyReserve.btc, 5), availQty: fmt(s.availableStock.btc, 5), heldQty: fmt(s.holdings.btc.qty, 5), heldValSar: s.holdings.btc.qty * btcPriceSar, holding: s.holdings.btc, lockMsg: s.holdings.btc.locked ? t(`مقفل حتى عودة السعر إلى $${fmt(s.holdings.btc.lockTargetUsd)} أو أعلى`, `Locked until $${fmt(s.holdings.btc.lockTargetUsd)}+`) : '' },
+        { id: 'gold', code: 'MGC', nameAr: 'ذهب عيار 24', nameEn: '24K Gold', unit: t('جم', 'g'), priceLabel: `${fmt(s.prices.goldSarPerG, 2)} ${t('ريال/جم', 'SAR/g')}`, reserveQty: fmt(s.companyReserve.goldG, 2), availQty: fmt(s.availableStock.goldG, 2), heldQty: fmt(s.holdings.gold.qty, 2), heldValSar: s.holdings.gold.qty * s.prices.goldSarPerG, holding: s.holdings.gold, lockMsg: s.holdings.gold.locked ? t(`مقفل حتى ${fmt(s.holdings.gold.lockTargetSar, 2)} ريال/جم`, `Locked until ${fmt(s.holdings.gold.lockTargetSar, 2)} SAR/g`) : '' },
+        { id: 'land', code: 'MHC', nameAr: 'عقار', nameEn: 'Real Estate', unit: t('م²', 'm²'), priceLabel: `${fmt(s.prices.landSarPerSqm, 0)} ${t('ريال/م²', 'SAR/m²')}`, reserveQty: fmt(s.companyReserve.landSqm, 0), availQty: fmt(s.availableStock.landSqm, 0), heldQty: fmt(s.holdings.land.qty, 2), heldValSar: s.holdings.land.qty * s.prices.landSarPerSqm, holding: s.holdings.land, lockMsg: s.holdings.land.locked ? t(`مقفل حتى ${fmt(s.holdings.land.lockTargetSar)} ريال/م²`, `Locked until ${fmt(s.holdings.land.lockTargetSar)} SAR/m²`) : '' }
       ];
 
       return `
@@ -1051,41 +1076,46 @@
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية الهبوط 10% مفعّلة', '10% Downside Protection Active')}</span>
         </div>
 
-        <div class="rounded-2xl border border-brand-border dark:border-slate-800 bg-white dark:bg-slate-900 p-5 mb-5">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div>
-              <div class="text-xs text-slate-500 mb-1">${t('الرصيد الرسمي في الخزنة', 'Official Safe Balance')}</div>
-              <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight text-brand-navy dark:text-sky-400">${fmt(s.micc, 2)} <span class="text-lg font-medium">MiCC</span></div>
-              <div class="text-base text-slate-600 dark:text-slate-300 tabular-nums mt-1">USDT : $${fmt(totalUsdt, 2)}</div>
+        <div class="safe-hero rounded-3xl p-5 sm:p-6 mb-5">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div class="min-w-0">
+              <div class="text-[11px] font-semibold tracking-wide gold-text mb-1">${t('الرصيد الرسمي في الخزنة', 'Official Safe Balance')}</div>
+              <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(s.micc, 2)} <span class="text-lg font-medium gold-text">MiCC</span></div>
+              <div class="text-base text-white/80 tabular-nums mt-1">USDT : $${fmt(totalUsdt, 2)}</div>
             </div>
-            <div class="text-xs text-slate-500">
-              <div>${t('مستوى العضوية:', 'Tier:')} <strong>${t(tier.ar, tier.en)}</strong></div>
-              <div>${t('حد السحب والتسوية:', 'Withdrawal Cap & Cycle:')} <strong>${fmt(capSar(tier))} ${t('ريال', 'SAR')} · ${t(tier.cycleAr, tier.cycleEn)}</strong></div>
-            </div>
+            <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-16 h-16 sm:w-20 sm:h-20 shrink-0" />
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/75 pt-3 mb-4 border-t" style="border-color:rgba(233,196,106,.22)">
+            <div>${t('مستوى العضوية:', 'Tier:')} <strong class="gold-text">${t(tier.ar, tier.en)}</strong></div>
+            <div>${t('حد الإنفاق الشهري:', 'Monthly Spending Limit:')} <strong class="gold-text tabular-nums">${fmt(capSar(tier))} ${t('ريال', 'SAR')}</strong></div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <button onclick="openReceiveUsdtModal()" class="py-2.5 px-4 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('استقبال USDT (Polygon)', 'Receive USDT (Polygon)')}</button>
-            <button onclick="openWithdrawUsdtModal()" class="py-2.5 px-4 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('سحب USDT (رسوم 2%)', 'Withdraw USDT (2% Fee)')}</button>
-            <button onclick="openReturnToWalletModal()" class="py-2.5 px-4 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('تحويل إلى MiCC Wallet (0%)', 'Transfer to MiCC Wallet (0%)')}</button>
+            <button onclick="openReceiveUsdtModal()" class="btn-gold py-2.5 px-4 rounded-xl text-xs font-bold">${t('استقبال USDT (Polygon)', 'Receive USDT (Polygon)')}</button>
+            <button onclick="openWithdrawUsdtModal()" class="btn-ghost-gold py-2.5 px-4 rounded-xl text-xs font-semibold">${t('سحب USDT (رسوم 2%)', 'Withdraw USDT (2% Fee)')}</button>
+            <button onclick="openReturnToWalletModal()" class="btn-ghost-gold py-2.5 px-4 rounded-xl text-xs font-semibold">${t('تحويل إلى MiCC Wallet (0%)', 'Transfer to MiCC Wallet (0%)')}</button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
           ${assets.map(a => `
-            <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900 flex flex-col justify-between">
+            <div class="asset-card rounded-2xl p-4 flex flex-col justify-between">
               <div>
-                <div class="flex items-center justify-between mb-1.5"><h3 class="font-bold text-sm">${t(a.nameAr, a.nameEn)}</h3><span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">${a.code}</span></div>
-                <div class="text-xs text-slate-500 mb-2.5">${t('السعر:', 'Price:')} <strong class="text-slate-900 dark:text-slate-100 tabular-nums">${a.priceLabel}</strong></div>
-                <div class="rounded-xl bg-slate-50 dark:bg-slate-950 p-2.5 text-xs space-y-1 mb-2.5">
-                  <div class="flex justify-between"><span class="text-slate-500">${t('الاحتياطي:', 'Reserve:')}</span><span class="font-semibold tabular-nums">${a.reserveQty} ${a.unit}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-500">${t('المتاح:', 'Available:')}</span><span class="font-semibold text-brand-emerald dark:text-emerald-400 tabular-nums">${a.availQty} ${a.unit}</span></div>
-                  <div class="flex justify-between pt-1 border-t border-brand-border dark:border-slate-800"><span class="text-slate-500">${t('رصيدك:', 'Yours:')}</span><span class="font-bold tabular-nums">${a.heldQty} ${a.unit} (${fmt(a.heldValSar, 0)} ${t('ريال', 'SAR')})</span></div>
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="asset-emblem w-12 h-12">${ASSET_EMBLEMS[a.id]}</span>
+                  <div class="min-w-0">
+                    <h3 class="font-bold text-[15px] leading-tight">${t(a.nameAr, a.nameEn)}</h3>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums mt-0.5">${a.priceLabel}</div>
+                  </div>
                 </div>
-                ${a.holding.locked ? `<div class="mb-2.5 p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-[11px] text-brand-crimson dark:text-rose-300 font-medium">${a.lockMsg}</div>` : ''}
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                  <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('الكمية', 'Quantity')}</div><div class="font-bold text-sm tabular-nums">${a.heldQty} <span class="text-[11px] font-medium text-slate-500">${a.unit}</span></div></div>
+                  <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('القيمة', 'Value')}</div><div class="font-bold text-sm tabular-nums">${fmt(a.heldValSar, 0)} <span class="text-[11px] font-medium text-slate-500">${t('ريال', 'SAR')}</span></div></div>
+                </div>
+                ${a.holding.locked ? `<div class="mb-3 p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-[11px] text-brand-crimson dark:text-rose-300 font-medium">${a.lockMsg}</div>` : ''}
               </div>
               <div class="grid grid-cols-2 gap-2">
-                <button onclick="openStockTradeModal('${a.id}','buy')" ${a.holding.locked ? 'disabled' : ''} class="py-2 rounded-xl bg-brand-emerald text-white text-xs font-semibold ${a.holding.locked ? 'opacity-40 cursor-not-allowed' : ''}">${t('شراء', 'Buy')}</button>
-                <button onclick="openStockTradeModal('${a.id}','sell')" ${a.holding.qty <= 0 ? 'disabled' : ''} class="py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${a.holding.qty <= 0 ? 'opacity-40 cursor-not-allowed' : ''}">${t('بيع', 'Sell')}</button>
+                <button onclick="openStockTradeModal('${a.id}','buy')" ${a.holding.locked ? 'disabled' : ''} class="btn-navy py-2.5 rounded-xl text-xs font-semibold ${a.holding.locked ? 'opacity-40 cursor-not-allowed' : ''}">${t('شراء', 'Buy')}</button>
+                <button onclick="openStockTradeModal('${a.id}','sell')" ${a.holding.qty <= 0 ? 'disabled' : ''} class="btn-outline-gold py-2.5 rounded-xl text-xs font-semibold ${a.holding.qty <= 0 ? 'opacity-40 cursor-not-allowed' : ''}">${t('بيع', 'Sell')}</button>
               </div>
             </div>
           `).join('')}
@@ -1201,26 +1231,25 @@
       const nxt = TIERS[idx + 1];
       const c = state.user.walletProgressMicc;
       const range = nxt ? t(`من ${fmt(tr.min)} MiCC`, `From ${fmt(tr.min)} MiCC`) : t(`من ${fmt(tr.min)} MiCC فأكثر`, `${fmt(tr.min)} MiCC and above`);
-      const progress = isCur ? (nxt ? `<div class="mt-3"><div class="tc-bar"><div style="width:${Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100))}%"></div></div><div class="text-[11px] mt-1.5 opacity-90">${t(`متبقي ${fmt(nxt.min - c)} MiCC للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`)}</div></div>` : `<div class="text-[11px] mt-2 opacity-90">${t('أعلى مستوى', 'Top Tier')}</div>`) : '';
-      return `<div class="tier-card ${tr.cls} ${isCur ? 'is-current' : ''} p-4">
-        <div class="flex items-center justify-between gap-2">
-          <span class="tc-chip"></span>
-          ${isCur ? `<span class="tc-badge">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : ''}
-        </div>
-        <div class="mt-3 text-2xl font-bold leading-tight">${t(tr.ar, tr.en)}</div>
-        <div class="text-xs opacity-90 mt-0.5 tabular-nums">${range}</div>
-        <div class="mt-3 pt-3 flex items-end justify-between gap-2" style="border-top:1px solid currentColor;border-top-color:color-mix(in srgb, currentColor 25%, transparent)">
-          <span class="text-[11px] opacity-90">${t('حد السحب', 'Withdrawal cap')}</span>
-          <span class="text-lg font-bold tabular-nums">${fmt(capSar(tr))} <span class="text-xs font-semibold opacity-90">${t('ريال', 'SAR')}</span></span>
+      const progress = isCur ? (nxt ? `<div class="mt-1.5"><div class="tc-bar"><div style="width:${Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100))}%"></div></div><div class="text-[10px] mt-1 opacity-90">${t(`متبقي ${fmt(nxt.min - c)} MiCC للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`)}</div></div>` : `<div class="text-[10px] mt-1 opacity-90">${t('أعلى مستوى', 'Top Tier')}</div>`) : '';
+      return `<div class="tier-card tier-mini ${tr.cls} ${isCur ? 'is-current' : ''} px-3.5 py-2.5">
+        <div class="flex items-center gap-3">
+          <span class="tc-chip shrink-0"></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap"><span class="text-[15px] font-bold leading-tight">${t(tr.ar, tr.en)}</span>${isCur ? `<span class="tc-badge">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : ''}</div>
+            <div class="text-[10.5px] opacity-80 tabular-nums leading-tight mt-0.5">${range}</div>
+          </div>
+          <div class="shrink-0 text-end leading-none"><span class="text-lg font-bold tabular-nums">${fmt(capSar(tr))}</span> <span class="text-[10px] font-semibold opacity-90">${t('ريال', 'SAR')}</span></div>
         </div>
         ${progress}
       </div>`;
     }
 
     function openTierGuide() {
-      openModal(t('دليل مستويات الرفاقة — MiCC Wallet', 'Companionship Tier Guide — MiCC Wallet'), `
-        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">${t('يرتقي مستواك تلقائياً مع نشاطك في MiCC Wallet، ويرتفع معه حد السحب.', 'Your tier rises automatically with your activity in MiCC Wallet, and your withdrawal cap rises with it.')}</p>
-        <div class="space-y-4 px-1 pb-1">${TIERS.map(tierCardHtml).join('')}</div>
+      openModal(t('دليل مستويات الرفاقة', 'Companionship Tier Guide'), `
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5 leading-relaxed">${t('يرتقي مستواك تلقائياً مع نشاطك في MiCC Wallet.', 'Your tier rises automatically with your activity in MiCC Wallet.')}</p>
+        <div class="flex items-center justify-between px-2 mb-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400"><span>${t('المستوى', 'Tier')}</span><span>${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
+        <div class="space-y-2.5 p-1.5">${TIERS.map(tierCardHtml).join('')}</div>
       `);
     }
 
@@ -1324,7 +1353,7 @@
     function openWithdrawUsdtModal() {
       const tier = getCurrentTier();
       openModal(t('سحب USDT خارجي (رسوم 2%)', 'External USDT Withdrawal (2% Fee)'), `
-        <p class="text-xs text-slate-500 mb-3">${t(`الحد: ${fmt(capSar(tier))} ريال · ${tier.cycleAr}`, `Cap: ${fmt(capSar(tier))} SAR · ${tier.cycleEn}`)}</p>
+        <p class="text-xs text-slate-500 mb-3">${t(`حد الإنفاق الشهري: ${fmt(capSar(tier))} ريال · ${tier.cycleAr}`, `Monthly Spending Limit: ${fmt(capSar(tier))} SAR · ${tier.cycleEn}`)}</p>
         <input id="wd-micc" type="number" min="10" max="${Math.floor(state.safe.micc)}" value="${Math.min(50, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
         <input id="wd-addr" type="text" placeholder="0x..." class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4" />
         <button id="do-wd-usdt" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تأكيد السحب', 'Confirm Withdrawal')}</button>
@@ -1332,7 +1361,7 @@
       document.getElementById('do-wd-usdt').addEventListener('click', () => {
         const micc = Number(document.getElementById('wd-micc').value) || 0;
         const grossUsdt = micc * MICC_USDT_RATE;
-        if (micc <= 0 || micc > state.safe.micc || grossUsdt > tier.safeCapUsdt) { showToast(t('يتجاوز الرصيد أو حد المستوى', 'Exceeds limit')); return; }
+        if (micc <= 0 || micc > state.safe.micc || grossUsdt * SAR_PER_USD > capSar(tier)) { showToast(t('يتجاوز الرصيد أو حد المستوى', 'Exceeds limit')); return; }
         const netUsdt = grossUsdt * (1 - SAFE_WITHDRAW_FEE);
         state.safe.micc -= micc;
         state.safe.logs.unshift({ ar: `سحب ($${fmt(netUsdt, 2)} USDT)`, en: `Withdraw ($${fmt(netUsdt, 2)} net)`, amount: `-${fmt(micc, 2)} MiCC` });
