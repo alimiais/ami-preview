@@ -357,9 +357,9 @@
           btcUsd: 64539,
         },
         companyReserve: {
-          micc: 18450, // رصيد MiCC المحفوظ في الاحتياطي (تجريبي) / MiCC held in reserve (demo)
+          micc: 509470, // رصيد MiCC المحفوظ في الاحتياطي (تجريبي) / MiCC held in reserve (demo)
         },
-        totalMiccSold: 126800, // إجمالي مبيعات MiCC للعملاء (تجريبي) / Total MiCC sold to customers (demo)
+        totalMiccSold: 1018940, // إجمالي مبيعات MiCC للعملاء (تجريبي) / Total MiCC sold to customers (demo)
         availableStock: {
           btc: 5.00000,
         },
@@ -856,9 +856,8 @@
         <div class="sales-metric rounded-2xl p-4 mt-8">
           <div class="flex items-center justify-between gap-2 mb-2">
             <h2 class="font-bold text-[15px] text-slate-700 dark:text-slate-200">${t('إجمالي رصيد الرفاقة', 'Total MiCC Sales')}</h2>
-            <span class="soon-badge">${t('مؤشر مبيعات', 'Sales metric')}</span>
           </div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">${t('كل ما اشتراه العملاء من ميك، استُخدم أو لم يُستخدم. لا يُحتسب ضمن أصول الشركة.', 'All MiCC purchased by customers, used or not. Not counted in company assets.')}</p>
+          <p class="text-[min(11px,2.1vw)] whitespace-nowrap overflow-hidden text-slate-500 dark:text-slate-400 mb-3">${t('كل ما اشتراه العملاء من ميك، استُخدم أو لم يُستخدم. لا يُحتسب ضمن أصول الشركة.', 'All MiCC purchased by customers, used or not. Not counted in company assets.')}</p>
           <div class="grid grid-cols-2 gap-2">
             <div class="rounded-xl bg-white/80 dark:bg-slate-900/80 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('الكمية المباعة', 'Units Sold')}</div><div class="font-bold text-sm tabular-nums"><bdi>${fmt(soldMicc, 0)} ${MU()}</bdi></div></div>
             <div class="rounded-xl bg-white/80 dark:bg-slate-900/80 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('قيمة المبيعات', 'Sales Value')}</div><div class="font-bold text-sm tabular-nums">${fmt(soldMicc * MICC_SAR_VALUE, 0)} <span class="text-[11px] font-medium text-slate-500">${t('ريال', 'SAR')}</span></div></div>
@@ -913,11 +912,7 @@
               <input id="fc-phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="${t('رقم الجوال *', 'Mobile number *')}" class="${inp}" />
               <input id="fc-email" type="email" required autocomplete="email" dir="ltr" placeholder="${t('البريد الإلكتروني *', 'Email *')}" class="${inp} text-start" />
             </div>
-            <select id="fc-track" required class="${inp}">
-              <option value="" disabled selected>${t('اختر مجال الاستشارة *', 'Select a consulting area *')}</option>
-              ${tracks.map(([v, ar, en]) => `<option value="${v}">${t(ar, en)}</option>`).join('')}
-            </select>
-            <textarea id="fc-notes" rows="2" required placeholder="${t('نبذة مختصرة عن المشروع *', 'Brief project note *')}" class="${inp}"></textarea>
+            <textarea id="fc-notes" rows="7" required placeholder="${t('نبذة مختصرة *', 'Brief note *')}" class="${inp}"></textarea>
             <div id="fc-error" class="hidden text-xs font-semibold text-brand-crimson dark:text-rose-400"></div>
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">${t('إرسال الطلب', 'Submit Request')}</button>
           </form>
@@ -1862,8 +1857,7 @@
           ['fc-name', val('fc-name').length >= 2, t('يرجى إدخال الاسم الكامل أو اسم الجهة.', 'Please enter your full name or organization.')],
           ['fc-phone', /^(\+?966|0)?5\d{8}$/.test(val('fc-phone').replace(/[\s-]/g, '')), t('يرجى إدخال رقم جوال صحيح (05xxxxxxxx).', 'Please enter a valid mobile number (05xxxxxxxx).')],
           ['fc-email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val('fc-email')), t('يرجى إدخال بريد إلكتروني صحيح.', 'Please enter a valid email address.')],
-          ['fc-track', !!val('fc-track'), t('يرجى اختيار مجال الاستشارة.', 'Please select a consulting area.')],
-          ['fc-notes', val('fc-notes').length >= 3, t('يرجى كتابة نبذة مختصرة عن المشروع.', 'Please add a brief project note.')],
+          ['fc-notes', val('fc-notes').length >= 3, t('يرجى كتابة نبذة مختصرة.', 'Please add a brief note.')],
         ];
         checks.forEach(([id, ok]) => { const el = document.getElementById(id); el.classList.toggle('border-rose-500', !ok); el.setAttribute('aria-invalid', ok ? 'false' : 'true'); });
         const bad = checks.find(c => !c[1]);
