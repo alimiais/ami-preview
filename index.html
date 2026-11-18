@@ -41,21 +41,21 @@
     .tier-card { position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 6px 18px -8px rgba(15,23,42,.45), inset 0 1px 0 rgba(255,255,255,.18); }
     .tier-card::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 55%), repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, rgba(255,255,255,0) 2px 9px); }
     .tier-card > * { position: relative; z-index: 1; }
-    .tier-classic { background: linear-gradient(135deg, #1F2328 0%, #3A4048 55%, #24282E 100%); color: #F8FAFC; }
+    .tier-classic { background: linear-gradient(135deg, #064E3B 0%, #047857 45%, #10B981 78%, #065F46 100%); color: #FFFFFF; }
     .tier-silver { background: linear-gradient(135deg, #F1F3F6 0%, #B4BCC8 50%, #E1E5EA 100%); color: #111827; }
     .tier-gold { background: linear-gradient(135deg, #F8E08E 0%, #D4A12A 55%, #F3CF6B 100%); color: #3A2705; }
-    .tier-platinum { background: linear-gradient(135deg, #FFFFFF 0%, #E4E7EB 45%, #C9CED6 75%, #F4F5F7 100%); color: #1F2937; }
-    .tier-diamond { background: linear-gradient(135deg, #0A1F3D 0%, #1B4F7A 55%, #3F8FC2 100%); color: #FFFFFF; }
-    .tier-silver .bg-black\/20, .tier-gold .bg-black\/20, .tier-platinum .bg-black\/20 { background: rgba(255,255,255,.5); }
-    .tier-silver .bg-white, .tier-gold .bg-white, .tier-platinum .bg-white { background: #1E293B; }
-    .tier-silver .bg-white\/15, .tier-gold .bg-white\/15, .tier-platinum .bg-white\/15, .tier-silver .bg-white\/20, .tier-gold .bg-white\/20, .tier-platinum .bg-white\/20 { background: rgba(15,23,42,.14); }
+    .tier-platinum { background: linear-gradient(135deg, #1C2026 0%, #3E454E 32%, #8C949E 50%, #4A5159 66%, #23272D 100%); color: #F8FAFC; }
+    .tier-diamond { background: radial-gradient(circle at 18% 28%, rgba(255,255,255,.95) 0 1.5px, rgba(255,255,255,0) 2.5px), radial-gradient(circle at 72% 64%, rgba(255,255,255,.9) 0 1.2px, rgba(255,255,255,0) 2.2px), radial-gradient(circle at 88% 22%, rgba(255,255,255,.85) 0 1px, rgba(255,255,255,0) 2px), linear-gradient(135deg, #E6F7FF 0%, #A8DEF7 30%, #F2FBFF 48%, #7FC7EE 68%, #CDEFFF 100%); color: #0A2540; }
+    .tier-silver .bg-black\/20, .tier-gold .bg-black\/20, .tier-diamond .bg-black\/20 { background: rgba(255,255,255,.5); }
+    .tier-silver .bg-white, .tier-gold .bg-white, .tier-diamond .bg-white { background: #1E293B; }
+    .tier-silver .bg-white\/15, .tier-gold .bg-white\/15, .tier-diamond .bg-white\/15, .tier-silver .bg-white\/20, .tier-gold .bg-white\/20, .tier-diamond .bg-white\/20 { background: rgba(15,23,42,.14); }
     .tc-chip { width: 34px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.25)); border: 1px solid rgba(0,0,0,.18); }
-    .tier-silver .tc-chip, .tier-gold .tc-chip, .tier-platinum .tc-chip { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(120,90,20,.25)); }
+    .tier-silver .tc-chip, .tier-gold .tc-chip, .tier-diamond .tc-chip { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(120,90,20,.25)); }
     .tc-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); }
-    .tier-silver .tc-badge, .tier-gold .tc-badge, .tier-platinum .tc-badge { background: rgba(15,23,42,.12); border-color: rgba(15,23,42,.25); }
+    .tier-silver .tc-badge, .tier-gold .tc-badge, .tier-diamond .tc-badge { background: rgba(15,23,42,.12); border-color: rgba(15,23,42,.25); }
     .tc-bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }
     .tc-bar > div { height: 100%; border-radius: 999px; background: currentColor; }
-    .tier-silver .tc-bar, .tier-gold .tc-bar, .tier-platinum .tc-bar { background: rgba(15,23,42,.15); }
+    .tier-silver .tc-bar, .tier-gold .tc-bar, .tier-diamond .tc-bar { background: rgba(15,23,42,.15); }
     .tier-card.is-current { box-shadow: 0 0 0 2px #fff, 0 0 0 5px #10B981, 0 10px 24px -8px rgba(16,185,129,.55); }
     .dark .tier-card.is-current { box-shadow: 0 0 0 2px #0F172A, 0 0 0 5px #34D399, 0 10px 24px -8px rgba(52,211,153,.4); }
 
@@ -68,7 +68,7 @@
     /* Moving shimmer on progress bars */
     .tc-bar > div, .tc-shine { position: relative; overflow: hidden; }
     .tc-bar > div::after, .tc-shine::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.65) 50%, rgba(255,255,255,0) 100%); transform: translateX(-100%); animation: tcShine 2.4s ease-in-out infinite; }
-    .tier-silver .tc-bar > div::after, .tier-gold .tc-bar > div::after, .tier-platinum .tc-bar > div::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%); }
+    .tier-silver .tc-bar > div::after, .tier-gold .tc-bar > div::after, .tier-diamond .tc-bar > div::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%); }
     @keyframes tcShine { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
     @media (prefers-reduced-motion: reduce) { .tc-bar > div::after, .tc-shine::after { animation: none; display: none; } }
     /* MiCC logo coin */
@@ -91,6 +91,32 @@
     .dark .btn-navy { background: #1E3A64; }
     .btn-outline-gold { border: 1px solid #C9A23A; color: #8A6A16; background: transparent; }
     .dark .btn-outline-gold { color: #E9C46A; border-color: rgba(233,196,106,.6); }
+
+
+    /* Tier guide: Apple-Wallet style stack */
+    .tg-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(2,6,23,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .tg-wrap { --tw: min(72vw, 270px); width: var(--tw); margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 0 28px; }
+    .tg-slot { position: relative; height: 60px; transition: height .28s ease; }
+    .tg-slot.is-open { height: calc(var(--tw) / 1.586 + 10px); }
+    .tg-slot > .tier-card { position: absolute; top: 0; inset-inline: 0; z-index: 0; isolation: isolate; cursor: pointer; }
+    .tier-card.tg-card { aspect-ratio: 1.586 / 1; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; box-shadow: 0 -4px 14px -6px rgba(0,0,0,.55), 0 10px 22px -10px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.22); }
+    .tg-card .tc-chip { width: 28px; height: 21px; border-radius: 5px; }
+    .tg-card .tc-badge { padding: 1px 7px; font-size: 9.5px; }
+    .tg-card .tc-bar { height: 4px; }
+    .tg-logo { width: 22px; height: 22px; }
+    .tier-card.tg-card.is-current { box-shadow: 0 0 0 2px #34D399, 0 10px 24px -8px rgba(52,211,153,.55); }
+    .tier-diamond.tg-card { box-shadow: 0 -4px 14px -6px rgba(0,0,0,.5), 0 10px 26px -8px rgba(127,199,238,.6), inset 0 1px 0 rgba(255,255,255,.7); }
+    /* Safe dashboard */
+    .safe-dash { border: 1px solid #E5E7EB; background: #fff; }
+    .dark .safe-dash { border-color: #1E293B; background: #0F172A; }
+    .safe-dash-total { background: linear-gradient(135deg, #0A1A31 0%, #13294B 100%); color: #fff; border: 1px solid rgba(212,175,55,.35); }
+    .safe-dash-row + .safe-dash-row { border-top: 1px solid #EEF0F3; }
+    .dark .safe-dash-row + .safe-dash-row { border-top-color: #1E293B; }
+    .alloc-bar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.12); }
+    .live-dot { width: 7px; height: 7px; border-radius: 999px; background: #94A3B8; display: inline-block; }
+    .live-dot.on { background: #22C55E; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: livePulse 1.8s infinite; }
+    @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 70% { box-shadow: 0 0 0 7px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+    @media (prefers-reduced-motion: reduce) { .live-dot.on { animation: none; } .tg-slot { transition: none; } }
 
     /* Institutional Banking Card Styling */
     .svc-badge svg { width: 1.5rem !important; height: 1.5rem !important; }
@@ -193,6 +219,9 @@
       <div id="modal-body" class="text-sm"></div>
     </div>
   </div>
+
+  <!-- Tier Guide Overlay -->
+  <div id="tier-overlay" class="tg-overlay hidden" role="dialog" aria-modal="true"></div>
 
   <!-- Toast Notification -->
   <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-emerald-700 text-white text-xs sm:text-sm font-medium shadow-lg"></div>
@@ -372,6 +401,62 @@
       gold: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3.5 18.5 6.4 11h11.2l2.9 7.5z"/><path d="M6.4 11 8.2 7h7.6l1.8 4"/><path d="M8.2 7 9.3 11M15.8 7 14.7 11"/><path d="M9.5 15h5"/></svg>',
       land: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="M5.5 20.5V9.5L12 4l6.5 5.5v11"/><path d="M9 11.5h2M13 11.5h2M9 14.8h2M13 14.8h2"/><path d="M10.6 20.5v-3h2.8v3"/></svg>',
     };
+
+
+    // ---- Live market data (falls back silently to static values) ----
+    // عنوان تجريبي / Demo address — replace with the company's real public BTC address
+    const RESERVE_BTC_ADDRESS = 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh';
+    const RESERVE_BTC_IS_DEMO = true;
+    const LIVE_REFRESH_MS = 45000;
+    const TROY_OZ_G = 31.1035;
+    const live = { on: false, updatedAt: null, reserveBtc: null };
+
+    async function liveJson(url) {
+      const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+      const timer = setTimeout(() => ctrl && ctrl.abort(), 9000);
+      try {
+        const r = await fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+        if (!r.ok) throw new Error('http ' + r.status);
+        return await r.json();
+      } finally { clearTimeout(timer); }
+    }
+    const okNum = (v, lo, hi) => { const n = Number(v); return isFinite(n) && n > lo && n < hi ? n : null; };
+
+    async function refreshLive() {
+      if (typeof fetch !== 'function') return;
+      let btcUsd = null, goldUsdOz = null, paxgUsd = null, changed = false;
+      try { const j = await liveJson('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,pax-gold&vs_currencies=usd'); btcUsd = okNum(j && j.bitcoin && j.bitcoin.usd, 1000, 1e7); paxgUsd = okNum(j && j['pax-gold'] && j['pax-gold'].usd, 300, 1e5); } catch (e) {}
+      if (!btcUsd) { try { const j = await liveJson('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'); btcUsd = okNum(j && j.price, 1000, 1e7); } catch (e) {} }
+      if (!btcUsd) { try { const j = await liveJson('https://api.coinbase.com/v2/prices/BTC-USD/spot'); btcUsd = okNum(j && j.data && j.data.amount, 1000, 1e7); } catch (e) {} }
+      try { const j = await liveJson('https://api.gold-api.com/price/XAU'); goldUsdOz = okNum(j && j.price, 300, 1e5); } catch (e) {}
+      if (!goldUsdOz) goldUsdOz = paxgUsd;
+      let resBtc = null;
+      for (const base of ['https://blockstream.info/api/address/', 'https://mempool.space/api/address/']) {
+        try {
+          const j = await liveJson(base + RESERVE_BTC_ADDRESS);
+          const cs = j && j.chain_stats;
+          if (cs) { const sats = Number(cs.funded_txo_sum) - Number(cs.spent_txo_sum); if (isFinite(sats) && sats >= 0) { resBtc = sats / 1e8; break; } }
+        } catch (e) {}
+      }
+      if (btcUsd) { state.safe.prices.btcUsd = btcUsd; changed = true; }
+      if (goldUsdOz) { state.safe.prices.goldSarPerG = Math.round((goldUsdOz / TROY_OZ_G) * SAR_PER_USD * 100) / 100; changed = true; }
+      if (resBtc !== null) { live.reserveBtc = resBtc; changed = true; }
+      if (changed) {
+        live.on = true; live.updatedAt = new Date();
+        if (state.view === 'safe' || state.view === 'about') { const y = window.scrollY; render(); if (window.scrollY !== y) window.scrollTo(0, y); }
+      }
+    }
+    function liveBadge(dark) {
+      const tm = live.updatedAt ? live.updatedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<span class="inline-flex items-center gap-1.5 text-[10.5px] font-semibold ${dark ? 'text-white/75' : 'text-slate-500 dark:text-slate-400'}"><span class="live-dot ${live.on ? 'on' : ''}"></span>${live.on ? `${t('مباشر', 'Live')} · <span class="tabular-nums" dir="ltr">${tm}</span>` : t('أسعار مرجعية', 'Reference prices')}</span>`;
+    }
+    function startLive() {
+      if (typeof fetch !== 'function' || window.__liveStarted) return;
+      window.__liveStarted = true;
+      refreshLive();
+      setInterval(() => { if (!document.hidden) refreshLive(); }, LIVE_REFRESH_MS);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && (!live.updatedAt || Date.now() - live.updatedAt.getTime() > LIVE_REFRESH_MS)) refreshLive(); });
+    }
 
     function getNextTier() {
       const cur = getCurrentTier();
@@ -648,7 +733,8 @@
     function renderAbout() {
       const r = state.safe.companyReserve;
       const p = state.safe.prices;
-      const btcValSar = r.btc * p.btcUsd * 3.75;
+      const resBtc = live.reserveBtc !== null ? live.reserveBtc : r.btc;
+      const btcValSar = resBtc * p.btcUsd * 3.75;
       const goldValSar = r.goldG * p.goldSarPerG;
       const landValSar = r.landSqm * p.landSarPerSqm;
       const totalSar = btcValSar + goldValSar + landValSar;
@@ -666,11 +752,12 @@
           <p class="text-xs text-white/70 mb-4">${t('أصول مملوكة وممولة من نسبة مقتطعة من إيرادات الشركة التشغيلية', 'Owned assets funded by allocated operating revenue')}</p>
           <div class="text-[11px] font-semibold tracking-wide gold-text mb-1">${t('إجمالي القيمة التقديرية', 'Total Estimated Value')}</div>
           <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(totalSar, 0)} <span class="text-lg font-medium gold-text">${t('ريال', 'SAR')}</span></div>
+          <div class="mt-2">${liveBadge(true)}</div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           ${[
-            { id: 'btc', nameAr: 'بيتكوين', nameEn: 'Bitcoin', refAr: 'محفظة الشركة الباردة', refEn: 'Company Cold Custody', qty: `${fmt(r.btc, 5)} BTC`, val: btcValSar },
+            { id: 'btc', nameAr: 'بيتكوين', nameEn: 'Bitcoin', refAr: 'محفظة الشركة الباردة', refEn: 'Company Cold Custody', qty: `${fmt(resBtc, 5)} BTC`, val: btcValSar, extra: `<a href="https://mempool.space/address/${RESERVE_BTC_ADDRESS}" target="_blank" rel="noopener" class="mt-2 flex items-center gap-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2 text-[10.5px] text-slate-500 dark:text-slate-400"><span class="live-dot ${live.reserveBtc !== null ? 'on' : ''}"></span><span class="font-semibold shrink-0">${RESERVE_BTC_IS_DEMO ? t('عنوان تجريبي:', 'Demo address:') : t('عنوان المحفظة:', 'Wallet address:')}</span><span class="font-mono truncate" dir="ltr">${RESERVE_BTC_ADDRESS}</span></a>` },
             { id: 'gold', nameAr: 'ذهب عيار 24', nameEn: '24K Gold', refAr: 'محفظة الراجحي باسم الشركة', refEn: 'Al Rajhi Company Gold Portfolio', qty: `${fmt(r.goldG, 2)} ${t('جم', 'g')}`, val: goldValSar },
             { id: 'land', nameAr: 'أصول عقارية', nameEn: 'Real Estate', refAr: 'سجل الأصول العقارية للشركة', refEn: 'Company Real Estate Registry', qty: `${fmt(r.landSqm, 0)} ${t('م²', 'm²')}`, val: landValSar },
           ].map(x => `
@@ -686,6 +773,7 @@
                 <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('الكمية المملوكة', 'Owned Quantity')}</div><div class="font-bold text-sm tabular-nums">${x.qty}</div></div>
                 <div class="rounded-xl bg-slate-50 dark:bg-slate-950 px-3 py-2"><div class="text-[10.5px] text-slate-500 dark:text-slate-400">${t('القيمة السوقية', 'Market Value')}</div><div class="font-bold text-sm tabular-nums">${fmt(x.val, 0)} <span class="text-[11px] font-medium text-slate-500">${t('ريال', 'SAR')}</span></div></div>
               </div>
+              ${x.extra || ''}
             </div>
           `).join('')}
         </div>
@@ -1057,6 +1145,41 @@
       `;
     }
 
+    function renderSafeDashboard() {
+      const s = state.safe, p = s.prices;
+      const rows = [
+        { key: 'micc', icon: `<img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-9 h-9" />`, nameAr: 'MiCC', nameEn: 'MiCC', qty: `${fmt(s.micc, 2)} MiCC`, sub: `≈ ${fmt(s.micc * MICC_USDT_RATE, 2)} USDT`, val: s.micc * MICC_SAR_VALUE, color: '#E9C46A' },
+        { key: 'btc', icon: `<span class="asset-emblem w-9 h-9">${ASSET_EMBLEMS.btc}</span>`, nameAr: 'بيتكوين', nameEn: 'Bitcoin', qty: `${fmt(s.holdings.btc.qty, 6)} BTC`, sub: `$${fmt(p.btcUsd)}`, val: s.holdings.btc.qty * p.btcUsd * SAR_PER_USD, color: '#F7931A' },
+        { key: 'gold', icon: `<span class="asset-emblem w-9 h-9">${ASSET_EMBLEMS.gold}</span>`, nameAr: 'ذهب', nameEn: 'Gold', qty: `${fmt(s.holdings.gold.qty, 3)} ${t('جم', 'g')}`, sub: `${fmt(p.goldSarPerG, 2)} ${t('ريال/جم', 'SAR/g')}`, val: s.holdings.gold.qty * p.goldSarPerG, color: '#D4AF37' },
+        { key: 'land', icon: `<span class="asset-emblem w-9 h-9">${ASSET_EMBLEMS.land}</span>`, nameAr: 'عقار', nameEn: 'Real Estate', qty: `${fmt(s.holdings.land.qty, 2)} ${t('م²', 'm²')}`, sub: `${fmt(p.landSarPerSqm, 0)} ${t('ريال/م²', 'SAR/m²')}`, val: s.holdings.land.qty * p.landSarPerSqm, color: '#60A5FA' },
+      ];
+      const total = rows.reduce((a, r) => a + r.val, 0);
+      const bar = total > 0 ? rows.filter(r => r.val > 0).map(r => `<span style="width:${(r.val / total) * 100}%;background:${r.color}"></span>`).join('') : '';
+      return `
+        <div class="safe-dash rounded-2xl p-3.5 mb-5">
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <h3 class="font-bold text-sm text-brand-navy dark:text-sky-300">${t('لوحة الأرصدة', 'Balances Dashboard')}</h3>
+            ${liveBadge(false)}
+          </div>
+          <div class="safe-dash-total rounded-xl px-3.5 py-3 mb-2">
+            <div class="text-[11px] font-semibold gold-text">${t('إجمالي قيمة المحفظة', 'Total Portfolio Value')}</div>
+            <div class="text-2xl font-bold tabular-nums leading-tight mb-2">${fmt(total, 2)} <span class="text-sm font-medium gold-text">${t('ريال', 'SAR')}</span></div>
+            <div class="alloc-bar">${bar}</div>
+          </div>
+          <div>
+            ${rows.map(r => `
+              <div class="safe-dash-row flex items-center gap-3 py-2">
+                ${r.icon}
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${r.color}"></span><span class="font-bold text-[13px] leading-tight">${t(r.nameAr, r.nameEn)}</span></div>
+                  <div class="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums leading-tight mt-0.5"><bdi dir="ltr">${r.qty}</bdi> · <bdi dir="ltr">${r.sub}</bdi></div>
+                </div>
+                <div class="shrink-0 text-end leading-tight"><div class="font-bold text-[13px] tabular-nums">${fmt(r.val, 2)}</div><div class="text-[10px] text-slate-500 dark:text-slate-400">${t('ريال', 'SAR')}</div></div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
     function renderSafe() {
       const s = state.safe;
       const tier = getCurrentTier();
@@ -1076,25 +1199,27 @@
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية الهبوط 10% مفعّلة', '10% Downside Protection Active')}</span>
         </div>
 
-        <div class="safe-hero rounded-3xl p-5 sm:p-6 mb-5">
-          <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="safe-hero rounded-2xl p-4 sm:p-5 mb-4">
+          <div class="flex items-center justify-between gap-3 mb-2.5">
             <div class="min-w-0">
-              <div class="text-[11px] font-semibold tracking-wide gold-text mb-1">${t('الرصيد الرسمي في الخزنة', 'Official Safe Balance')}</div>
-              <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(s.micc, 2)} <span class="text-lg font-medium gold-text">MiCC</span></div>
-              <div class="text-base text-white/80 tabular-nums mt-1">USDT : $${fmt(totalUsdt, 2)}</div>
+              <div class="text-[11px] font-semibold tracking-wide gold-text mb-0.5">${t('الرصيد الرسمي في الخزنة', 'Official Safe Balance')}</div>
+              <div class="text-3xl sm:text-4xl font-bold tabular-nums leading-tight">${fmt(s.micc, 2)} <span class="text-base font-medium gold-text">MiCC</span></div>
+              <div class="text-sm text-white/80 tabular-nums">USDT : $${fmt(totalUsdt, 2)}</div>
             </div>
-            <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-16 h-16 sm:w-20 sm:h-20 shrink-0" />
+            <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-12 h-12 sm:w-14 sm:h-14 shrink-0" />
           </div>
-          <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/75 pt-3 mb-4 border-t" style="border-color:rgba(233,196,106,.22)">
+          <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/75 pt-2.5 mb-3 border-t" style="border-color:rgba(233,196,106,.22)">
             <div>${t('مستوى العضوية:', 'Tier:')} <strong class="gold-text">${t(tier.ar, tier.en)}</strong></div>
             <div>${t('حد الإنفاق الشهري:', 'Monthly Spending Limit:')} <strong class="gold-text tabular-nums">${fmt(capSar(tier))} ${t('ريال', 'SAR')}</strong></div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <button onclick="openReceiveUsdtModal()" class="btn-gold py-2.5 px-4 rounded-xl text-xs font-bold">${t('استقبال USDT (Polygon)', 'Receive USDT (Polygon)')}</button>
-            <button onclick="openWithdrawUsdtModal()" class="btn-ghost-gold py-2.5 px-4 rounded-xl text-xs font-semibold">${t('سحب USDT (رسوم 2%)', 'Withdraw USDT (2% Fee)')}</button>
-            <button onclick="openReturnToWalletModal()" class="btn-ghost-gold py-2.5 px-4 rounded-xl text-xs font-semibold">${t('تحويل إلى MiCC Wallet (0%)', 'Transfer to MiCC Wallet (0%)')}</button>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="openReceiveUsdtModal()" class="btn-gold py-2 px-1.5 rounded-xl text-[11px] leading-tight font-bold">${t('استقبال USDT (Polygon)', 'Receive USDT (Polygon)')}</button>
+            <button onclick="openWithdrawUsdtModal()" class="btn-ghost-gold py-2 px-1.5 rounded-xl text-[11px] leading-tight font-semibold">${t('سحب USDT (رسوم 2%)', 'Withdraw USDT (2% Fee)')}</button>
+            <button onclick="openReturnToWalletModal()" class="btn-ghost-gold py-2 px-1.5 rounded-xl text-[11px] leading-tight font-semibold">${t('تحويل إلى MiCC Wallet (0%)', 'Transfer to MiCC Wallet (0%)')}</button>
           </div>
         </div>
+
+        ${renderSafeDashboard()}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
           ${assets.map(a => `
@@ -1224,33 +1349,59 @@
       });
     }
 
-    function tierCardHtml(tr) {
+    function tierCardHtml(tr, open) {
       const cur = getCurrentTier();
       const isCur = tr.id === cur.id;
       const idx = TIERS.findIndex(x => x.id === tr.id);
       const nxt = TIERS[idx + 1];
       const c = state.user.walletProgressMicc;
       const range = nxt ? t(`من ${fmt(tr.min)} MiCC`, `From ${fmt(tr.min)} MiCC`) : t(`من ${fmt(tr.min)} MiCC فأكثر`, `${fmt(tr.min)} MiCC and above`);
-      const progress = isCur ? (nxt ? `<div class="mt-1.5"><div class="tc-bar"><div style="width:${Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100))}%"></div></div><div class="text-[10px] mt-1 opacity-90">${t(`متبقي ${fmt(nxt.min - c)} MiCC للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`)}</div></div>` : `<div class="text-[10px] mt-1 opacity-90">${t('أعلى مستوى', 'Top Tier')}</div>`) : '';
-      return `<div class="tier-card tier-mini ${tr.cls} ${isCur ? 'is-current' : ''} px-3.5 py-2.5">
-        <div class="flex items-center gap-3">
-          <span class="tc-chip shrink-0"></span>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5 flex-wrap"><span class="text-[15px] font-bold leading-tight">${t(tr.ar, tr.en)}</span>${isCur ? `<span class="tc-badge">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : ''}</div>
-            <div class="text-[10.5px] opacity-80 tabular-nums leading-tight mt-0.5">${range}</div>
-          </div>
-          <div class="shrink-0 text-end leading-none"><span class="text-lg font-bold tabular-nums">${fmt(capSar(tr))}</span> <span class="text-[10px] font-semibold opacity-90">${t('ريال', 'SAR')}</span></div>
+      const progress = isCur ? (nxt ? `<div><div class="tc-bar"><div style="width:${Math.max(4, Math.min(100, ((c - tr.min) / (nxt.min - tr.min)) * 100))}%"></div></div><div class="text-[10px] mt-1 opacity-90">${t(`متبقي ${fmt(nxt.min - c)} MiCC للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`)}</div></div>` : `<div class="text-[10px] opacity-90">${t('أعلى مستوى', 'Top Tier')}</div>`) : '';
+      return `<div class="tg-slot ${open ? 'is-open' : ''}"><div class="tier-card tg-card ${tr.cls} ${isCur ? 'is-current' : ''}" onclick="toggleTierCard('${tr.id}')">
+        <div class="flex items-center gap-2">
+          <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin tg-logo shrink-0" />
+          <span class="text-[15px] font-bold leading-tight truncate">${t(tr.ar, tr.en)}</span>
+          <span class="ms-auto shrink-0 leading-none"><span class="text-[17px] font-bold tabular-nums">${fmt(capSar(tr))}</span> <span class="text-[10px] font-semibold opacity-90">${t('ريال', 'SAR')}</span></span>
         </div>
-        ${progress}
-      </div>`;
+        <div class="flex items-center gap-1.5 mt-1 min-h-[16px]"><span class="text-[10.5px] opacity-85 tabular-nums leading-tight">${range}</span>${isCur ? `<span class="tc-badge ms-auto">✓ ${t('مستواك الحالي', 'Your tier')}</span>` : ''}</div>
+        <div class="mt-auto flex items-end justify-between gap-3">
+          <div class="min-w-0 flex-1">${progress}</div>
+          <div class="shrink-0 flex flex-col items-end gap-1"><span class="tc-chip"></span><span class="text-[10px] font-bold tracking-[.18em] opacity-80" dir="ltr">MiCC</span></div>
+        </div>
+      </div></div>`;
     }
 
+    let tierGuideOpenId = null;
+    function renderTierGuide() {
+      const ov = document.getElementById('tier-overlay');
+      if (!ov) return;
+      const openId = tierGuideOpenId || getCurrentTier().id;
+      ov.setAttribute('dir', state.lang === 'ar' ? 'rtl' : 'ltr');
+      ov.innerHTML = `<div class="tg-wrap">
+        <div class="flex items-center justify-between gap-3 mb-1.5">
+          <h3 class="font-bold text-base text-white">${t('دليل مستويات الرفاقة', 'Companionship Tier Guide')}</h3>
+          <button onclick="closeTierGuide()" aria-label="${t('إغلاق', 'Close')}" class="w-8 h-8 shrink-0 rounded-full bg-white/15 hover:bg-white/25 text-white text-sm font-bold">✕</button>
+        </div>
+        <p class="text-[11px] text-white/65 mb-2.5 leading-relaxed">${t('يرتقي مستواك تلقائياً مع نشاطك في MiCC Wallet.', 'Your tier rises automatically with your activity in MiCC Wallet.')}</p>
+        <div class="flex items-center justify-between px-1 mb-2 text-[11px] font-bold text-white/80"><span>${t('المستوى', 'Tier')}</span><span class="gold-text">${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
+        <div>${TIERS.map((tr, i) => tierCardHtml(tr, tr.id === openId || i === TIERS.length - 1)).join('')}</div>
+      </div>`;
+    }
     function openTierGuide() {
-      openModal(t('دليل مستويات الرفاقة', 'Companionship Tier Guide'), `
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5 leading-relaxed">${t('يرتقي مستواك تلقائياً مع نشاطك في MiCC Wallet.', 'Your tier rises automatically with your activity in MiCC Wallet.')}</p>
-        <div class="flex items-center justify-between px-2 mb-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400"><span>${t('المستوى', 'Tier')}</span><span>${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
-        <div class="space-y-2.5 p-1.5">${TIERS.map(tierCardHtml).join('')}</div>
-      `);
+      tierGuideOpenId = null;
+      renderTierGuide();
+      const ov = document.getElementById('tier-overlay');
+      ov.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeTierGuide() {
+      const ov = document.getElementById('tier-overlay');
+      if (ov) ov.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    function toggleTierCard(id) {
+      tierGuideOpenId = id;
+      renderTierGuide();
     }
 
     function openTransferToSafeModal() {
@@ -1498,6 +1649,8 @@
     document.getElementById('auth-btn').addEventListener('click', toggleAuth);
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') closeModal(); });
+    document.getElementById('tier-overlay').addEventListener('click', e => { if (e.target.id === 'tier-overlay' || e.target.classList.contains('tg-wrap')) closeTierGuide(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTierGuide(); });
 
     function applyHashRoute() {
       if (location.hash === '#safe') setView('safe');
@@ -1505,6 +1658,7 @@
     window.addEventListener('hashchange', applyHashRoute);
 
     render();
+    startLive();
     applyHashRoute();
   </script>
 </body>
