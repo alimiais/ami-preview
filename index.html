@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AMi | المنصة الرسمية للخدمات والاستشارات والمتجر ونظام الرفاقة</title>
+  <title>AMi | الخدمات والاستشارات والمتجر ونظام الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -457,7 +457,7 @@
         name.textContent = t('شركة AMi', 'AMi Company');
         links.innerHTML = `<button ${lk} onclick="setView('privacy')">${t('سياسة الخصوصية', 'Privacy Policy')}</button><button ${lk} onclick="openContactModal()">${t('تواصل معنا', 'Contact')}</button>`;
         copy.textContent = `© 2026 ${t('شركة AMi', 'AMi Company')}`;
-        document.title = 'AMi | المنصة الرسمية للخدمات والاستشارات والمتجر ونظام الرفاقة';
+        document.title = 'AMi | الخدمات والاستشارات والمتجر ونظام الرفاقة';
       }
     }
 
@@ -523,12 +523,12 @@
           code: '05',
           accent: 'border-t-violet-700 dark:border-t-violet-400',
           badgeCls: 'text-violet-800 dark:text-violet-300 bg-violet-50 dark:bg-violet-950',
-          titleAr: 'منصة GoodGuest',
-          titleEn: 'GoodGuest Platform',
+          titleAr: 'GoodGuest',
+          titleEn: 'GoodGuest',
           subAr: 'تقييم نزلاء الفنادق والضيافة',
           subEn: 'Hotel Guest Risk & Evaluation',
-          ctaAr: 'الانتقال للمنصة',
-          ctaEn: 'Open Platform',
+          ctaAr: 'فتح GoodGuest',
+          ctaEn: 'Open GoodGuest',
           icon: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`
         },
         {
@@ -573,8 +573,8 @@
           </h1>
           <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             ${t(
-              'تقدم شركة AMi منظومة متكاملة من الاستشارات الإدارية والتسويقية، والرعاية الحركية عن بُعد، إلى جانب حلول الضيافة الرقمية والمتجر المنتقى. تجمع المنصة بين الخبرة المهنية المباشرة وأدوات القيمة المستدامة لخدمة الأفراد والمنشآت.',
-              'AMi provides an integrated suite of management and marketing advisory, remote Empathic Kinetic Care, digital hospitality solutions, and curated goods. The platform combines direct expert consultation with sustainable value tools for individuals and enterprises.'
+              'تقدم شركة AMi منظومة متكاملة من الاستشارات الإدارية والتسويقية، والرعاية الحركية عن بُعد، إلى جانب حلول الضيافة الرقمية والمتجر المنتقى. تجمع AMi بين الخبرة المهنية المباشرة وأدوات القيمة المستدامة لخدمة الأفراد والمنشآت.',
+              'AMi provides an integrated suite of management and marketing advisory, remote Empathic Kinetic Care, digital hospitality solutions, and curated goods. AMi combines direct expert consultation with sustainable value tools for individuals and enterprises.'
             )}
           </p>
         </section>
@@ -919,7 +919,7 @@
 
         <div class="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-slate-950 via-violet-950/60 to-slate-900 text-white p-6 mb-5">
           <div class="inline-block px-3 py-1 rounded-full text-[11px] font-semibold bg-violet-500/20 text-violet-200 border border-violet-400/30 mb-3">GoodGuest.me</div>
-          <h1 class="text-2xl sm:text-3xl font-bold mb-2">${t('منصة GoodGuest لتقييم الضيوف وحماية قطاع الضيافة', 'GoodGuest Hospitality & Guest Evaluation Platform')}</h1>
+          <h1 class="text-2xl sm:text-3xl font-bold mb-2">${t('GoodGuest لتقييم الضيوف وحماية قطاع الضيافة', 'GoodGuest Hospitality & Guest Evaluation')}</h1>
           <p class="text-sm text-slate-300 max-w-3xl leading-relaxed">
             ${t('أحد المسارات الاستراتيجية ضمن منظومة AMi، صُممت لتمكين الفنادق ومشغلي الضيافة من تقييم سجل النزلاء وتقليل المخاطر التشغيلية عبر تكامل مباشر مع أنظمة الفنادق.', 'A strategic pillar within the AMi ecosystem, built to empower hotels and hospitality operators with verified guest evaluation and PMS-integrated risk management.')}
           </p>
@@ -942,6 +942,7 @@
       const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
       const capUsedPct = Math.min(100, (state.user.annualPurchasedSar / ANNUAL_PURCHASE_CAP_SAR) * 100);
       const remainingCapSar = Math.max(0, ANNUAL_PURCHASE_CAP_SAR - state.user.annualPurchasedSar);
+      const maxSafeAllowanceSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
       const canRefund = !state.user.usedOrTransferred && state.user.daysSincePurchase <= 8 && state.user.walletMicc > 0;
 
       return `
@@ -973,9 +974,10 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <button onclick="openBuyMiccModal()" class="py-2.5 px-3 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('شراء MiCC', 'Buy MiCC')}</button>
               <button onclick="openPeerTransferModal()" class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">${t('تحويل لعميل', 'Transfer to Peer')}</button>
+              <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل رصيد', 'Transfer Balance')}</button>
               <button onclick="handleRefundRequest()" ${canRefund ? '' : 'disabled'} class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${canRefund ? 'text-brand-crimson dark:text-rose-400' : 'opacity-40 cursor-not-allowed'}">${t('استرداد (8 أيام)', 'Refund (8 Days)')}</button>
             </div>
 
@@ -990,6 +992,7 @@
               <h3 class="font-bold text-sm mb-2">${t('السقف السنوي (30,000 ريال)', 'Annual Cap (30,000 SAR)')}</h3>
               <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span class="tabular-nums">${fmt(state.user.annualPurchasedSar, 2)} ${t('ريال', 'SAR')}</span><span class="tabular-nums">${fmt(remainingCapSar, 2)} ${t('ريال', 'SAR')} ${t('متبقي', 'left')}</span></div>
               <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3"><div class="h-full bg-brand-emerald rounded-full" style="width:${capUsedPct}%"></div></div>
+              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتاح للتحويل (50% — من 250 إلى 15,000 ريال):', 'Available to transfer (50% — 250 to 15,000 SAR):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} MiCC)</strong></div>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60">
@@ -1169,6 +1172,26 @@
         <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${t('تُحدَّد المستويات في MiCC Wallet حسب استهلاكك.', 'Tiers in MiCC Wallet are determined based on your consumption.')}</p>
         <div class="space-y-2 text-xs">${TIERS.map(tr => `<div class="rounded-xl border border-brand-border dark:border-slate-800 p-3 flex items-center justify-between"><div><strong>${t(tr.ar, tr.en)}</strong><div class="text-slate-500">${t(`من ${fmt(tr.min)} MiCC استهلاك`, `From ${fmt(tr.min)} MiCC consumed`)}</div></div><div class="text-end"><strong>$${fmt(tr.safeCapUsdt)}</strong></div></div>`).join('')}</div>
       `);
+    }
+
+    function openTransferToSafeModal() {
+      const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
+      const maxSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
+      const maxUnits = Math.floor(maxSar / MICC_SAR_VALUE);
+      openModal(t('تحويل رصيد', 'Transfer Balance'), `
+        <p class="text-xs text-slate-500 mb-3">${t(`الحد الأدنى 50 MiCC (250 ريال) · المتاح: ${maxUnits} MiCC`, `Min 50 MiCC (250 SAR) · Available: ${maxUnits} MiCC`)}</p>
+        <input id="to-safe-amt" type="number" min="50" max="${maxUnits}" value="${Math.min(50, maxUnits)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
+        <button id="do-to-safe" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تنفيذ التحويل', 'Transfer')}</button>
+      `);
+      document.getElementById('do-to-safe').addEventListener('click', () => {
+        const units = Number(document.getElementById('to-safe-amt').value) || 0;
+        if (units < 50 || units > maxUnits) { showToast(t('القيمة خارج النطاق المسموح', 'Out of range')); return; }
+        state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; state.user.usedOrTransferred = true;
+        state.safe.micc += units;
+        state.walletLogs.unshift({ ar: 'تحويل رصيد', en: 'Transfer Balance', amount: `-${units} MiCC` });
+        state.safe.logs.unshift({ ar: 'استلام من MiCC Wallet', en: 'From MiCC Wallet', amount: `+${units} MiCC` });
+        closeModal(); render(); showToast(t('تم التحويل', 'Transferred'));
+      });
     }
 
     function openBuyMiccModal() {
