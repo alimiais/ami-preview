@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.5" />
+  <meta name="ami-version" content="v13.6" />
   <title>AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -367,6 +367,9 @@
         membershipExpiresAt: 0, // v13.5: ms timestamp; 0 = no expiry recorded
         autoRenew: false,
         autoRenewFromBitcoin: false, // separate explicit consent to renew by selling Bitcoin
+        miccPurchasedTotal: null, // v13.6: cumulative MiCC bought (card/Tamara/Emkan), minus refunds
+        miccReceivedTotal: 0,     // v13.6: cumulative MiCC received from other Companions
+        cashoutRequests: [],      // v13.6: cash-out requests for the admin dashboard
         annualPurchasedSar: 2500,
         walletMicc: 500,
         walletProgressMicc: 180,
@@ -470,7 +473,9 @@
     loadShared();
     if (PAGE === 'safe') state.view = 'safe';
     // v13.5: MiCC purchases are tracked one by one so a refund returns only the purchased amount (never MiCC received from Safe or elsewhere)
+    if (!Array.isArray(state.user.cashoutRequests)) state.user.cashoutRequests = [];
     if (!Array.isArray(state.user.purchases)) state.user.purchases = [{ id: 'pu-initial', ts: Date.now() - (state.user.daysSincePurchase || 0) * 86400000, micc: Math.round((state.user.annualPurchasedSar || 0) / MICC_SAR_VALUE), sar: state.user.annualPurchasedSar || 0, used: !!state.user.usedOrTransferred, refunded: false }];
+    if (typeof state.user.miccPurchasedTotal !== 'number') state.user.miccPurchasedTotal = state.user.purchases.filter(p => !p.refunded).reduce((a, p) => a + p.micc, 0);
     const TIERS = [
       { id: 'classic',  min: 0,    max: 199,  cls: 'tier-classic',  ar: 'أساسي',  en: 'Basic',  spendSar: 1000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
       { id: 'silver', min: 200,  max: 599,  cls: 'tier-silver', ar: 'فضي',   en: 'Silver', spendSar: 3000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
@@ -1192,7 +1197,8 @@
       const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
       const capUsedPct = Math.min(100, (state.user.annualPurchasedSar / ANNUAL_PURCHASE_CAP_SAR) * 100);
       const remainingCapSar = Math.max(0, ANNUAL_PURCHASE_CAP_SAR - state.user.annualPurchasedSar);
-      const maxSafeAllowanceSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
+      const capInfo = safeTransferCap(), heldMicc = cashoutPendingMicc();
+      const maxSafeAllowanceSar = capInfo.capRemain * MICC_SAR_VALUE;
       const canRefund = refundableMicc() > 0;
 
       return `
@@ -1212,6 +1218,7 @@
                   <div class="flex items-center gap-2 mb-2"><span class="tc-chip"></span><span class="text-xs font-semibold opacity-90">${t('الرفاقة · مستوى', 'Companions · Tier')} ${t(tier.ar, tier.en)}</span></div>
                   <div class="text-4xl sm:text-5xl font-bold tabular-nums leading-tight">${fmt(state.user.walletMicc, 2)} <span class="text-lg font-medium opacity-90">${MU()}</span></div>
                   <div class="text-base opacity-90 tabular-nums mt-1">${t('القيمة:', 'Value:')} ${fmt(walletSar, 2)} ${t('ريال', 'SAR')}</div>
+                  ${heldMicc > 0 ? `<div id="cashout-held" class="text-xs opacity-90 tabular-nums mt-1">${t(`محجوز لطلبات الصرف النقدي: ${fmt(heldMicc * MICC_SAR_VALUE, 2)} ريال (${fmt(heldMicc, 2)} ميك)`, `Held for cash-out requests: ${fmt(heldMicc * MICC_SAR_VALUE, 2)} SAR (${fmt(heldMicc, 2)} MiCC)`)}</div>` : ''}
                 </div>
                 <div class="flex flex-col items-end gap-2 shrink-0">
                   <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-11 h-11 sm:w-12 sm:h-12" />
@@ -1232,6 +1239,7 @@
               <button onclick="openPeerTransferModal()" class="companion-btn py-2.5 px-3 rounded-xl text-white text-xs font-semibold">${t('تحويل للرفاقة', 'Transfer To Companions')}</button>
               <button onclick="openTransferToSafeModal()" class="py-2.5 px-3 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تحويل خارجي', 'External Transfer')}</button>
               <button onclick="handleRefundRequest()" ${canRefund ? '' : 'disabled'} class="py-2.5 px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold ${canRefund ? 'text-brand-crimson dark:text-rose-400' : 'opacity-40 cursor-not-allowed'}">${t('استرداد (8 أيام)', 'Refund (8 Days)')}</button>
+              <button onclick="openCashoutModal()" class="col-span-2 sm:col-span-4 py-2.5 px-3 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-xs font-semibold">${t('طلب صرف نقدي', 'Cash-out Request')}</button>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
@@ -1240,6 +1248,8 @@
             </div>
 
             ${renderPurchasesHtml()}
+
+            ${renderCashoutHtml()}
           </div>
 
           <div class="space-y-4">
@@ -1247,7 +1257,7 @@
               <h3 class="font-bold text-sm mb-2">${t('حد الشراء السنوي (30,000 ريال)', 'Annual Purchase Limit (30,000 SAR)')}</h3>
               <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span class="tabular-nums">${fmt(state.user.annualPurchasedSar, 2)} ${t('ريال', 'SAR')}</span><span class="tabular-nums">${fmt(remainingCapSar, 2)} ${t('ريال', 'SAR')} ${t('متبقي', 'left')}</span></div>
               <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3"><div class="h-full bg-brand-emerald rounded-full" style="width:${capUsedPct}%"></div></div>
-              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتاح للتحويل (60% — من 250 إلى 15,000 ريال):', 'Available to transfer (60% — 250 to 15,000 SAR):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
+              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتبقي من حد التحويل التراكمي إلى MiCC Safe (60% من إجمالي ميك الداخل إلى المحفظة):', 'Remaining cumulative allowance to MiCC Safe (60% of all MiCC that entered the wallet):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60">
@@ -1275,7 +1285,7 @@
 
     function renderPrivacy() {
       // AMi privacy & terms (v12g)
-      const secs = [["مقدمة ونطاق السياسة", "Introduction and Scope", "توضّح هذه السياسة كيفية جمع الشركة للبيانات الشخصية لرفاقنا ومعالجتها وحمايتها، التزامًا بأحكام نظام حماية البيانات الشخصية ولوائحه التنفيذية. ويُعدّ استخدامك للمنصة أو إنشاؤك حسابًا فيها إقرارًا بالاطلاع على هذه السياسة والموافقة عليها. والنسخة العربية هي النسخة المعتمدة، وأي ترجمة أخرى للتيسير فقط.", "This Policy explains how the Company collects, processes, and protects the personal data of our companions, in compliance with the Personal Data Protection Law and its implementing regulations. Your use of the platform or creation of an account constitutes acknowledgment of, and consent to, this Policy. The Arabic version is the governing version; any other translation is provided for convenience only."], ["البيانات التي نجمعها", "Data We Collect", ["بيانات الحساب: الاسم ورقم الجوال والبريد الإلكتروني وكلمة المرور، وتُحفظ كلمة المرور مشفّرة.", "بيانات الخدمات: طلبات الاستشارات وحجوزات الرعاية التعاطفية والحركية وما يتصل بها من إفصاح صحي، وتُعامل بسرية تامة.", "بيانات وحدات الرفاقة: رصيد ميك وحركاته ومستوى العضوية.", "بيانات الدفع: تتم عمليات الدفع لدى مزوّدي خدمات دفع مرخّصين، ولا تصل بيانات بطاقتك إلى خوادمنا ولا نحتفظ بها، ونكتفي بمرجع العملية ومبلغها وحالتها.", "بيانات تقنية محدودة: ملفات ارتباط ضرورية لتشغيل الجلسة وحفظ تفضيلات اللغة والمظهر فقط."], ["Account data: name, mobile number, email address, and password; passwords are stored encrypted.", "Service data: consultation requests, empathic and kinetic care bookings, and related health disclosures, all treated in strict confidence.", "Companions unit data: MiCC balance and transactions, and membership level.", "Payment data: payments are processed by licensed payment service providers; your card details never reach our servers and are not retained by us. We keep only the transaction reference, amount, and status.", "Limited technical data: cookies strictly necessary to run your session and save your language and appearance preferences only."]], ["أغراض المعالجة وأساسها النظامي", "Purposes of Processing and Legal Basis", "نعالج البيانات حصرًا لإدارة حسابك، وتقديم الاستشارات والرعاية التعاطفية والحركية، وتنفيذ طلبات المتجر، وإدارة وحدات الرفاقة، ومعالجة المدفوعات، والتواصل التشغيلي، وحماية المنصة. والأساس النظامي لذلك هو تنفيذ التعاقد معك، وموافقتك الصريحة عند التسجيل، والمصلحة المشروعة في حماية المنصة ورفاقنا.", "We process data solely to manage your account, provide consultations and empathic and kinetic care, fulfill store orders, manage Companions units, process payments, handle operational communications, and protect the platform. The legal basis is the performance of our contract with you, your explicit consent at registration, and our legitimate interest in protecting the platform and our companions."], ["مشاركة البيانات", "Data Sharing", "لا نبيع بياناتك الشخصية ولا نتاجر بها، ولا نشاركها إلا في أضيق الحدود: مع مزوّدي الخدمات التشغيلية من دفع واستضافة وبالقدر اللازم لأداء الخدمة، ومع الجهات المختصة متى طُلب ذلك نظامًا.", "We do not sell or trade your personal data. We share it only to the narrowest extent necessary: with operational service providers such as payment and hosting providers, as needed to perform the service, and with competent authorities when legally required."], ["شروط وحدات الرفاقة (ميك) والعضوية", "Companions Unit (MiCC) and Membership Terms", ["تُقتنى وحدات ميك بالسعر المعلن وقت الشراء، بحدٍّ أدنى 10 ميك، وبحدّ شراء سنوي أقصاه 30,000 ريال.", "القوة الشرائية المضاعفة مخصّصة للخدمات الصحية فقط، وتُتاح حصريًا لأعضاء الرفاقة المفعّلين.", "رسوم عضوية الرفاقة 360 ريالًا سنويًا.", "يُتاح استرداد أي مبلغ مدفوع، بما في ذلك رسوم عضوية الرفاقة، خلال 8 أيام من تاريخ الدفع، شريطة عدم استخدام الرصيد أو الاستفادة من العضوية."], ["MiCC units are acquired at the price announced at the time of purchase, with a minimum of 10 MiCC and an annual purchase limit of 30,000 SAR.", "Doubled purchasing power is reserved for health services only and is available exclusively to activated Companions Program members.", "The Companions Program membership fee is 360 SAR per year.", "Any amount paid, including the Companions Program membership fee, may be refunded within 8 days of the payment date, provided the balance has not been used and the membership has not been benefited from."]], ["حقوقك كصاحب بيانات", "Your Rights as a Data Subject", "لك الحق في العلم بأسباب جمع بياناتك، وفي الوصول إليها والحصول على نسخة منها، وفي طلب تصحيحها أو تحديثها، وفي طلب إتلافها متى انتفت الحاجة إليها، وفي سحب موافقتك في أي وقت، مع العلم أن سحب الموافقة قد يوقف تقديم الخدمة. ولك الحق في حذف حسابك في أي وقت عبر خيار «حذف الحساب» في صفحة حسابك، وتُحذف بياناتك الشخصية وتُجهّل سجلات العمليات المرتبطة بها، مع مراعاة ما يلزم الاحتفاظ به نظامًا. ويُسترد رصيد ميك غير المستخدم وفق شروط البند 5 قبل إتمام الحذف. كما يحق لك التقدّم بشكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).", "You have the right to be informed of the reasons for collecting your data; to access it and obtain a copy; to request its correction or update; to request its destruction once it is no longer needed; and to withdraw your consent at any time, noting that withdrawing consent may stop the provision of the service. You may delete your account at any time through the “Delete Account” option on your account page; your personal data will be deleted and related transaction records anonymized, subject to what must be retained by law. Any unused MiCC balance is refunded under the terms of Section 5 before deletion is completed. You also have the right to lodge a complaint with the Saudi Data and Artificial Intelligence Authority (SDAIA)."], ["الاحتفاظ بالبيانات وأمنها", "Data Retention and Security", "نحتفظ ببياناتك طوال سريان حسابك وبالقدر اللازم للوفاء بالمتطلبات النظامية، ثم تُتلف أو تُجهّل. ونطبّق تدابير حماية مناسبة، منها التشفير أثناء النقل وتقييد الصلاحيات والحد من محاولات الدخول المتكررة. وفي حال وقوع أي حادث يمس بياناتك نلتزم بالإشعار وفق النظام.", "We retain your data for as long as your account is active and as necessary to meet legal requirements, after which it is destroyed or anonymized. We apply appropriate safeguards, including encryption in transit, access restrictions, and limits on repeated login attempts. In the event of any incident affecting your data, we commit to notification as required by law."], ["إخلاء المسؤولية والنظام الواجب التطبيق", "Disclaimer and Governing Law", "تُقدَّم المنصة «كما هي» و«حسب المتاح»، ولا تتحمل الشركة المسؤولية عن الأضرار غير المباشرة أو الانقطاعات الخارجة عن سيطرتها المعقولة، بما لا يُخلّ بالحقوق المقرّرة نظامًا. ويتحمل المستخدم مسؤولية صحة بياناته وسرية بيانات دخوله. وتخضع هذه السياسة لأنظمة المملكة العربية السعودية، ويكون الاختصاص للجهات القضائية المختصة فيها.", "The platform is provided “as is” and “as available”. The Company is not liable for indirect damages or interruptions beyond its reasonable control, without prejudice to rights established by law. The user is responsible for the accuracy of their data and the confidentiality of their login credentials. This Policy is governed by the laws of the Kingdom of Saudi Arabia, and the competent judicial authorities there shall have jurisdiction."], ["التعديلات والتواصل", "Amendments and Contact", "قد نحدّث هذه السياسة من وقت لآخر، وننشر النسخة المحدّثة في هذه الصفحة مع تاريخ سريانها. وللتواصل أو لممارسة حقوقك، يسعدنا خدمتك عبر ", "We may update this Policy from time to time and will publish the updated version on this page with its effective date. To contact us or exercise your rights, we are happy to assist you via "]];
+      const secs = [["مقدمة ونطاق السياسة", "Introduction and Scope", "توضّح هذه السياسة كيفية جمع الشركة للبيانات الشخصية لرفاقنا ومعالجتها وحمايتها، التزامًا بأحكام نظام حماية البيانات الشخصية ولوائحه التنفيذية. ويُعدّ استخدامك للمنصة أو إنشاؤك حسابًا فيها إقرارًا بالاطلاع على هذه السياسة والموافقة عليها. والنسخة العربية هي النسخة المعتمدة، وأي ترجمة أخرى للتيسير فقط.", "This Policy explains how the Company collects, processes, and protects the personal data of our companions, in compliance with the Personal Data Protection Law and its implementing regulations. Your use of the platform or creation of an account constitutes acknowledgment of, and consent to, this Policy. The Arabic version is the governing version; any other translation is provided for convenience only."], ["البيانات التي نجمعها", "Data We Collect", ["بيانات الحساب: الاسم ورقم الجوال والبريد الإلكتروني وكلمة المرور، وتُحفظ كلمة المرور مشفّرة.", "بيانات الخدمات: طلبات الاستشارات وحجوزات الرعاية التعاطفية والحركية وما يتصل بها من إفصاح صحي، وتُعامل بسرية تامة.", "بيانات وحدات الرفاقة: رصيد ميك وحركاته ومستوى العضوية.", "بيانات الدفع: تتم عمليات الدفع لدى مزوّدي خدمات دفع مرخّصين، ولا تصل بيانات بطاقتك إلى خوادمنا ولا نحتفظ بها، ونكتفي بمرجع العملية ومبلغها وحالتها.", "بيانات تقنية محدودة: ملفات ارتباط ضرورية لتشغيل الجلسة وحفظ تفضيلات اللغة والمظهر فقط."], ["Account data: name, mobile number, email address, and password; passwords are stored encrypted.", "Service data: consultation requests, empathic and kinetic care bookings, and related health disclosures, all treated in strict confidence.", "Companions unit data: MiCC balance and transactions, and membership level.", "Payment data: payments are processed by licensed payment service providers; your card details never reach our servers and are not retained by us. We keep only the transaction reference, amount, and status.", "Limited technical data: cookies strictly necessary to run your session and save your language and appearance preferences only."]], ["أغراض المعالجة وأساسها النظامي", "Purposes of Processing and Legal Basis", "نعالج البيانات حصرًا لإدارة حسابك، وتقديم الاستشارات والرعاية التعاطفية والحركية، وتنفيذ طلبات المتجر، وإدارة وحدات الرفاقة، ومعالجة المدفوعات، والتواصل التشغيلي، وحماية المنصة. والأساس النظامي لذلك هو تنفيذ التعاقد معك، وموافقتك الصريحة عند التسجيل، والمصلحة المشروعة في حماية المنصة ورفاقنا.", "We process data solely to manage your account, provide consultations and empathic and kinetic care, fulfill store orders, manage Companions units, process payments, handle operational communications, and protect the platform. The legal basis is the performance of our contract with you, your explicit consent at registration, and our legitimate interest in protecting the platform and our companions."], ["مشاركة البيانات", "Data Sharing", "لا نبيع بياناتك الشخصية ولا نتاجر بها، ولا نشاركها إلا في أضيق الحدود: مع مزوّدي الخدمات التشغيلية من دفع واستضافة وبالقدر اللازم لأداء الخدمة، ومع الجهات المختصة متى طُلب ذلك نظامًا.", "We do not sell or trade your personal data. We share it only to the narrowest extent necessary: with operational service providers such as payment and hosting providers, as needed to perform the service, and with competent authorities when legally required."], ["شروط وحدات الرفاقة (ميك) والعضوية", "Companions Unit (MiCC) and Membership Terms", ["تُقتنى وحدات ميك بالسعر المعلن وقت الشراء، بحدٍّ أدنى 10 ميك، وبحدّ شراء سنوي أقصاه 30,000 ريال.", "القوة الشرائية المضاعفة مخصّصة للخدمات الصحية فقط، وتُتاح حصريًا لأعضاء الرفاقة المفعّلين.", "رسوم عضوية الرفاقة 360 ريالًا سنويًا.", "يُتاح استرداد أي مبلغ مدفوع، بما في ذلك رسوم عضوية الرفاقة، خلال 8 أيام من تاريخ الدفع، شريطة عدم استخدام الرصيد أو الاستفادة من العضوية.", "حدّ التحويل التراكمي إلى MiCC Safe: يجوز تحويل ما لا يتجاوز 60% من إجمالي وحدات ميك التي دخلت محفظتك منذ فتح الحساب (المشتراة بالبطاقة أو تمارا أو إمكان، والمستلمة من الرفاق)، مطروحًا منه كل ما سبق تحويله إلى MiCC Safe. والحد تراكمي على مدى عمر الحساب، لا يتجدد شهريًا ولا سنويًا، ولا تُحتسب الوحدات المُعادة من MiCC Safe إلى المحفظة ضمن الإجمالي، ولا تُعيد إعادتُها الحدَّ. ويبقى الحد الأدنى للتحويل الواحد 50 ميك (250 ريال)، والحد الأقصى الإجمالي 15,000 ريال."], ["MiCC units are acquired at the price announced at the time of purchase, with a minimum of 10 MiCC and an annual purchase limit of 30,000 SAR.", "Doubled purchasing power is reserved for health services only and is available exclusively to activated Companions Program members.", "The Companions Program membership fee is 360 SAR per year.", "Any amount paid, including the Companions Program membership fee, may be refunded within 8 days of the payment date, provided the balance has not been used and the membership has not been benefited from.", "Cumulative transfer limit to MiCC Safe: you may transfer up to 60% of all MiCC units that have entered your wallet since the account was opened (bought by card, Tamara or Emkan, or received from Companions), minus everything already transferred to MiCC Safe. The limit is cumulative over the life of the account; it does not reset monthly or yearly, units returned from MiCC Safe to the wallet are not added to the total, and returning them does not restore the limit. The minimum per transfer remains 50 MiCC (250 SAR) and the overall maximum 15,000 SAR."]], ["حقوقك كصاحب بيانات", "Your Rights as a Data Subject", "لك الحق في العلم بأسباب جمع بياناتك، وفي الوصول إليها والحصول على نسخة منها، وفي طلب تصحيحها أو تحديثها، وفي طلب إتلافها متى انتفت الحاجة إليها، وفي سحب موافقتك في أي وقت، مع العلم أن سحب الموافقة قد يوقف تقديم الخدمة. ولك الحق في حذف حسابك في أي وقت عبر خيار «حذف الحساب» في صفحة حسابك، وتُحذف بياناتك الشخصية وتُجهّل سجلات العمليات المرتبطة بها، مع مراعاة ما يلزم الاحتفاظ به نظامًا. ويُسترد رصيد ميك غير المستخدم وفق شروط البند 5 قبل إتمام الحذف. كما يحق لك التقدّم بشكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).", "You have the right to be informed of the reasons for collecting your data; to access it and obtain a copy; to request its correction or update; to request its destruction once it is no longer needed; and to withdraw your consent at any time, noting that withdrawing consent may stop the provision of the service. You may delete your account at any time through the “Delete Account” option on your account page; your personal data will be deleted and related transaction records anonymized, subject to what must be retained by law. Any unused MiCC balance is refunded under the terms of Section 5 before deletion is completed. You also have the right to lodge a complaint with the Saudi Data and Artificial Intelligence Authority (SDAIA)."], ["الاحتفاظ بالبيانات وأمنها", "Data Retention and Security", "نحتفظ ببياناتك طوال سريان حسابك وبالقدر اللازم للوفاء بالمتطلبات النظامية، ثم تُتلف أو تُجهّل. ونطبّق تدابير حماية مناسبة، منها التشفير أثناء النقل وتقييد الصلاحيات والحد من محاولات الدخول المتكررة. وفي حال وقوع أي حادث يمس بياناتك نلتزم بالإشعار وفق النظام.", "We retain your data for as long as your account is active and as necessary to meet legal requirements, after which it is destroyed or anonymized. We apply appropriate safeguards, including encryption in transit, access restrictions, and limits on repeated login attempts. In the event of any incident affecting your data, we commit to notification as required by law."], ["إخلاء المسؤولية والنظام الواجب التطبيق", "Disclaimer and Governing Law", "تُقدَّم المنصة «كما هي» و«حسب المتاح»، ولا تتحمل الشركة المسؤولية عن الأضرار غير المباشرة أو الانقطاعات الخارجة عن سيطرتها المعقولة، بما لا يُخلّ بالحقوق المقرّرة نظامًا. ويتحمل المستخدم مسؤولية صحة بياناته وسرية بيانات دخوله. وتخضع هذه السياسة لأنظمة المملكة العربية السعودية، ويكون الاختصاص للجهات القضائية المختصة فيها.", "The platform is provided “as is” and “as available”. The Company is not liable for indirect damages or interruptions beyond its reasonable control, without prejudice to rights established by law. The user is responsible for the accuracy of their data and the confidentiality of their login credentials. This Policy is governed by the laws of the Kingdom of Saudi Arabia, and the competent judicial authorities there shall have jurisdiction."], ["التعديلات والتواصل", "Amendments and Contact", "قد نحدّث هذه السياسة من وقت لآخر، وننشر النسخة المحدّثة في هذه الصفحة مع تاريخ سريانها. وللتواصل أو لممارسة حقوقك، يسعدنا خدمتك عبر ", "We may update this Policy from time to time and will publish the updated version on this page with its effective date. To contact us or exercise your rights, we are happy to assist you via "]];
       const esc = x => x;
       const body = (sec, i) => {
         const ar = sec[2], en = sec[3];
@@ -1369,7 +1379,7 @@
       const co = { micc: false, amount: null, step: 1, method: 'card', card: 'applepay' };
       const calc = () => {
         const need = totalSar / MICC_SAR_VALUE;
-        const maxM = Math.round(Math.min(state.user.walletMicc, need) * 100) / 100;
+        const maxM = Math.round(Math.min(walletAvailableMicc(), need) * 100) / 100;
         if (co.amount === null || co.amount > maxM) co.amount = maxM;
         if (co.amount < 0 || isNaN(co.amount)) co.amount = 0;
         const deduct = co.micc ? Math.round(co.amount * 100) / 100 : 0;
@@ -1544,18 +1554,53 @@
       renderTierGuide();
     }
 
+    // v13.6: cumulative transfer cap from the MiCC wallet to MiCC Safe.
+    // Allowed total = 60% × all MiCC that ever entered the wallet (purchases by card/Tamara/Emkan + transfers received
+    // from other Companions) − MiCC already transferred to Safe. MiCC returned from Safe does not count and does not restore the cap.
+    function safeTransferCap() {
+      const u = state.user;
+      const inMicc = (u.miccPurchasedTotal || 0) + (u.miccReceivedTotal || 0);
+      const capMicc = inMicc * SAFE_MAX_RATIO;
+      const doneMicc = (u.transferredToSafeSar || 0) / MICC_SAR_VALUE;
+      const capRemain = Math.max(0, Math.floor((capMicc - doneMicc) * 100 + 1e-6) / 100);
+      const sarCapRemain = Math.max(0, (SAFE_MAX_SAR - (u.transferredToSafeSar || 0)) / MICC_SAR_VALUE);
+      const allowed = Math.max(0, Math.floor(Math.min(capRemain, sarCapRemain, walletAvailableMicc())));
+      return { inMicc, capMicc, doneMicc, capRemain, sarCapRemain, allowed };
+    }
+    // For transfers received from other Companions (backend hook; counted in the cumulative total)
+    function receiveFromCompanion(micc, fromLabel) {
+      micc = Number(micc) || 0; if (micc <= 0) return;
+      state.user.walletMicc += micc; state.user.miccReceivedTotal = (state.user.miccReceivedTotal || 0) + micc;
+      state.walletLogs.unshift({ ar: `استلام تحويل من الرفاقة${fromLabel ? ' — ' + fromLabel : ''}`, en: `Received from a Companion${fromLabel ? ' — ' + fromLabel : ''}`, amount: `+${fmt(micc, 2)} MiCC` });
+      render();
+    }
     function openTransferToSafeModal() {
-      const walletSar = state.user.walletMicc * MICC_SAR_VALUE;
-      const maxSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
-      const maxUnits = Math.floor(maxSar / MICC_SAR_VALUE);
+      const c = safeTransferCap();
+      const S = m => `${fmt(m * MICC_SAR_VALUE, 2)} ${t('ريال', 'SAR')} <span class="font-normal text-slate-500">(${fmt(m, 2)} ${MU()})</span>`;
+      const row = (a, b, cls) => `<div class="flex justify-between gap-3 ${cls || ''}"><span>${a}</span><strong class="tabular-nums text-end">${b}</strong></div>`;
       openModal(t('تحويل خارجي', 'External Transfer'), `
-        <p class="text-xs text-slate-500 mb-3">${t(`الحد الأدنى 50 ميك (250 ريال) · المتاح: ${maxUnits} ميك`, `Min 50 MiCC (250 SAR) · Available: ${maxUnits} MiCC`)}</p>
-        <input id="to-safe-amt" type="number" min="50" max="${maxUnits}" value="${Math.min(50, maxUnits)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
+        <div class="text-xs space-y-1.5 mb-3 rounded-xl bg-slate-50 dark:bg-slate-950 p-3">
+          ${row(t('إجمالي ميك الداخل إلى المحفظة:', 'Total MiCC that entered the wallet:'), S(c.inMicc))}
+          ${row(t('الحد التراكمي (60%):', 'Cumulative limit (60%):'), S(c.capMicc))}
+          ${row(t('المحوَّل سابقًا إلى MiCC Safe:', 'Already transferred to MiCC Safe:'), S(c.doneMicc))}
+          ${row(t('المتبقي المسموح بتحويله:', 'Remaining allowance:'), S(c.capRemain), 'text-brand-navy dark:text-sky-400 border-t border-brand-border dark:border-slate-800 pt-1.5')}
+        </div>
+        <p class="text-[11px] text-slate-500 mb-3">${t('الحد تراكمي: 60% من كل ما دخل محفظتك من ميك (شراءً أو استلامًا من الرفاق) مطروحًا منه كل ما حُوِّل سابقًا. الحد الأدنى للتحويل 50 ميك (250 ريال).', 'The limit is cumulative: 60% of all MiCC that entered your wallet (bought or received from Companions) minus everything transferred before. Minimum transfer 50 MiCC (250 SAR).')}</p>
+        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك المراد تحويلها', 'MiCC units to transfer')}</label>
+        <input id="to-safe-amt" type="number" min="50" step="1" value="${Math.min(50, c.allowed)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-1 tabular-nums" />
+        <div id="to-safe-sar" class="text-[11px] text-slate-500 mb-4 tabular-nums"></div>
         <button id="do-to-safe" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تنفيذ التحويل', 'Transfer')}</button>
       `);
+      const inp = document.getElementById('to-safe-amt');
+      const showSar = () => { const u = Number(inp.value) || 0; document.getElementById('to-safe-sar').textContent = t(`= ${fmt(u * MICC_SAR_VALUE, 2)} ريال`, `= ${fmt(u * MICC_SAR_VALUE, 2)} SAR`); };
+      inp.addEventListener('input', showSar); showSar();
       document.getElementById('do-to-safe').addEventListener('click', () => {
-        const units = Number(document.getElementById('to-safe-amt').value) || 0;
-        if (units < 50 || units > maxUnits) { showToast(t('القيمة خارج النطاق المسموح', 'Out of range')); return; }
+        const units = Number(inp.value) || 0;
+        const cc = safeTransferCap();
+        if (!Number.isFinite(units) || Math.floor(units) !== units || units < 50) { showToast(t('الحد الأدنى للتحويل 50 ميك (250 ريال)', 'Minimum transfer is 50 MiCC (250 SAR)')); return; }
+        if (units > cc.capRemain) { showToast(t(`المبلغ يتجاوز المتبقي من حد التحويل التراكمي: ${fmt(cc.capRemain * MICC_SAR_VALUE, 2)} ريال (${fmt(cc.capRemain, 2)} ميك)`, `Amount exceeds the remaining cumulative allowance: ${fmt(cc.capRemain * MICC_SAR_VALUE, 2)} SAR (${fmt(cc.capRemain, 2)} MiCC)`)); return; }
+        if (units > cc.sarCapRemain) { showToast(t('المبلغ يتجاوز الحد الأقصى الإجمالي 15,000 ريال', 'Amount exceeds the 15,000 SAR overall maximum')); return; }
+        if (units > walletAvailableMicc()) { showToast(t('الرصيد المتاح في المحفظة غير كافٍ', 'Insufficient available wallet balance')); return; }
         state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; markMiccUsed();
         state.safe.micc += units; state.safe.capitalSar = (state.safe.capitalSar || 0) + units * MICC_SAR_VALUE;
         state.walletLogs.unshift({ ar: 'تحويل خارجي', en: 'External Transfer', amount: `-${units} MiCC` });
@@ -1564,36 +1609,161 @@
       });
     }
 
+    // v13.6: Buy MiCC uses the store checkout UI (card / Tamara / Emkan, no «الدفع بميك»). Demo only: no real gateway.
+    const INSTALLMENT_MIN_MICC = 100;
     function openBuyMiccModal() {
       const remSar = Math.max(0, ANNUAL_PURCHASE_CAP_SAR - state.user.annualPurchasedSar);
-      openModal(t('شراء وحدات ميك', 'Buy MiCC Units'), `
-        <p class="text-xs text-slate-500 mb-1">${t(`${MICC_SAR_VALUE} ريال/وحدة · المتبقي: ${fmt(remSar)} ريال`, `${MICC_SAR_VALUE} SAR/unit · Remaining: ${fmt(remSar)} SAR`)}</p>
-        <p class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3">${t(`أقل كمية للشراء: ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase: ${MIN_PURCHASE_MICC} MiCC`)}</p>
-        <input id="buy-micc-amt" type="number" min="${MIN_PURCHASE_MICC}" step="1" max="${Math.floor(remSar / MICC_SAR_VALUE)}" value="100" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
-        <div class="mb-4">${payOptionsGwHtml('buy-pay')}</div>
-        <button id="do-buy-micc" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تأكيد الشراء', 'Confirm Purchase')}</button>
-      `);
-      document.getElementById('do-buy-micc').addEventListener('click', () => {
-        const units = Number(document.getElementById('buy-micc-amt').value) || 0;
-        const sar = units * MICC_SAR_VALUE;
-        if (!Number.isFinite(units) || units < MIN_PURCHASE_MICC || Math.floor(units) !== units) { showToast(t(`أقل كمية للشراء ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase is ${MIN_PURCHASE_MICC} MiCC`)); return; }
-        if (sar > remSar) { showToast(t('يتجاوز حد الشراء السنوي', 'Exceeds annual purchase limit')); return; }
+      const maxUnits = Math.floor(remSar / MICC_SAR_VALUE);
+      const mf = n => fmt(Math.round(n * 100) / 100, Math.abs(Math.round(n * 100) / 100 % 1) > 0 ? 2 : 0);
+      const co = { units: Math.min(100, maxUnits), step: 1, method: 'card', card: 'applepay', loading: false };
+      const btn = (id, label, cls) => `<button id="${id}" class="w-full py-2.5 rounded-xl ${cls || 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} text-xs font-semibold">${label}</button>`;
+      const instOk = () => co.units >= INSTALLMENT_MIN_MICC;
+      const validMsg = () => {
+        if (!Number.isFinite(co.units) || Math.floor(co.units) !== co.units || co.units < MIN_PURCHASE_MICC) return t(`أقل كمية للشراء ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase is ${MIN_PURCHASE_MICC} MiCC`);
+        if (co.units * MICC_SAR_VALUE > remSar) return t('يتجاوز حد الشراء السنوي', 'Exceeds annual purchase limit');
+        return '';
+      };
+      const finish = () => {
+        const units = co.units, sar = units * MICC_SAR_VALUE;
+        if (validMsg()) { showToast(validMsg()); return; }
         state.user.walletMicc += units; state.user.annualPurchasedSar += sar; state.user.daysSincePurchase = 0;
-        state.user.purchases = (state.user.purchases || []).concat([{ id: 'pu' + Date.now().toString(36), ts: Date.now(), micc: units, sar, used: false, refunded: false }]);
-        state.walletLogs.unshift({ ar: 'شراء MiCC', en: 'Purchased MiCC', amount: `+${units} MiCC` });
+        state.user.miccPurchasedTotal = (state.user.miccPurchasedTotal || 0) + units;
+        state.user.purchases = (state.user.purchases || []).concat([{ id: 'pu' + Date.now().toString(36), ts: Date.now(), micc: units, sar, method: co.method, used: false, refunded: false }]);
+        state.walletLogs.unshift({ ar: `شراء ميك (${payProviderName(co.method)})`, en: `Purchased MiCC (${payProviderName(co.method)})`, amount: `+${units} MiCC` });
         closeModal(); render(); showToast(t(`تمت إضافة ${units} ميك`, `Added ${units} MiCC`));
+      };
+      const drawDyn = () => {
+        const box = document.getElementById('buy-dyn'); if (!box) return;
+        if (!instOk() && co.method !== 'card') co.method = 'card';
+        const sar = (Number.isFinite(co.units) ? co.units : 0) * MICC_SAR_VALUE;
+        const row = p => { const off = p.id !== 'card' && !instOk(); return `<label class="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs ${off ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"><input type="radio" name="buy-pay" value="${p.id}" ${p.id === co.method ? 'checked' : ''} ${off ? 'disabled' : ''} class="accent-[#0B5C4A]" /><span class="font-semibold">${t(p.ar, p.en)}</span>${off ? `<span class="ms-auto text-[10.5px] text-slate-500">${t('من 100 ميك', 'From 100 MiCC')}</span>` : ''}</label>`; };
+        box.innerHTML = `
+          <div class="flex justify-between font-bold text-sm mb-3"><span>${t('الإجمالي:', 'Total:')}</span><span class="tabular-nums">${mf(sar)} ${t('ريال', 'SAR')} <span class="text-xs font-medium text-slate-500">(${fmt(Number.isFinite(co.units) ? co.units : 0)} ${MU()})</span></span></div>
+          <div class="mb-2"><div class="font-semibold text-xs mb-1.5">${t('طريقة الدفع:', 'Payment method:')}</div><div class="space-y-1.5 pay-options"><div class="grid grid-cols-1 gap-1.5">${PAY_PROVIDERS.map(row).join('')}</div></div></div>
+          ${instOk() ? '' : `<p id="inst-note" class="text-[10.5px] text-slate-500 dark:text-slate-400 mb-2">${t('التقسيط عبر تمارا أو إمكان متاح للشراء من 100 ميك (500 ريال) فأكثر.', 'Installments via Tamara or Emkan are available from 100 MiCC (500 SAR).')}</p>`}
+          <div class="mt-3">${btn('co-next', t('التالي', 'Next'))}</div>`;
+        box.querySelectorAll('input[name="buy-pay"]').forEach(r => r.addEventListener('change', () => { co.method = r.value; }));
+        document.getElementById('co-next').addEventListener('click', () => {
+          const m = validMsg(); if (m) { showToast(m); return; }
+          const ch = box.querySelector('input[name="buy-pay"]:checked'); if (ch) co.method = ch.value;
+          const body = document.getElementById('modal-body');
+          body.innerHTML = `<div class="py-10 flex flex-col items-center gap-3 text-center"><div class="w-9 h-9 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-brand-emerald animate-spin"></div><div class="text-sm font-semibold">${t('جارٍ تحويلك لصفحة الدفع…', 'Redirecting you to the payment page…')}</div></div>`;
+          co.loading = true;
+          setTimeout(() => { if (!co.loading) return; co.loading = false; if (document.getElementById('modal-backdrop').classList.contains('hidden')) return; co.step = 2; draw(); }, 1200);
+        });
+      };
+      const draw = () => {
+        const body = document.getElementById('modal-body');
+        if (co.step === 1) {
+          body.innerHTML = `
+            <p class="text-xs text-slate-500 mb-1">${t(`سعر الوحدة ${MICC_SAR_VALUE} ريال · المتبقي من حد الشراء السنوي: ${fmt(remSar)} ريال`, `${MICC_SAR_VALUE} SAR per unit · Annual limit remaining: ${fmt(remSar)} SAR`)}</p>
+            <p class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3">${t(`أقل كمية للشراء: ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase: ${MIN_PURCHASE_MICC} MiCC`)}</p>
+            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك', 'MiCC units')}</label>
+            <input id="buy-micc-amt" type="number" inputmode="numeric" min="${MIN_PURCHASE_MICC}" step="1" max="${maxUnits}" value="${co.units}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
+            <div id="buy-dyn"></div>`;
+          const inp = document.getElementById('buy-micc-amt');
+          inp.addEventListener('input', () => { const v = parseFloat(inp.value); co.units = isNaN(v) ? 0 : v; drawDyn(); });
+          drawDyn();
+          return;
+        }
+        // step 2: provider demo screen (nothing real is collected) — same as the store checkout
+        const c = { remainSar: co.units * MICC_SAR_VALUE };
+        const back = `<button id="co-back" class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3 inline-flex items-center gap-1">${state.lang === 'ar' ? '→' : '←'} ${t('رجوع', 'Back')}</button>`;
+        const amt = `<div class="flex justify-between font-bold text-sm mb-4"><span>${t('المبلغ المطلوب:', 'Amount due:')}</span><span class="tabular-nums">${mf(c.remainSar)} ${t('ريال', 'SAR')} <span class="text-xs font-medium text-slate-500">(${fmt(co.units)} ${MU()})</span></span></div>`;
+        let inner = '';
+        if (co.method === 'card') {
+          const cards = [['applepay', 'Apple Pay', 'Apple Pay'], ['samsungpay', 'Samsung Pay', 'Samsung Pay'], ['card', 'بطاقة مدى / فيزا / ماستركارد', 'mada / Visa / Mastercard']];
+          inner = `<div class="font-bold text-sm mb-2">${t('البطاقة', 'Card')}</div><div class="space-y-1.5 mb-4">${cards.map(([id, ar, en]) => `<div role="button" tabindex="0" data-card="${id}" class="pay-card-opt w-full text-start cursor-pointer px-3 py-3 rounded-xl border-2 text-xs font-bold ${co.card === id ? 'border-brand-emerald bg-emerald-50/60 dark:bg-emerald-950/30' : 'border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900'}">${t(ar, en)}</div>`).join('')}</div>`;
+        } else if (co.method === 'tamara') {
+          const q = c.remainSar / 4;
+          inner = `<div class="font-bold text-sm mb-2">${t('تمارا', 'Tamara')}</div><div class="rounded-xl border border-brand-border dark:border-slate-700 p-3 mb-4 text-xs"><div class="font-semibold mb-2">${t('قسّمها على 4 دفعات بدون فوائد', 'Split in 4 interest-free payments')}</div><div class="grid grid-cols-4 gap-1.5 text-center">${[0, 1, 2, 3].map(i => `<div class="rounded-lg bg-slate-50 dark:bg-slate-950 py-2"><div class="text-[10px] text-slate-500">${i === 0 ? t('اليوم', 'Today') : t(`+${i} شهر`, `+${i} mo`)}</div><div class="font-bold tabular-nums">${mf(q)}</div></div>`).join('')}</div></div>`;
+        } else {
+          const m = c.remainSar / 12;
+          inner = `<div class="font-bold text-sm mb-2">${t('إمكان', 'Emkan')}</div><div class="rounded-xl border border-brand-border dark:border-slate-700 p-3 mb-4 text-xs"><div class="font-semibold mb-2">${t('تمويل على 12 شهرًا', 'Financing over 12 months')}</div><div class="flex justify-between"><span>${t('القسط الشهري', 'Monthly installment')}</span><strong class="tabular-nums">${mf(m)} ${t('ريال', 'SAR')}</strong></div></div>`;
+        }
+        body.innerHTML = back + amt + inner + btn('co-confirm', t('تأكيد الدفع', 'Confirm Payment'));
+        document.getElementById('co-back').addEventListener('click', () => { co.step = 1; draw(); });
+        body.querySelectorAll('.pay-card-opt').forEach(b => b.addEventListener('click', () => { co.card = b.dataset.card; draw(); }));
+        document.getElementById('co-confirm').addEventListener('click', finish);
+      };
+      openModal(t('شراء وحدات ميك', 'Buy MiCC Units'), '');
+      draw();
+    }
+
+    // ---- v13.6: cash-out request (MiCC wallet only; not available in MiCC Safe) ----
+    // A request is stored with status 'pending' for the admin dashboard. Its amount is held (not spendable) until an
+    // admin decides: approve → deducted from the wallet; reject → hold released.
+    const cashoutPendingMicc = () => (state.user.cashoutRequests || []).filter(r => r.status === 'pending').reduce((a, r) => a + r.micc, 0);
+    function walletAvailableMicc() { return Math.max(0, Math.round((state.user.walletMicc - cashoutPendingMicc()) * 100) / 100); }
+    const CASHOUT_STATUS = { pending: ['قيد المراجعة', 'Under review'], approved: ['تمت الموافقة', 'Approved'], rejected: ['مرفوض', 'Rejected'] };
+    function openCashoutModal() {
+      const avail = walletAvailableMicc();
+      openModal(t('طلب صرف نقدي', 'Cash-out Request'), `
+        <p class="text-xs text-slate-500 mb-3">${t(`الرصيد المتاح: ${fmt(avail * MICC_SAR_VALUE, 2)} ريال (${fmt(avail, 2)} ميك)`, `Available balance: ${fmt(avail * MICC_SAR_VALUE, 2)} SAR (${fmt(avail, 2)} MiCC)`)}</p>
+        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('المبلغ المطلوب صرفه (ريال)', 'Amount to cash out (SAR)')}</label>
+        <input id="co-sar" type="number" inputmode="decimal" min="0" step="any" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-1 tabular-nums" />
+        <div id="co-micc-eq" class="text-[11px] text-slate-500 mb-3 tabular-nums"></div>
+        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('مبرر الطلب (إلزامي)', 'Reason for the request (required)')}</label>
+        <textarea id="co-reason" rows="3" maxlength="1000" placeholder="${t('مثال: أقيم خارج المملكة وأحتاج إلى صرف رصيدي نقدًا.', 'e.g. I live abroad and need my balance paid out in cash.')}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3"></textarea>
+        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('مرفقات داعمة (اختياري)', 'Supporting attachments (optional)')}</label>
+        <input id="co-files" type="file" multiple accept="image/*,application/pdf" class="w-full text-xs mb-3" />
+        <p class="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mb-4">${t('يُحجز المبلغ في محفظتك فور الإرسال ولا يمكن استخدامه، ويبقى الطلب «قيد المراجعة» حتى تبتّ فيه الإدارة: عند الموافقة يُخصم من المحفظة ويُصرف، وعند الرفض يُفك الحجز. الصرف النقدي متاح من محفظة ميك فقط؛ ولصرف رصيد MiCC Safe حوِّله إلى المحفظة أولًا.', 'The amount is held in your wallet as soon as you submit and cannot be used. The request stays "Under review" until the admin decides: if approved it is deducted from the wallet and paid out; if rejected the hold is released. Cash-out is available from the MiCC Wallet only; to cash out a MiCC Safe balance, move it to the wallet first.')}</p>
+        <button id="do-cashout" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('إرسال الطلب', 'Submit Request')}</button>
+      `);
+      const sarInp = document.getElementById('co-sar');
+      const eq = () => { const v = parseFloat(sarInp.value) || 0; document.getElementById('co-micc-eq').textContent = t(`= ${fmt(v / MICC_SAR_VALUE, 2)} ميك`, `= ${fmt(v / MICC_SAR_VALUE, 2)} MiCC`); };
+      sarInp.addEventListener('input', eq); eq();
+      document.getElementById('do-cashout').addEventListener('click', () => {
+        const sar = Math.round((parseFloat(sarInp.value) || 0) * 100) / 100;
+        const micc = Math.round(sar / MICC_SAR_VALUE * 100) / 100;
+        const reason = (document.getElementById('co-reason').value || '').trim();
+        if (!(sar > 0)) { showToast(t('يرجى إدخال المبلغ', 'Please enter the amount')); return; }
+        if (micc > walletAvailableMicc()) { showToast(t('المبلغ أكبر من الرصيد المتاح', 'Amount exceeds the available balance')); return; }
+        if (reason.length < 10) { showToast(t('يرجى كتابة مبرر واضح للطلب (10 أحرف على الأقل)', 'Please write a clear reason (at least 10 characters)')); return; }
+        const files = [...(document.getElementById('co-files').files || [])].map(f => ({ name: f.name, size: f.size, type: f.type }));
+        const req = { id: 'co' + Date.now().toString(36), ts: Date.now(), micc, sar, reason, attachments: files, status: 'pending', decidedAt: null };
+        state.user.cashoutRequests = (state.user.cashoutRequests || []).concat([req]);
+        state.walletLogs.unshift({ ar: 'طلب صرف نقدي — قيد المراجعة (المبلغ محجوز)', en: 'Cash-out request — under review (amount held)', amount: `${fmt(sar, 2)} SAR` });
+        closeModal(); render(); showToast(t('تم إرسال طلب الصرف النقدي، وهو الآن قيد المراجعة', 'Cash-out request submitted; it is now under review'));
       });
+    }
+    // Admin decisions (for the future admin dashboard)
+    function approveCashout(id) {
+      const r = (state.user.cashoutRequests || []).find(x => x.id === id && x.status === 'pending'); if (!r) return false;
+      if (r.micc > state.user.walletMicc) return false;
+      state.user.walletMicc = Math.round((state.user.walletMicc - r.micc) * 100) / 100; r.status = 'approved'; r.decidedAt = Date.now();
+      state.walletLogs.unshift({ ar: 'صرف نقدي — تمت الموافقة', en: 'Cash-out — approved', amount: `-${fmt(r.micc, 2)} MiCC` });
+      render(); return true;
+    }
+    function rejectCashout(id) {
+      const r = (state.user.cashoutRequests || []).find(x => x.id === id && x.status === 'pending'); if (!r) return false;
+      r.status = 'rejected'; r.decidedAt = Date.now();
+      state.walletLogs.unshift({ ar: 'طلب صرف نقدي — مرفوض (فُكّ الحجز)', en: 'Cash-out request — rejected (hold released)', amount: `${fmt(r.sar, 2)} SAR` });
+      render(); return true;
+    }
+    function renderCashoutHtml() {
+      const list = (state.user.cashoutRequests || []).slice().sort((a, b) => b.ts - a.ts);
+      if (!list.length) return '';
+      const d = ms => new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const chip = st => st === 'pending' ? 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : st === 'approved' ? 'bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
+      return `<div id="cashout-list" class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
+        <h2 class="font-bold text-sm mb-2">${t('طلبات الصرف النقدي', 'Cash-out Requests')}</h2>
+        <div class="space-y-1.5">${list.map(r => `<div class="text-xs py-1.5 border-b border-brand-border dark:border-slate-800 last:border-0">
+          <div class="flex flex-wrap items-center justify-between gap-2"><span><span class="tabular-nums font-semibold">${fmt(r.sar, 2)} ${t('ريال', 'SAR')}</span> <span class="text-slate-500 tabular-nums">· ${fmt(r.micc, 2)} ${MU()} · <bdi dir="ltr">${d(r.ts)}</bdi></span></span><span class="cashout-status px-2 py-0.5 rounded-full text-[10.5px] font-semibold ${chip(r.status)}">${t(...CASHOUT_STATUS[r.status])}</span></div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${t('المبرر:', 'Reason:')} ${escSupport(r.reason)}${r.attachments && r.attachments.length ? ` · ${t('المرفقات:', 'Attachments:')} ${r.attachments.length}` : ''}</div>
+        </div>`).join('')}</div>
+      </div>`;
     }
 
     function openPeerTransferModal() {
       openModal(t('تحويل للرفاقة', 'Transfer To Companions'), `
         <input id="peer-id" type="text" placeholder="${t('رقم الجوال أو البريد', 'Mobile or email')}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3" />
-        <input id="peer-amt" type="number" min="1" max="${state.user.walletMicc}" value="20" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
+        <input id="peer-amt" type="number" min="1" max="${walletAvailableMicc()}" value="20" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
         <button id="do-peer-tr" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('إرسال مجاناً', 'Send Free')}</button>
       `);
       document.getElementById('do-peer-tr').addEventListener('click', () => {
         const amt = Number(document.getElementById('peer-amt').value) || 0;
-        if (amt <= 0 || amt > state.user.walletMicc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
+        if (amt <= 0 || amt > walletAvailableMicc()) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         state.user.walletMicc -= amt; markMiccUsed();
         state.walletLogs.unshift({ ar: 'تحويل للرفاقة', en: 'Transfer To Companions', amount: `-${amt} MiCC` });
         closeModal(); render(); showToast(t('تم التحويل وسقط حق الاسترداد', 'Transferred'));
@@ -1614,7 +1784,7 @@
       return { ok: true, ar: `متاح للاسترداد · متبقٍ ${left} ${left === 1 ? 'يوم' : (left <= 10 ? 'أيام' : 'يومًا')}`, en: `Refundable · ${left} day${left === 1 ? '' : 's'} left` };
     }
     const refundablePurchases = () => (state.user.purchases || []).filter(p => purchaseRefundInfo(p).ok);
-    const refundableMicc = () => Math.min(state.user.walletMicc, refundablePurchases().reduce((a, p) => a + p.micc, 0));
+    const refundableMicc = () => Math.min(walletAvailableMicc(), refundablePurchases().reduce((a, p) => a + p.micc, 0));
     function handleRefundRequest() {
       const list = refundablePurchases();
       const micc = refundableMicc();
@@ -1622,6 +1792,7 @@
       const sar = micc * MICC_SAR_VALUE;
       state.user.walletMicc -= micc;
       list.forEach(p => { p.refunded = true; });
+      state.user.miccPurchasedTotal = Math.max(0, (state.user.miccPurchasedTotal || 0) - micc);
       state.walletLogs.unshift({ ar: 'طلب استرداد (8 أيام)', en: '8-Day Refund', amount: `${fmt(sar)} SAR` });
       render(); showToast(t(`تم رفع طلب استرداد ${fmt(sar)} ريال`, `Refund of ${fmt(sar)} SAR submitted`));
     }
@@ -1664,7 +1835,7 @@
       document.getElementById('do-mem-act').addEventListener('click', () => {
         const mode = document.getElementById('mem-pay').value;
         if (mode === 'micc') {
-          if (state.user.walletMicc < MEMBERSHIP_FEE_MICC) { showToast(t('مطلوب 72 ميك', 'Need 72 MiCC')); return; }
+          if (walletAvailableMicc() < MEMBERSHIP_FEE_MICC) { showToast(t('مطلوب 72 ميك', 'Need 72 MiCC')); return; }
           state.user.walletMicc -= MEMBERSHIP_FEE_MICC; state.user.walletProgressMicc += MEMBERSHIP_FEE_MICC; markMiccUsed();
           state.walletLogs.unshift({ ar: 'تفعيل عضوية الرفاقة', en: 'Membership', amount: '-72 MiCC' });
         } else {
@@ -1848,7 +2019,7 @@
           const offer = state.selectedEkcOffer || { track: EKC_TRACKS[0], opt: EKC_TRACKS[0].options[0] };
           if (payMode === 'micc') {
             const miccNeeded = Math.ceil(offer.opt.priceSar / (MICC_SAR_VALUE * 2));
-            if (state.user.walletMicc < miccNeeded) { showToast(t('رصيد ميك غير كافٍ', 'Insufficient MiCC')); return; }
+            if (walletAvailableMicc() < miccNeeded) { showToast(t('رصيد ميك غير كافٍ', 'Insufficient MiCC')); return; }
             state.user.walletMicc -= miccNeeded; state.user.walletProgressMicc += miccNeeded; markMiccUsed();
             state.walletLogs.unshift({ ar: `حجز ${offer.track.titleAr}`, en: `Booked ${offer.track.titleEn}`, amount: `-${miccNeeded} MiCC` });
           }
