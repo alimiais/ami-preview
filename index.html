@@ -363,7 +363,7 @@
       },
       safe: {
         micc: 120,
-        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net invested capital (SAR)
+        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net paid-in capital (SAR)
         prices: {
           btcUsd: 64539,
         },
@@ -616,7 +616,7 @@
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
         brandTitle.textContent = 'MiCC Safe';
-        brandSub.textContent = t('استثمار طويل الأمد', 'Long-term investment');
+        brandSub.textContent = '';
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
         sideMenuBtn.classList.add('hidden');
