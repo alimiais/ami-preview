@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="ami-version" content="v13.5" />
   <title>AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -139,6 +140,15 @@
     .sc-wrap { position: fixed; z-index: 70; pointer-events: none; box-sizing: border-box; left: calc(var(--sc-l, 0px) + 16px); width: calc(var(--sc-w, 100vw) - 32px); bottom: calc(var(--sc-b, 0px) + 16px); display: flex; justify-content: flex-end; transform: none; }
     .sc-panel { pointer-events: auto; box-sizing: border-box; width: min(320px, 82vw); max-width: 100%; height: min(460px, 50vh); max-height: calc(var(--sc-vh, 100vh) - 32px); display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: #fff; box-shadow: 0 18px 50px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(15,23,42,.08); }
     .dark .sc-panel { background: #0F172A; }
+    /* v13.5: minimize chat to a corner bubble (draft and history kept) */
+    .sc-mbtn + .sc-x { margin-inline-start: 6px; }
+    .sc-bubble { display: none; pointer-events: auto; position: relative; width: 56px; height: 56px; border-radius: 999px; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #0A1A31 0%, #1E3A5F 100%); border: 2px solid #D4AF37; box-shadow: 0 12px 30px -10px rgba(0,0,0,.55); }
+    .sc-ami .sc-bubble { background: linear-gradient(135deg, #04231A 0%, #0E4A37 100%); }
+    .sc-bubble svg { width: 24px; height: 24px; }
+    .sc-dot { display: none; position: absolute; top: 2px; inset-inline-end: 2px; width: 13px; height: 13px; border-radius: 999px; background: #EF4444; border: 2px solid #fff; }
+    .sc-bubble.has-new .sc-dot { display: block; }
+    .sc-wrap.sc-min .sc-panel { display: none; }
+    .sc-wrap.sc-min .sc-bubble { display: inline-flex; }
     .sc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: #fff; border-bottom: 2px solid #D4AF37; }
     .sc-safe .sc-head { background: linear-gradient(135deg, #0A1A31 0%, #13294B 60%, #1E3A5F 100%); }
     .sc-ami .sc-head { background: linear-gradient(135deg, #04231A 0%, #0B3D2E 60%, #0E4A37 100%); }
@@ -354,6 +364,9 @@
         nameAr: 'علي محمد إسماعيل',
         nameEn: 'Ali Mohammed Ismail',
         membershipActive: false,
+        membershipExpiresAt: 0, // v13.5: ms timestamp; 0 = no expiry recorded
+        autoRenew: false,
+        autoRenewFromBitcoin: false, // separate explicit consent to renew by selling Bitcoin
         annualPurchasedSar: 2500,
         walletMicc: 500,
         walletProgressMicc: 180,
@@ -397,8 +410,45 @@
       const safe = Object.assign({}, state.safe); delete safe.prices; // live prices are per page, not shared
       return JSON.stringify({ v: 1, loggedIn: state.loggedIn, lang: state.lang, dark: state.dark, user: state.user, safe: safe, walletLogs: state.walletLogs });
     }
+    // v13.5: a page that missed updates (background/suspended tab, back-forward cache on iOS Safari) must not
+    // overwrite newer data written by the other page. If storage changed since our last sync, merge field by field:
+    // keep the other page's values and apply only the fields this page actually changed.
+    function sharedMergeObj(base, mine, theirs) {
+      const out = {};
+      const keys = new Set([...Object.keys(theirs || {}), ...Object.keys(mine || {})]);
+      keys.forEach(k => {
+        const mineChanged = JSON.stringify((mine || {})[k]) !== JSON.stringify((base || {})[k]);
+        out[k] = mineChanged || !(theirs && k in theirs) ? (mine || {})[k] : theirs[k];
+      });
+      return out;
+    }
+    function sharedMerge(base, mine, theirs) {
+      const out = sharedMergeObj(base, mine, theirs);
+      ['user', 'safe'].forEach(k => { if (mine[k] && theirs[k]) out[k] = sharedMergeObj((base || {})[k], mine[k], theirs[k]); });
+      return out;
+    }
     function saveShared() {
-      try { const s = sharedSnapshot(); if (s !== sharedLast) { localStorage.setItem(SHARED_KEY, s); sharedLast = s; } } catch (e) {}
+      try {
+        let s = sharedSnapshot();
+        if (s === sharedLast) return;
+        const cur = localStorage.getItem(SHARED_KEY);
+        if (cur && sharedLast && cur !== sharedLast) {
+          s = JSON.stringify(sharedMerge(JSON.parse(sharedLast), JSON.parse(s), JSON.parse(cur)));
+          localStorage.setItem(SHARED_KEY, s);
+          loadShared(s);
+          return;
+        }
+        localStorage.setItem(SHARED_KEY, s); sharedLast = s;
+      } catch (e) {}
+    }
+    // Re-read the shared state whenever the page comes back (tab switch, back/forward cache, focus)
+    function resyncShared() {
+      try {
+        const raw = localStorage.getItem(SHARED_KEY);
+        if (!raw || raw === sharedLast || !loadShared(raw)) return;
+        if (PAGE === 'main' && !state.loggedIn && !PUBLIC_VIEWS.has(state.view)) state.view = 'home';
+        if (typeof render === 'function' && document.getElementById('main-content')) { const y = window.scrollY; render(); if (window.scrollY !== y) window.scrollTo(0, y); }
+      } catch (e) {}
     }
     function loadShared(raw) {
       try {
@@ -419,6 +469,8 @@
     function flashNext(msg) { try { sessionStorage.setItem(FLASH_KEY, msg); } catch (e) {} }
     loadShared();
     if (PAGE === 'safe') state.view = 'safe';
+    // v13.5: MiCC purchases are tracked one by one so a refund returns only the purchased amount (never MiCC received from Safe or elsewhere)
+    if (!Array.isArray(state.user.purchases)) state.user.purchases = [{ id: 'pu-initial', ts: Date.now() - (state.user.daysSincePurchase || 0) * 86400000, micc: Math.round((state.user.annualPurchasedSar || 0) / MICC_SAR_VALUE), sar: state.user.annualPurchasedSar || 0, used: !!state.user.usedOrTransferred, refunded: false }];
     const TIERS = [
       { id: 'classic',  min: 0,    max: 199,  cls: 'tier-classic',  ar: 'أساسي',  en: 'Basic',  spendSar: 1000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
       { id: 'silver', min: 200,  max: 599,  cls: 'tier-silver', ar: 'فضي',   en: 'Silver', spendSar: 3000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
@@ -1141,7 +1193,7 @@
       const capUsedPct = Math.min(100, (state.user.annualPurchasedSar / ANNUAL_PURCHASE_CAP_SAR) * 100);
       const remainingCapSar = Math.max(0, ANNUAL_PURCHASE_CAP_SAR - state.user.annualPurchasedSar);
       const maxSafeAllowanceSar = Math.max(0, Math.min(walletSar * SAFE_MAX_RATIO, SAFE_MAX_SAR - state.user.transferredToSafeSar));
-      const canRefund = !state.user.usedOrTransferred && state.user.daysSincePurchase <= 8 && state.user.walletMicc > 0;
+      const canRefund = refundableMicc() > 0;
 
       return `
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -1186,6 +1238,8 @@
               <h2 class="font-bold text-sm mb-2">${t('سجل عمليات المحفظة', 'Wallet Log')}</h2>
               ${state.walletLogs.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5">${state.walletLogs.map(l => `<div class="text-xs py-1.5 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${arU(t(l.ar, l.en))}</span><span class="tabular-nums font-semibold">${arU(l.amount)}</span></div>`).join('')}</div>`}
             </div>
+
+            ${renderPurchasesHtml()}
           </div>
 
           <div class="space-y-4">
@@ -1326,7 +1380,7 @@
         const { deduct } = calc();
         if (deduct > 0) {
           state.user.walletMicc = Math.round((state.user.walletMicc - deduct) * 100) / 100;
-          state.user.walletProgressMicc += deduct; state.user.usedOrTransferred = true;
+          state.user.walletProgressMicc += deduct; markMiccUsed();
           state.walletLogs.unshift({ ar: 'شراء من المتجر', en: 'Store Purchase', amount: `-${mf(deduct)} MiCC` });
         }
         state.cart = []; closeModal(); render();
@@ -1502,7 +1556,7 @@
       document.getElementById('do-to-safe').addEventListener('click', () => {
         const units = Number(document.getElementById('to-safe-amt').value) || 0;
         if (units < 50 || units > maxUnits) { showToast(t('القيمة خارج النطاق المسموح', 'Out of range')); return; }
-        state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; state.user.usedOrTransferred = true;
+        state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; markMiccUsed();
         state.safe.micc += units; state.safe.capitalSar = (state.safe.capitalSar || 0) + units * MICC_SAR_VALUE;
         state.walletLogs.unshift({ ar: 'تحويل خارجي', en: 'External Transfer', amount: `-${units} MiCC` });
         state.safe.logs.unshift({ ar: 'استلام من محفظة ميك', en: 'From MiCC Wallet', amount: `+${units} MiCC` });
@@ -1525,6 +1579,7 @@
         if (!Number.isFinite(units) || units < MIN_PURCHASE_MICC || Math.floor(units) !== units) { showToast(t(`أقل كمية للشراء ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase is ${MIN_PURCHASE_MICC} MiCC`)); return; }
         if (sar > remSar) { showToast(t('يتجاوز حد الشراء السنوي', 'Exceeds annual purchase limit')); return; }
         state.user.walletMicc += units; state.user.annualPurchasedSar += sar; state.user.daysSincePurchase = 0;
+        state.user.purchases = (state.user.purchases || []).concat([{ id: 'pu' + Date.now().toString(36), ts: Date.now(), micc: units, sar, used: false, refunded: false }]);
         state.walletLogs.unshift({ ar: 'شراء MiCC', en: 'Purchased MiCC', amount: `+${units} MiCC` });
         closeModal(); render(); showToast(t(`تمت إضافة ${units} ميك`, `Added ${units} MiCC`));
       });
@@ -1539,18 +1594,44 @@
       document.getElementById('do-peer-tr').addEventListener('click', () => {
         const amt = Number(document.getElementById('peer-amt').value) || 0;
         if (amt <= 0 || amt > state.user.walletMicc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
-        state.user.walletMicc -= amt; state.user.usedOrTransferred = true;
+        state.user.walletMicc -= amt; markMiccUsed();
         state.walletLogs.unshift({ ar: 'تحويل للرفاقة', en: 'Transfer To Companions', amount: `-${amt} MiCC` });
         closeModal(); render(); showToast(t('تم التحويل وسقط حق الاسترداد', 'Transferred'));
       });
     }
 
+    // v13.5: refund only eligible purchases (within 8 days, not used/transferred since, not already refunded)
+    function markMiccUsed() {
+      state.user.usedOrTransferred = true;
+      (state.user.purchases || []).forEach(p => { p.used = true; });
+    }
+    function purchaseRefundInfo(p) {
+      const age = (Date.now() - p.ts) / 86400000;
+      if (p.refunded) return { ok: false, ar: 'تم استرداد هذه العملية', en: 'Refunded' };
+      if (p.used) return { ok: false, ar: 'سقط حق الاسترداد لاستخدام الرصيد أو تحويله', en: 'Not refundable: balance used or transferred' };
+      if (age > 8) return { ok: false, ar: 'انتهت مهلة الاسترداد (8 أيام)', en: 'Refund window (8 days) ended' };
+      const left = Math.max(1, Math.ceil(8 - age));
+      return { ok: true, ar: `متاح للاسترداد · متبقٍ ${left} ${left === 1 ? 'يوم' : (left <= 10 ? 'أيام' : 'يومًا')}`, en: `Refundable · ${left} day${left === 1 ? '' : 's'} left` };
+    }
+    const refundablePurchases = () => (state.user.purchases || []).filter(p => purchaseRefundInfo(p).ok);
+    const refundableMicc = () => Math.min(state.user.walletMicc, refundablePurchases().reduce((a, p) => a + p.micc, 0));
     function handleRefundRequest() {
-      if (state.user.usedOrTransferred || state.user.daysSincePurchase > 8 || state.user.walletMicc <= 0) return;
-      const sar = state.user.walletMicc * MICC_SAR_VALUE;
-      state.user.walletMicc = 0;
+      const list = refundablePurchases();
+      const micc = refundableMicc();
+      if (!list.length || micc <= 0) return;
+      const sar = micc * MICC_SAR_VALUE;
+      state.user.walletMicc -= micc;
+      list.forEach(p => { p.refunded = true; });
       state.walletLogs.unshift({ ar: 'طلب استرداد (8 أيام)', en: '8-Day Refund', amount: `${fmt(sar)} SAR` });
       render(); showToast(t(`تم رفع طلب استرداد ${fmt(sar)} ريال`, `Refund of ${fmt(sar)} SAR submitted`));
+    }
+    function renderPurchasesHtml() {
+      const list = (state.user.purchases || []).slice().sort((a, b) => b.ts - a.ts).slice(0, 5);
+      const d = ms => new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `<div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
+        <h2 class="font-bold text-sm mb-2">${t('آخر المشتريات', 'Latest Purchases')}</h2>
+        ${list.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد مشتريات بعد', 'No purchases yet')}</div>` : `<div class="space-y-1.5">${list.map(p => { const r = purchaseRefundInfo(p); return `<div class="text-xs py-1.5 border-b border-brand-border dark:border-slate-800 last:border-0 flex flex-wrap items-center justify-between gap-2"><span><span class="tabular-nums font-semibold">${fmt(p.sar, 2)} ${t('ريال', 'SAR')}</span> <span class="text-slate-500 tabular-nums">· ${fmt(p.micc)} ${MU()} · <bdi dir="ltr">${d(p.ts)}</bdi></span></span><span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold ${r.ok ? 'bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}">${t(r.ar, r.en)}</span></div>`; }).join('')}</div>`}
+      </div>`;
     }
 
     function openDeleteAccountModal() {
@@ -1584,12 +1665,13 @@
         const mode = document.getElementById('mem-pay').value;
         if (mode === 'micc') {
           if (state.user.walletMicc < MEMBERSHIP_FEE_MICC) { showToast(t('مطلوب 72 ميك', 'Need 72 MiCC')); return; }
-          state.user.walletMicc -= MEMBERSHIP_FEE_MICC; state.user.walletProgressMicc += MEMBERSHIP_FEE_MICC; state.user.usedOrTransferred = true;
+          state.user.walletMicc -= MEMBERSHIP_FEE_MICC; state.user.walletProgressMicc += MEMBERSHIP_FEE_MICC; markMiccUsed();
           state.walletLogs.unshift({ ar: 'تفعيل عضوية الرفاقة', en: 'Membership', amount: '-72 MiCC' });
         } else {
           state.walletLogs.unshift({ ar: 'تفعيل عضوية الرفاقة (360 ريال)', en: 'Membership (360 SAR)', amount: '360 SAR' });
         }
-        state.user.membershipActive = true; closeModal(); render(); showToast(t('تم تفعيل العضوية', 'Membership activated'));
+        state.user.membershipActive = true; state.user.membershipExpiresAt = Math.max(Date.now(), state.user.membershipExpiresAt || 0) + 365 * 86400000;
+        closeModal(); render(); showToast(t('تم تفعيل العضوية', 'Membership activated'));
       });
     }
 
@@ -1652,6 +1734,7 @@
         <div class="sc-head">
           <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
           <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('نرد عليك في أقرب وقت', 'We reply as soon as possible')}</div></div>
+          <button type="button" class="sc-x sc-mbtn" onclick="minimizeSupportChat()" aria-label="${t('تصغير', 'Minimize')}">—</button>
           <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
         </div>
         <div id="sc-list" class="sc-list"></div>
@@ -1659,7 +1742,8 @@
           <input id="sc-input" class="sc-in" type="text" maxlength="1000" autocomplete="off" placeholder="${t('اكتب رسالتك...', 'Type your message...')}" />
           <button id="sc-send" type="submit" class="sc-send">${t('إرسال', 'Send')}</button>
         </form>
-      </div>`;
+      </div>
+      <button type="button" class="sc-bubble" onclick="restoreSupportChat()" aria-label="${t('فتح المحادثة', 'Open chat')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span class="sc-dot"></span></button>`;
       wrap.addEventListener('click', e => { if (e.target === wrap) closeSupportChat(); });
       document.body.appendChild(wrap);
       scLockPage(true); scSyncViewport();
@@ -1671,7 +1755,34 @@
       });
       renderSupportChatList();
     }
-    function closeSupportChat() { const el = document.getElementById('support-chat'); if (el) { el.remove(); scLockPage(false); } }
+    function closeSupportChat() { const el = document.getElementById('support-chat'); if (el) { el.remove(); scLockPage(false); } scStopWatch(); }
+    // v13.5: minimize / restore (the panel stays in the DOM, so the typed draft and the history are kept)
+    let scSeenReplies = 0, scWatchTimer = null;
+    const scReplyCount = () => loadSupportMessages().filter(m => m.source === supportChatSource && m.from === 'support').length;
+    function scStopWatch() { if (scWatchTimer) { clearInterval(scWatchTimer); scWatchTimer = null; } }
+    function scCheckNew() {
+      const el = document.getElementById('support-chat');
+      if (!el || !el.classList.contains('sc-min')) return;
+      const b = el.querySelector('.sc-bubble');
+      if (b) b.classList.toggle('has-new', scReplyCount() > scSeenReplies);
+    }
+    function minimizeSupportChat() {
+      const el = document.getElementById('support-chat');
+      if (!el) return;
+      const inp = document.getElementById('sc-input'); if (inp) inp.blur();
+      scSeenReplies = scReplyCount();
+      el.classList.add('sc-min'); scLockPage(false);
+      scStopWatch(); scWatchTimer = setInterval(scCheckNew, 3000);
+      scCheckNew();
+    }
+    function restoreSupportChat() {
+      const el = document.getElementById('support-chat');
+      if (!el) return;
+      el.classList.remove('sc-min');
+      const b = el.querySelector('.sc-bubble'); if (b) b.classList.remove('has-new');
+      scStopWatch(); scLockPage(true); scSyncViewport(); renderSupportChatList();
+    }
+    window.addEventListener('storage', e => { if (e.key === SUPPORT_KEY) { scCheckNew(); const el = document.getElementById('support-chat'); if (el && !el.classList.contains('sc-min')) renderSupportChatList(); } });
     // v13.2: keep the chat window inside the visible viewport, just above the on-screen keyboard (iOS Safari)
     function scSyncViewport() {
       const el = document.getElementById('support-chat');
@@ -1738,7 +1849,7 @@
           if (payMode === 'micc') {
             const miccNeeded = Math.ceil(offer.opt.priceSar / (MICC_SAR_VALUE * 2));
             if (state.user.walletMicc < miccNeeded) { showToast(t('رصيد ميك غير كافٍ', 'Insufficient MiCC')); return; }
-            state.user.walletMicc -= miccNeeded; state.user.walletProgressMicc += miccNeeded; state.user.usedOrTransferred = true;
+            state.user.walletMicc -= miccNeeded; state.user.walletProgressMicc += miccNeeded; markMiccUsed();
             state.walletLogs.unshift({ ar: `حجز ${offer.track.titleAr}`, en: `Booked ${offer.track.titleEn}`, amount: `-${miccNeeded} MiCC` });
           }
           showToast(payMode === 'micc' ? t('تم تأكيد الموعد بنجاح', 'Appointment confirmed') : t(`تم تأكيد الموعد — جارٍ تحويلك إلى ${payProviderName(payMode)} لإتمام الدفع`, `Appointment confirmed — redirecting you to ${payProviderName(payMode)} to pay`));
@@ -1778,6 +1889,9 @@
       if (PAGE === 'main' && !state.loggedIn && !PUBLIC_VIEWS.has(state.view)) state.view = 'home';
       const y = window.scrollY; render(); if (window.scrollY !== y) window.scrollTo(0, y);
     });
+    window.addEventListener('pageshow', resyncShared);
+    window.addEventListener('focus', resyncShared);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) resyncShared(); });
     try { const f = sessionStorage.getItem(FLASH_KEY); if (f) { sessionStorage.removeItem(FLASH_KEY); setTimeout(() => showToast(f), 60); } } catch (e) {}
 
     render();
