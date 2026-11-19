@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="ami-version" content="v13.12" />
-  <title>الخزنة</title>
+  <title>خزنة ميك</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
@@ -349,7 +349,7 @@
         <button id="brand-btn" class="flex items-center gap-2 text-start focus:outline-none">
           <div id="brand-mark" class="hidden"></div>
           <div>
-            <div id="brand-title" class="font-bold text-sm leading-tight">الخزنة</div>
+            <div id="brand-title" class="font-bold text-sm leading-tight">خزنة ميك</div>
             <div id="brand-sub" class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight hidden sm:block"></div>
           </div>
         </button>
@@ -383,7 +383,7 @@
     <aside class="w-72 max-w-[82vw] h-full bg-white dark:bg-slate-950 border-e border-brand-border dark:border-slate-800 p-4 flex flex-col justify-between shadow-xl">
       <div>
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-brand-border dark:border-slate-800">
-          <span id="drawer-brand" class="font-bold text-sm">الخزنة</span>
+          <span id="drawer-brand" class="font-bold text-sm">خزنة ميك</span>
           <button id="side-menu-close" class="w-7 h-7 rounded-lg border border-brand-border dark:border-slate-700 text-xs font-bold">✕</button>
         </div>
 
@@ -561,6 +561,9 @@
     function flashNext(msg) { try { sessionStorage.setItem(FLASH_KEY, msg); } catch (e) {} }
     loadShared();
     if (PAGE === 'safe') state.view = 'safe';
+    // v13.19: paid total seeded exactly as in index.html (lines 484-485) when missing
+    if (!Array.isArray(state.user.purchases)) state.user.purchases = [{ id: 'pu-initial', ts: Date.now() - (state.user.daysSincePurchase || 0) * 86400000, micc: Math.round((state.user.annualPurchasedSar || 0) / MICC_SAR_VALUE), sar: state.user.annualPurchasedSar || 0, method: 'card', used: false, refunded: false }];
+    if (typeof state.user.miccPurchasedTotal !== 'number') state.user.miccPurchasedTotal = state.user.purchases.filter(p => !p.refunded).reduce((a, p) => a + p.micc, 0);
     const TIERS = [
       { id: 'classic',  min: 0,    max: 199,  cls: 'tier-classic',  ar: 'أساسي',  en: 'Basic',  spendSar: 1000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
       { id: 'silver', min: 200,  max: 599,  cls: 'tier-silver', ar: 'فضي',   en: 'Silver', spendSar: 3000,  cycleAr: 'فوري وتلقائي في Safe', cycleEn: 'Instant & Automatic in Safe' },
@@ -593,25 +596,30 @@
     const MEMBERSHIP_RENEW_SAR = 360;
     const DAY_MS = 86400000;
     const capSar = tr => tr.spendSar; // Monthly Spending Limit (SAR)
-    const SAFE_ACTIVE_ASSETS = new Set(['btc']); // Safe trades Bitcoin only
+    const SAFE_ACTIVE_ASSETS = new Set(['btc']); // MiCC Safe trades Bitcoin only
     const BTC_COIN = 'data:image/webp;base64,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';
     const btcCoinImg = (cls) => `<img src="${BTC_COIN}" alt="Bitcoin" class="btc-coin ${cls || ''}" />`;
     // Total Safe portfolio (SAR) and net paid-in capital
     const safeTotalSar = () => state.safe.micc * MICC_SAR_VALUE + state.safe.holdings.btc.qty * state.safe.prices.btcUsd * SAR_PER_USD;
-    // v13.12: protected capital = original deposits into Safe (from the wallet) minus MiCC transferred back to the wallet.
-    // Profits re-used for buying are not protected. Stored in ami.shared.v1 → safe.protectedCapitalSar (merged per key).
+    // v13.19: protection = SAR deposited into Safe − full SAR value of every transfer from Safe back to the wallet (never below 0).
+    // The paid-from-own-pocket cap (user.miccPurchasedTotal × 5) is applied only at sale time (safeProtectionBase), never stored.
+    // Stored in ami.shared.v1 → safe.protectDepositsSar / safe.protectOutSar / safe.protectedCapitalSar (= deposits − out).
     function syncProtectedCapital() {
       const s = state.safe, dep = state.user.transferredToSafeSar || 0;
-      if (typeof s.protectedCapitalSar !== 'number') { s.protectedCapitalSar = s.capitalSar || 0; s.protectedDepositSeenSar = dep; }
-      if (typeof s.protectedDepositSeenSar !== 'number') s.protectedDepositSeenSar = dep;
-      if (dep > s.protectedDepositSeenSar) { s.protectedCapitalSar += dep - s.protectedDepositSeenSar; s.protectedDepositSeenSar = dep; }
-      // Protection cap per customer = total SAR actually paid from their own pocket for MiCC (card / Tamara / Emkan),
-      // read from the shared user record written by the wallet page (miccPurchasedTotal, the same paid total used by the 60% limit).
-      const paidSar = Math.max(0, (Number(state.user.miccPurchasedTotal) || 0) * MICC_SAR_VALUE);
-      state.user.protectionCapSar = paidSar; // stored in ami.shared.v1 → user.protectionCapSar
-      if (s.protectedCapitalSar > paidSar) s.protectedCapitalSar = paidSar;
+      if (s.protectV !== 2) { // one-time rebuild (repairs states cut to 0 by v13.18): seed capital + all wallet deposits − all logged returns
+        const seed = JSON.parse(SAFE_INITIAL).capitalSar || 0;
+        const outMicc = (s.logs || []).filter(l => l && l.en === 'To MiCC Wallet').reduce((a, l) => a + Math.abs(parseFloat(String(l.amount).replace(/[^0-9.\-]/g, '')) || 0), 0);
+        s.protectDepositsSar = seed + dep; s.protectDepositSeenSar = dep; s.protectOutSar = outMicc * MICC_SAR_VALUE; s.protectV = 2;
+      }
+      if (typeof s.protectDepositSeenSar !== 'number') s.protectDepositSeenSar = dep;
+      if (dep > s.protectDepositSeenSar) { s.protectDepositsSar += dep - s.protectDepositSeenSar; s.protectDepositSeenSar = dep; }
+      s.protectedCapitalSar = Math.max(0, (s.protectDepositsSar || 0) - (s.protectOutSar || 0));
       return s.protectedCapitalSar;
     }
+    // SAR the customer paid from own pocket for MiCC (card / Tamara / Emkan), from the shared user record
+    const safePaidSar = () => Math.max(0, (Number(state.user.miccPurchasedTotal) || 0) * MICC_SAR_VALUE);
+    // protection base at sale time = min(protected, paid − taken out), never below 0
+    const safeProtectionBase = () => Math.max(0, Math.min(syncProtectedCapital(), safePaidSar() - (state.safe.protectOutSar || 0)));
     const safeCapitalOut = (outSar) => { const tot = safeTotalSar(); const c = state.safe.capitalSar || 0; state.safe.capitalSar = tot > 0 ? Math.max(0, c * (1 - Math.min(1, outSar / tot))) : 0; };
     const plHtml = (valSar, costSar, cls) => { if (!(costSar > 0)) return `<span class="text-slate-400">—</span>`; const d = valSar - costSar, pct = (d / costSar) * 100, up = d >= 0; const sg = up ? '+' : '−'; return `<span class="${up ? 'pl-up' : 'pl-down'} ${cls || ''} tabular-nums whitespace-nowrap">${up ? '▲' : '▼'} <bdi dir="ltr">${sg}${fmt(Math.abs(d), 2)}</bdi> ${t('ريال', 'SAR')} (<bdi dir="ltr">${sg}${fmt(Math.abs(pct), 2)}%</bdi>)</span>`; };
     const MICC_COIN_SM = 'data:image/webp;base64,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';
@@ -742,7 +750,7 @@
       if (isSafe) {
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
-        brandTitle.textContent = t('الخزنة', 'Safe');
+        brandTitle.textContent = t('خزنة ميك', 'MiCC Safe');
         brandSub.textContent = '';
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
@@ -751,7 +759,7 @@
       } else {
         brandMark.textContent = '';
         brandMark.className = 'hidden';
-        brandTitle.textContent = t('الخزنة', 'Safe');
+        brandTitle.textContent = t('خزنة ميك', 'MiCC Safe');
         brandSub.textContent = t('الخدمات المهنية · الرعاية التعاطفية والحركية · المتجر', 'Professional Services · Empathic Kinetic Care · Store');
         mainNav.classList.add('md:flex');
         sideMenuBtn.classList.remove('hidden');
@@ -779,7 +787,7 @@
         btn.classList.toggle('dark:text-emerald-400', active);
       });
 
-      document.getElementById('drawer-brand').textContent = t('الخزنة', 'Safe');
+      document.getElementById('drawer-brand').textContent = t('خزنة ميك', 'MiCC Safe');
       document.getElementById('drawer-services-label').textContent = t('الخدمات', 'Services');
       document.getElementById('drawer-footer-note').textContent = t('الشركة', 'The Company');
 
@@ -803,14 +811,14 @@
       const ft = document.getElementById('app-footer');
       if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); ft.style.marginTop = (state.view === 'home' || state.view === 'store') ? '0' : ''; }
       if (isSafe) {
-        name.textContent = t('الخزنة', 'Safe');
-        links.innerHTML = `<button ${lk} onclick="setView('safeprivacy')">${t('الخصوصية', 'Privacy')}</button><button ${lk} onclick="openSafeTerms()">${t('الشروط', 'Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
-        copy.innerHTML = `<bdi>${t('© الخزنة 2026', '© Safe 2026')}</bdi>`;
-        document.title = t('الخزنة', 'Safe');
+        name.textContent = t('خزنة ميك', 'MiCC Safe');
+        links.innerHTML = `<button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact us')}</button>`;
+        copy.innerHTML = `<bdi>${t('© خزنة ميك 2026', '© MiCC Safe 2026')}</bdi>`;
+        document.title = t('خزنة ميك', 'MiCC Safe');
       } else {
         name.textContent = '';
         links.innerHTML = `<button ${lk} onclick="setView('aboutus')">${t('الرسالة', 'Mission')}</button><button ${lk} onclick="setView('privacy')">${t('سياسة الخصوصية', 'Privacy Policy')}</button><button ${lk} onclick="openSupportChat('ami')">${t('تواصل معنا', 'Contact')}</button>`;
-        copy.innerHTML = `<bdi>${t('© الخزنة 2026', '© Safe 2026')}</bdi>`;
+        copy.innerHTML = `<bdi>${t('© خزنة ميك 2026', '© MiCC Safe 2026')}</bdi>`;
         document.title = 'AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة';
       }
       name.classList.toggle('hidden', !name.textContent);
@@ -849,31 +857,31 @@
     function renderSafePrivacy() {
       const secs = [
         ['البيانات التي نجمعها', 'Data we collect', 'بيانات الحساب (الاسم ورقم الجوال والبريد الإلكتروني)، وعناوين المحافظ وسجل العمليات، والبيانات التقنية اللازمة لأمان الدخول.', 'Account details (name, phone number, email), wallet addresses and transaction history, and the technical data needed to keep sign-in secure.'],
-        ['كيف نستخدمها', 'How we use it', 'لتشغيل الخزنة وتنفيذ عملياتك وحماية حسابك والالتزام بالأنظمة المعمول بها.', 'To run Safe, process your transactions, protect your account, and comply with applicable regulations.'],
+        ['كيف نستخدمها', 'How we use it', 'لتشغيل خزنة ميك وتنفيذ عملياتك وحماية حسابك والالتزام بالأنظمة المعمول بها.', 'To run MiCC Safe, process your transactions, protect your account, and comply with applicable regulations.'],
         ['المشاركة', 'Sharing', 'لا نبيع بياناتك. لا نشاركها إلا مع مزوّدي الخدمة اللازمين للتشغيل، أو مع الجهات المختصة عند وجود إلزام نظامي.', 'We do not sell your data. We share it only with service providers needed to operate the service, or with competent authorities when legally required.'],
         ['الحماية والاحتفاظ', 'Protection & retention', 'نحمي بياناتك بالتشفير وضوابط الوصول، ونحتفظ بسجلات العمليات المدة التي يتطلبها النظام فقط.', 'We protect your data with encryption and access controls, and keep transaction records only as long as the law requires.'],
-        ['حقوقك', 'Your rights', 'يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها. للاستفسار تواصل مع دعم الخزنة.', 'You may access, correct, or request deletion of your data. For any question, contact Safe Support.'],
+        ['حقوقك', 'Your rights', 'يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها. للاستفسار تواصل مع دعم خزنة ميك.', 'You may access, correct, or request deletion of your data. For any question, contact MiCC Safe Support.'],
       ];
       return `
         <div class="max-w-3xl mx-auto rounded-2xl border border-brand-border dark:border-slate-800 p-5 sm:p-8 bg-white dark:bg-slate-900">
-          <h1 class="text-xl font-bold mb-1 text-brand-navy dark:text-sky-300">${t('خصوصية الخزنة', 'Safe Privacy')}</h1>
+          <h1 class="text-xl font-bold mb-1 text-brand-navy dark:text-sky-300">${t('خصوصية خزنة ميك', 'MiCC Safe Privacy')}</h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">${t('سارية اعتبارًا من 18 نوفمبر 2026', 'Effective as of 18 November 2026')}</p>
           <div class="border-t border-brand-border dark:border-slate-800 pt-4 space-y-4">
             ${secs.map(x => `<section class="sp-sec"><h3>${t(x[0], x[1])}</h3><p>${t(x[2], x[3])}</p></section>`).join('')}
           </div>
           <div id="safe-delete" class="mt-6 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/30 p-4">
             <h3 class="font-bold text-sm mb-1 text-red-700 dark:text-red-400">${t('حذف الحساب', 'Delete Account')}</h3>
-            <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mb-3">${t('يحذف بيانات حسابك في الخزنة وتُجهَّل سجلات العمليات المرتبطة به، مع الاحتفاظ بما يلزم نظامًا.', 'Deletes your Safe account data and anonymizes related transaction records, keeping only what the law requires.')}</p>
+            <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mb-3">${t('يحذف بيانات حسابك في خزنة ميك وتُجهَّل سجلات العمليات المرتبطة به، مع الاحتفاظ بما يلزم نظامًا.', 'Deletes your MiCC Safe account data and anonymizes related transaction records, keeping only what the law requires.')}</p>
             ${state.loggedIn ? `<button id="safe-delete-btn" onclick="openSafeDeleteModal()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold">${t('حذف حسابي', 'Delete My Account')}</button>` : ''}
           </div>
-          <button onclick="setView('safe')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('← العودة إلى الخزنة', '← Back to Safe')}</button>
+          <button onclick="setView('safe')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('← العودة إلى خزنة ميك', '← Back to MiCC Safe')}</button>
         </div>
       `;
     }
 
     function openSafeDeleteModal() {
-      openModal(t('حذف حساب الخزنة', 'Delete Safe Account'), `
-        <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">${t('سيتم حذف بيانات حسابك في الخزنة وتجهيل سجل عملياتك، وسيتم تسجيل خروجك.', 'Your Safe account data will be deleted, your transaction history anonymized, and you will be signed out.')}</p>
+      openModal(t('حذف حساب خزنة ميك', 'Delete MiCC Safe Account'), `
+        <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">${t('سيتم حذف بيانات حسابك في خزنة ميك وتجهيل سجل عملياتك، وسيتم تسجيل خروجك.', 'Your MiCC Safe account data will be deleted, your transaction history anonymized, and you will be signed out.')}</p>
         <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى سحب أي رصيد قبل المتابعة. لا يمكن التراجع عن هذا الإجراء.', 'Please withdraw any balance first. This action cannot be undone.')}</p>
         <div class="flex gap-2">
           <button id="sdel-cancel" type="button" class="flex-1 py-2.5 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('إلغاء', 'Cancel')}</button>
@@ -890,7 +898,7 @@
         state.loggedIn = false; state.view = 'safe';
         render();
         window.scrollTo({ top: 0 });
-        showToast(t('تم استلام طلب حذف حساب الخزنة', 'Safe account deletion request received'));
+        showToast(t('تم استلام طلب حذف حساب خزنة ميك', 'MiCC Safe account deletion request received'));
       });
     }
 
@@ -975,7 +983,7 @@
     function openRenewModal(source) {
       const fee = MEMBERSHIP_RENEW_SAR;
       const body = source === 'micc'
-        ? t(`يُخصم ${fmt(fee, 2)} ريال (${fmt(fee / MICC_SAR_VALUE, 2)} ميك) من رصيد ميك في الخزنة، وتُمدَّد العضوية سنة كاملة.`, `${fmt(fee, 2)} SAR (${fmt(fee / MICC_SAR_VALUE, 2)} MiCC) will be deducted from your Safe balance and the membership extended by one year.`)
+        ? t(`يُخصم ${fmt(fee, 2)} ريال (${fmt(fee / MICC_SAR_VALUE, 2)} ميك) من رصيد ميك في خزنة ميك، وتُمدَّد العضوية سنة كاملة.`, `${fmt(fee, 2)} SAR (${fmt(fee / MICC_SAR_VALUE, 2)} MiCC) will be deducted from your MiCC Safe balance and the membership extended by one year.`)
         : t(`يُباع من رصيد Bitcoin ما قيمته ${fmt(fee, 2)} ريال لسداد التجديد، دون رسوم، ولا يُحتسب ربحًا، ويُخفَّض رأس المال بالنسبة نفسها. تُمدَّد العضوية سنة كاملة.`, `Bitcoin worth ${fmt(fee, 2)} SAR will be sold to pay the renewal, with no fee; it is not counted as profit and capital is reduced proportionally. The membership is extended by one year.`);
       openModal(t('تجديد عضوية برنامج الرفاقة (360 ريال)', 'Renew Companions Membership (360 SAR)'), `
         <p class="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">${body}</p>
@@ -1003,7 +1011,7 @@
     }
     function renderSafeMembershipPage() {
       return `<div class="max-w-3xl mx-auto">
-        <button id="mem-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى الخزنة', '← Back to Safe')}</button>
+        <button id="mem-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى خزنة ميك', '← Back to MiCC Safe')}</button>
         ${renderMembershipPanel()}
       </div>`;
     }
@@ -1048,7 +1056,7 @@
       const fee = profit > 0 ? profit * SAFE_FEE_RATE : 0;
       let payout = saleSar - fee, comp = 0;
       if (full && profit < 0 && costPart > 0) {
-        const base = Math.min(costPart, syncProtectedCapital()); // v13.12: original deposited capital only
+        const base = Math.min(costPart, safeProtectionBase()); // v13.19: paid-from-own-pocket amount minus SAR taken out
         if (base > 0 && saleSar < base) {
           const lossPct = (base - saleSar) / base;
           const target = lossPct <= SAFE_PROTECT_RATE ? base : saleSar + SAFE_PROTECT_RATE * base;
@@ -1069,18 +1077,18 @@
     // v13.12: the Safe terms block, shared by the dashboard and the stand-alone terms view (open without signing in)
     const safeTermsHtml = () => `
           <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية للخزنة', 'Safe Withdrawal & Privacy Terms')}</h3>
+            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية لخزنة ميك', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
             <ul class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
               <li>${t('رسوم الأداء: 20% من صافي الربح عند البيع، محسوبة مقابل متوسط التكلفة. لا رسوم عند الخسارة، ولا تمسّ الرسوم رأس المال.', 'Performance fee: 20% of net profit on a sale, measured against the average cost. No fee on a loss, and the fee never touches capital.')}</li>
               <li id="safe-protect-note">${t('حماية 30% عند الخروج الكامل فقط: إذا كانت الخسارة 30% أو أقل يُسترد رأس المال كاملًا، وإذا تجاوزت 30% تُصرف القيمة الحالية مضافًا إليها 30% من رأس المال. لا تعويض في البيع الجزئي.', '30% protection on a full exit only: a loss of 30% or less returns the full capital; above 30% you receive the current value plus 30% of capital. No compensation on a partial sale.')}</li>
-              <li id="safe-protect-capital-note">${t('تُحتسب الحماية على رأس المال الأصلي المُودَع فقط، ولا تشمل الأرباح المُعاد استخدامها في الشراء؛ لأن الأرباح مكسب تحقق لك بالفعل، والحماية وُجدت لصون ما أودعته، لا لضمان ما ربحته.', 'Protection is calculated on the original deposited capital only and does not cover profits used again for buying, because profits are a gain you have already realized; protection exists to safeguard what you deposited, not to guarantee what you earned.')}<br>${t('مثال: أودعتَ 1,000 ريال، وبعتَ بربح حتى صار رصيدك 1,400 ريال، ثم أعدتَ الشراء بكامل الرصيد؛ تبقى الحماية على 1,000 ريال الأصلية فقط.', 'Example: you deposited 1,000 SAR, sold at a profit until your balance reached 1,400 SAR, then bought again with the full balance; protection remains on the original 1,000 SAR only.')}</li>
+              <li id="safe-protect-capital-note">${t('تُحتسب الحماية على المبلغ الذي دفعته من مالك الخاص فقط، مطروحًا منه كامل قيمة ما تسحبه من خزنة ميك بالريال، ولا تقل عن صفر، ولا تشمل الأرباح.', 'Protection is calculated only on the amount you paid from your own pocket, minus the full SAR value of everything you take out of MiCC Safe; it never falls below zero and does not cover profits.')}<br>${t('مثال: دفعتَ 1,000 ريال، ثم صار رصيدك 1,300 ريال، فسحبتَ 300 ريال؛ تصبح الحماية 700 ريال.', 'Example: you paid 1,000 SAR, your balance then became 1,300 SAR, and you took out 300 SAR; protection becomes 700 SAR.')}</li>
               <li id="safe-buy-lock-note">${t('بعد الخروج الكامل بخسارة يُغلق شراء Bitcoin مؤقتًا، ويُفتح تلقائيًا عندما يبلغ سعر Bitcoin متوسط شرائك السابق أو يتجاوزه.', 'After a full exit at a loss, buying Bitcoin is temporarily locked; it reopens automatically once the Bitcoin price reaches or exceeds your previous average buy price.')}</li>
               <li>${t('يتطلب الشراء عضوية سارية في برنامج الرفاقة. عند انتهاء العضوية يُوقَف الشراء فقط، ويبقى بيع Bitcoin وتحويل ميك إلى محفظة ميك متاحَين دون خصم أي اشتراك متأخر، وتُطبَّق رسوم 20% من صافي الربح على البيع الرابح كالمعتاد. التجديد مطلوب للشراء مجددًا فقط.', 'Buying requires an active Companions Program membership. When the membership expires, only buying is paused; selling Bitcoin and transferring MiCC to the MiCC Wallet remain available with no deduction of any overdue subscription, and the 20% net-profit fee applies to profitable sales as usual. Renewal is needed only to buy again.')}</li>
             </ul>
-            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني للخزنة', 'Contact Safe Support')}</button>
+            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لخزنة ميك', 'Contact MiCC Safe Support')}</button>
           </div>
 `;
-    function renderSafeTermsPage() { return `<div class="max-w-3xl mx-auto">${state.loggedIn && memEver() ? `<button id="terms-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى الخزنة', '← Back to Safe')}</button>` : ''}${safeTermsHtml()}</div>`; }
+    function renderSafeTermsPage() { return `<div class="max-w-3xl mx-auto"><button id="terms-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى خزنة ميك', '← Back to MiCC Safe')}</button>${safeTermsHtml()}</div>`; }
     function renderSafe() {
       syncProtectedCapital();
       const s = state.safe, p = s.prices, h = s.holdings.btc;
@@ -1095,11 +1103,13 @@
         ${renderMembershipBanner()}
 
         <div class="rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('الخزنة', 'Safe')}</div>
+          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('خزنة ميك', 'MiCC Safe')}</div>
           <button type="button" id="safe-protect-badge" onclick="openSafeTerms('safe-protect-note')" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية 30% من الخسارة عند الخروج الكامل', '30% loss protection on full exit')}</button>
         </div>
 
         ${frozen ? `<div id="safe-frozen" class="rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 p-4 mb-3 text-sm leading-relaxed font-semibold text-brand-crimson dark:text-rose-300">${FROZEN_MSG()}</div>` : ''}
+
+        ${renderSafeDashboard()}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div class="safe-hero rounded-2xl p-3.5">
@@ -1139,13 +1149,11 @@
 
         <div class="grid grid-cols-1 gap-3 mb-4">
           <div id="safe-log" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('سجل عمليات الخزنة', 'Safe Log')}</h3>
+            <h3 class="font-bold text-sm mb-2">${t('سجل عمليات خزنة ميك', 'MiCC Safe Log')}</h3>
             ${safeLogs().length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${safeLogs().map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between gap-2"><span>${arU(btcWord(t(l.ar, l.en)))}</span><span class="tabular-nums font-semibold text-end">${safeLogAmt(l.amount)}</span></div>`).join('')}</div>`}
           </div>
         </div>
-        <div class="text-center mb-4"><button id="safe-terms-link" type="button" onclick="openSafeTerms()" class="text-xs font-semibold text-brand-navy dark:text-sky-400 underline underline-offset-4">${t('الشروط والحماية', 'Terms & Protection')}</button></div>
-
-        ${renderSafeDashboard()}
+        ${safeLegalLinksHtml()}
 
       `;
     }
@@ -1298,7 +1306,7 @@
         const micc = Number(document.getElementById('ret-micc').value) || 0;
         if (micc <= 0 || micc > state.safe.micc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         safeCapitalOut(micc * MICC_SAR_VALUE);
-        syncProtectedCapital(); { const remBook = (state.safe.micc - micc) * MICC_SAR_VALUE + (state.safe.holdings.btc.costSar || 0); state.safe.protectedCapitalSar = Math.max(0, Math.min(state.safe.protectedCapitalSar, remBook)); } // profits withdrawn first; protected capital only drops when the remaining book value falls below it
+        syncProtectedCapital(); state.safe.protectOutSar = (state.safe.protectOutSar || 0) + micc * MICC_SAR_VALUE; syncProtectedCapital(); // v13.19: each return reduces protection by its full SAR value
         state.safe.micc -= micc; state.user.walletMicc += micc;
         state.safe.logs.unshift({ ar: 'تحويل إلى محفظة ميك', en: 'To MiCC Wallet', amount: `-${micc} MiCC` });
         state.walletLogs.unshift({ ar: 'استلام رصيد', en: 'Balance received', amount: `+${micc} MiCC` });
@@ -1358,7 +1366,7 @@
         });
       } else {
         const valueSar = h.qty * unitPriceSar;
-        openModal(t('بيع من MiCC Stock', 'Sell from MiCC Stock'), `
+        openModal(t('بيع Bitcoin', 'Sell Bitcoin'), `
           <p class="text-xs text-slate-500 mb-2">${t(`قيمة رصيدك من Bitcoin: ${fmt(valueSar, 2)} ريال (<bdi dir="ltr">${fmt(h.qty, 6)} Bitcoin</bdi>)`, `Your Bitcoin value: ${fmt(valueSar, 2)} SAR (${fmt(h.qty, 6)} Bitcoin)`)}</p>
           ${stkFld('sell-btc', t('بيتكوين', 'Bitcoin'))}${stkFld('sell-sar', t('ريال سعودي', 'Saudi Riyal (SAR)'), `<button id="sell-all" type="button" class="px-3 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold whitespace-nowrap">${t('بيع الكل', 'Sell all')}</button>`)}${stkFld('sell-usd', t('دولار أمريكي', 'US Dollar (USD)'))}${stkFld('sell-micc', t('ميك', 'MiCC'))}
           <div id="sell-quote" class="text-xs space-y-1.5 my-2.5"></div>
@@ -1450,7 +1458,7 @@
     // supportMessages (localStorage) stays as the flat feed for the future admin dashboard.
     let supportActiveThreadId = null; // null = latest open thread of the source, '__new__' = start a new one
     let supportViewThreadId = null;   // thread shown on the «محادثاتي مع الدعم» page
-    const supThreads = () => Object.values(state.supportThreads || {}).filter(x => x.source === 'safe'); // Safe shows Safe conversations only
+    const supThreads = () => Object.values(state.supportThreads || {}).filter(x => x.source === 'safe'); // MiCC Safe shows MiCC Safe conversations only
     const supLatestOpen = src => supThreads().filter(x => x.source === src && x.status === 'open').sort((a, b) => b.updatedAt - a.updatedAt)[0] || null;
     function supEnsureThreads() {
       if (state.supportThreads && typeof state.supportThreads === 'object') return;
@@ -1502,7 +1510,7 @@
       if (!state.loggedIn) return card(`<p id="sh-guest" class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى تسجيل الدخول لعرض محادثاتك مع الدعم.', 'Please sign in to view your support chats.')}</p>
         <button onclick="toggleAuth()" class="px-4 py-2 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('تسجيل الدخول', 'Sign In')}</button>`);
       supEnsureThreads();
-      const srcLabel = () => t('الخزنة', 'Safe');
+      const srcLabel = () => t('خزنة ميك', 'MiCC Safe');
       const srcCls = s => s === 'safe' ? 'bg-slate-100 text-brand-navy dark:bg-slate-800 dark:text-sky-300' : 'bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300';
       const when = ms => new Date(ms).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       const autoTxt = () => t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.');
@@ -1537,7 +1545,7 @@
       const src = supportChatSource;
       const msgs = supChatMessages();
       const welcome = src === 'safe'
-        ? t('أهلًا بك في دعم الخزنة. اكتب استفسارك وسنردّ عليك.', 'Welcome to Safe Support. Type your question and we will get back to you.')
+        ? t('أهلًا بك في دعم خزنة ميك. اكتب استفسارك وسنردّ عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
         : t('أهلًا بك في الدعم. اكتب استفسارك وسنردّ عليك.', 'Welcome to Support. Type your question and we will get back to you.');
       const tm = iso => { try { return new Date(iso).toLocaleTimeString(state.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
       box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
@@ -1556,7 +1564,7 @@
       wrap.innerHTML = `<div class="sc-panel">
         <div class="sc-head">
           <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
-          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم الخزنة', 'Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('سنردّ عليك في أقرب وقت ممكن', 'We reply as soon as possible')}</div></div>
+          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم خزنة ميك', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('سنردّ عليك في أقرب وقت ممكن', 'We reply as soon as possible')}</div></div>
           <button type="button" class="sc-x sc-mbtn" onclick="minimizeSupportChat()" aria-label="${t('تصغير', 'Minimize')}">—</button>
           <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
         </div>
@@ -1637,19 +1645,21 @@
       ['وضوح وبساطة', 'Clarity & Simplicity', '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'],
       ['دعم مخصص', 'Dedicated Support', '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/>'],
     ];
+    const safeLegalLinksHtml = () => `<div id="safe-legal-links" class="flex items-center justify-center gap-6 mt-2 mb-4"><button id="safe-terms-link" type="button" onclick="openSafeTerms()" class="text-xs font-semibold text-brand-navy dark:text-sky-400 underline underline-offset-4">${t('الشروط والحماية', 'Terms & Protection')}</button><button id="safe-privacy-link" type="button" onclick="setView('safeprivacy')" class="text-xs font-semibold text-brand-navy dark:text-sky-400 underline underline-offset-4">${t('الخصوصية', 'Privacy')}</button></div>`;
     function renderSafeSignedOut() {
       return `<div class="sw-page">
         <div class="safe-welcome max-w-md mx-auto mt-4 rounded-2xl p-5 text-center">
-          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">${t('الخزنة', 'Safe')}</h1>
+          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">${t('خزنة ميك', 'MiCC Safe')}</h1>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
           <ul class="sw-list">${SAFE_FEATS.map(x => `<li class="sw-row"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[2]}</svg></span><span>${t(x[0], x[1])}</span></li>`).join('')}</ul>
         </div>
+        ${safeLegalLinksHtml()}
         <div class="sw-chest-wrap">${safeChestHtml()}</div></div>
       `;
     }
 
     // v13.3: Safe is for برنامج الرفاقة members only (state.user.membershipActive, shared via ami.shared.v1)
-    const safeChestHtml = () => ''; // v13.17: chest image removed from the Safe UI
+    const safeChestHtml = () => ''; // v13.17: chest image removed from the MiCC Safe UI
     function renderSafeMembersOnly() {
       return `
         <div class="max-w-md mx-auto mt-6 rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-white dark:bg-slate-900 p-6 text-center">
@@ -1662,7 +1672,7 @@
 
     function render() {
       processAutoRenew(); // v13.5: before saving, so a renewal is persisted
-      syncProtectedCapital(); // v13.12: pick up new wallet → Safe deposits before saving
+      syncProtectedCapital(); // v13.12: pick up new wallet → MiCC Safe deposits before saving
       saveShared();
       renderHeader();
       renderFooter();
