@@ -1796,7 +1796,8 @@
       const btn = (id, label, cls) => `<button id="${id}" class="w-full py-2.5 rounded-xl ${cls || 'bg-brand-emerald hover:bg-brand-emeraldHover text-white'} text-xs font-semibold">${label}</button>`;
       const instOk = () => co.units >= INSTALLMENT_MIN_MICC;
       const validMsg = () => {
-        if (!Number.isFinite(co.units) || Math.floor(co.units) !== co.units || co.units < MIN_PURCHASE_MICC) return t(`أقل كمية للشراء ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase is ${MIN_PURCHASE_MICC} MiCC`);
+        if (Number.isFinite(co.units) && co.units >= MIN_PURCHASE_MICC && Math.floor(co.units) !== co.units) return t(`يجب أن يكون المبلغ وحدات ميك كاملة (مضاعفات ${MICC_SAR_VALUE} ريال)`, `The amount must be whole MiCC units (multiples of ${MICC_SAR_VALUE} SAR)`);
+        if (!Number.isFinite(co.units) || Math.floor(co.units) !== co.units || co.units < MIN_PURCHASE_MICC) return t(`أقل كمية للشراء ${MIN_PURCHASE_MICC} ميك (${fmt(MIN_PURCHASE_MICC * MICC_SAR_VALUE)} ريال)`, `Minimum purchase is ${MIN_PURCHASE_MICC} MiCC (${fmt(MIN_PURCHASE_MICC * MICC_SAR_VALUE)} SAR)`);
         if (co.units * MICC_SAR_VALUE > remSar) return t('يتجاوز حد الشراء السنوي', 'Exceeds annual purchase limit');
         return '';
       };
@@ -1835,11 +1836,23 @@
           body.innerHTML = `
             <p class="text-xs text-slate-500 mb-1">${t(`سعر الوحدة ${MICC_SAR_VALUE} ريال · المتبقي من حد الشراء السنوي: ${fmt(remSar)} ريال`, `${MICC_SAR_VALUE} SAR per unit · Annual limit remaining: ${fmt(remSar)} SAR`)}</p>
             <p class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3">${t(`أقل كمية للشراء: ${MIN_PURCHASE_MICC} ميك`, `Minimum purchase: ${MIN_PURCHASE_MICC} MiCC`)}</p>
-            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك', 'MiCC units')}</label>
-            <input id="buy-micc-amt" type="number" inputmode="numeric" min="${MIN_PURCHASE_MICC}" step="1" max="${maxUnits}" value="${co.units}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <label for="buy-sar-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('المبلغ بالريال', 'Amount (SAR)')}</label>
+                <input id="buy-sar-amt" type="number" inputmode="decimal" min="${MIN_PURCHASE_MICC * MICC_SAR_VALUE}" step="${MICC_SAR_VALUE}" max="${maxUnits * MICC_SAR_VALUE}" value="${Math.round(co.units * MICC_SAR_VALUE * 100) / 100}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+              </div>
+              <div>
+                <label for="buy-micc-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك', 'MiCC units')}</label>
+                <input id="buy-micc-amt" type="number" inputmode="decimal" min="${MIN_PURCHASE_MICC}" step="1" max="${maxUnits}" value="${co.units}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+              </div>
+            </div>
             <div id="buy-dyn"></div>`;
+          // linked inputs — SAR ↔ MiCC (1 MiCC = MICC_SAR_VALUE SAR), same as the transfer-to-Safe window
           const inp = document.getElementById('buy-micc-amt');
-          inp.addEventListener('input', () => { const v = parseFloat(inp.value); co.units = isNaN(v) ? 0 : v; drawDyn(); });
+          const sarInp = document.getElementById('buy-sar-amt');
+          const r2 = n => Math.round(n * 100) / 100;
+          inp.addEventListener('input', () => { const v = parseFloat(inp.value); co.units = isNaN(v) ? 0 : v; sarInp.value = inp.value === '' ? '' : String(r2(co.units * MICC_SAR_VALUE)); drawDyn(); });
+          sarInp.addEventListener('input', () => { const v = parseFloat(sarInp.value); co.units = isNaN(v) ? 0 : r2(v / MICC_SAR_VALUE); inp.value = sarInp.value === '' ? '' : String(co.units); drawDyn(); });
           drawDyn();
           return;
         }
