@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.15" />
+  <meta name="ami-version" content="v13.16" />
   <title>AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -96,6 +96,8 @@
 
     /* Tier guide: Apple-Wallet style stack */
     .tg-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(2,6,23,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .tg-modal-wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px 24px; }
+    .tg-modal { width: 100%; max-width: 420px; }
     .tg-wrap { --tw: min(72vw, 270px); width: var(--tw); margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 0 28px; }
     .tg-slot { position: relative; height: 60px; transition: height .28s ease; }
     .tg-slot.is-open { height: calc(var(--tw) / 1.586 + 10px); }
@@ -685,7 +687,7 @@
     function setView(viewName) {
       if (viewName === 'about') viewName = 'aboutus';
       closeDrawer();
-      if (SAFE_VIEWS.has(viewName)) return; // MiCC Safe is a separate page (safe.html); no navigation between pages
+      if (SAFE_VIEWS.has(viewName)) return; // Safe is a separate page (safe.html); no navigation between pages
       if (!state.loggedIn && !PUBLIC_VIEWS.has(viewName)) {
         openLoginGateModal(viewName);
         return;
@@ -716,7 +718,7 @@
       if (isSafe) {
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
-        brandTitle.textContent = 'MiCC Safe';
+        brandTitle.textContent = t('الخزنة', 'Safe');
         brandSub.textContent = '';
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
@@ -778,10 +780,10 @@
       const ft = document.getElementById('app-footer');
       if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); ft.style.marginTop = (state.view === 'home' || state.view === 'store') ? '0' : ''; }
       if (isSafe) {
-        name.textContent = 'MiCC Safe';
+        name.textContent = t('الخزنة', 'Safe');
         links.innerHTML = `<button ${lk} onclick="setView('safeprivacy')">${t('الخصوصية', 'Privacy')}</button><button ${lk} onclick="openSafeTerms()">${t('الشروط', 'Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
         copy.innerHTML = '<bdi dir="ltr">© The MiCC 2026</bdi>';
-        document.title = 'MiCC Safe';
+        document.title = t('الخزنة', 'Safe');
       } else {
         name.textContent = '';
         links.innerHTML = `<button ${lk} onclick="setView('aboutus')">${t('الرسالة', 'Mission')}</button><button ${lk} onclick="setView('privacy')">${t('سياسة الخصوصية', 'Privacy Policy')}</button><button ${lk} onclick="openSupportChat('ami')">${t('تواصل معنا', 'Contact')}</button>`;
@@ -1415,7 +1417,7 @@
               <h3 class="font-bold text-sm mb-2">${t('حد الشراء السنوي (30,000 ريال)', 'Annual Purchase Limit (30,000 SAR)')}</h3>
               <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span class="tabular-nums">${fmt(state.user.annualPurchasedSar, 2)} ${t('ريال', 'SAR')}</span><span class="tabular-nums">${fmt(remainingCapSar, 2)} ${t('ريال', 'SAR')} ${t('متبقي', 'left')}</span></div>
               <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3"><div class="h-full bg-brand-emerald rounded-full" style="width:${capUsedPct}%"></div></div>
-              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتبقي من حد التحويل التراكمي إلى MiCC Safe (60% من إجمالي ميك الداخل إلى المحفظة):', 'Remaining cumulative allowance to MiCC Safe (60% of all MiCC that entered the wallet):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
+              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتبقي من حد التحويل التراكمي إلى الخزنة (60% من إجمالي ميك الداخل إلى المحفظة):', 'Remaining cumulative allowance to Safe (60% of all MiCC that entered the wallet):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60">
@@ -1443,7 +1445,7 @@
 
     function renderPrivacy() {
       // AMi privacy & terms (v12g)
-      const secs = [["مقدمة ونطاق السياسة", "Introduction and Scope", "توضّح هذه السياسة كيفية جمع الشركة للبيانات الشخصية لرفاقنا ومعالجتها وحمايتها، التزامًا بأحكام نظام حماية البيانات الشخصية ولوائحه التنفيذية. ويُعدّ استخدامك للمنصة أو إنشاؤك حسابًا فيها إقرارًا بالاطلاع على هذه السياسة والموافقة عليها. والنسخة العربية هي النسخة المعتمدة، وأي ترجمة أخرى للتيسير فقط.", "This Policy explains how the Company collects, processes, and protects the personal data of our companions, in compliance with the Personal Data Protection Law and its implementing regulations. Your use of the platform or creation of an account constitutes acknowledgment of, and consent to, this Policy. The Arabic version is the governing version; any other translation is provided for convenience only."], ["البيانات التي نجمعها", "Data We Collect", ["بيانات الحساب: الاسم ورقم الجوال والبريد الإلكتروني وكلمة المرور، وتُحفظ كلمة المرور مشفّرة.", "بيانات الخدمات: طلبات الاستشارات وحجوزات الرعاية التعاطفية والحركية وما يتصل بها من إفصاح صحي، وتُعامل بسرية تامة.", "بيانات وحدات الرفاقة: رصيد ميك وحركاته ومستوى العضوية.", "بيانات الدفع: تتم عمليات الدفع لدى مزوّدي خدمات دفع مرخّصين، ولا تصل بيانات بطاقتك إلى خوادمنا ولا نحتفظ بها، ونكتفي بمرجع العملية ومبلغها وحالتها.", "بيانات تقنية محدودة: ملفات ارتباط ضرورية لتشغيل الجلسة وحفظ تفضيلات اللغة والمظهر فقط."], ["Account data: name, mobile number, email address, and password; passwords are stored encrypted.", "Service data: consultation requests, empathic and kinetic care bookings, and related health disclosures, all treated in strict confidence.", "Companions unit data: MiCC balance and transactions, and membership level.", "Payment data: payments are processed by licensed payment service providers; your card details never reach our servers and are not retained by us. We keep only the transaction reference, amount, and status.", "Limited technical data: cookies strictly necessary to run your session and save your language and appearance preferences only."]], ["أغراض المعالجة وأساسها النظامي", "Purposes of Processing and Legal Basis", "نعالج البيانات حصرًا لإدارة حسابك، وتقديم الاستشارات والرعاية التعاطفية والحركية، وتنفيذ طلبات المتجر، وإدارة وحدات الرفاقة، ومعالجة المدفوعات، والتواصل التشغيلي، وحماية المنصة. والأساس النظامي لذلك هو تنفيذ التعاقد معك، وموافقتك الصريحة عند التسجيل، والمصلحة المشروعة في حماية المنصة ورفاقنا.", "We process data solely to manage your account, provide consultations and empathic and kinetic care, fulfill store orders, manage Companions units, process payments, handle operational communications, and protect the platform. The legal basis is the performance of our contract with you, your explicit consent at registration, and our legitimate interest in protecting the platform and our companions."], ["مشاركة البيانات", "Data Sharing", "لا نبيع بياناتك الشخصية ولا نتاجر بها، ولا نشاركها إلا في أضيق الحدود: مع مزوّدي الخدمات التشغيلية من دفع واستضافة وبالقدر اللازم لأداء الخدمة، ومع الجهات المختصة متى طُلب ذلك نظامًا.", "We do not sell or trade your personal data. We share it only to the narrowest extent necessary: with operational service providers such as payment and hosting providers, as needed to perform the service, and with competent authorities when legally required."], ["شروط وحدات الرفاقة (ميك) والعضوية", "Companions Unit (MiCC) and Membership Terms", ["تُقتنى وحدات ميك بالسعر المعلن وقت الشراء، بحدٍّ أدنى 10 ميك، وبحدّ شراء سنوي أقصاه 30,000 ريال.", "القوة الشرائية المضاعفة مخصّصة للخدمات الصحية فقط، وتُتاح حصريًا لأعضاء الرفاقة المفعّلين.", "رسوم عضوية الرفاقة 360 ريالًا سنويًا.", "يُتاح استرداد أي مبلغ مدفوع، بما في ذلك رسوم عضوية الرفاقة، خلال 8 أيام من تاريخ الدفع، شريطة عدم استخدام الرصيد أو الاستفادة من العضوية.", "حدّ التحويل التراكمي إلى MiCC Safe: يجوز تحويل ما لا يتجاوز 60% من إجمالي وحدات ميك التي دخلت محفظتك منذ فتح الحساب (المشتراة بالبطاقة أو تمارا أو إمكان، والمستلمة من الرفاق)، مطروحًا منه كل ما سبق تحويله إلى MiCC Safe. والحد تراكمي على مدى عمر الحساب، لا يتجدد شهريًا ولا سنويًا، ولا تُحتسب الوحدات المُعادة من MiCC Safe إلى المحفظة ضمن الإجمالي، ولا تُعيد إعادتُها الحدَّ. ويبقى الحد الأدنى للتحويل الواحد 50 ميك (250 ريال)، والحد الأقصى الإجمالي 15,000 ريال."], ["MiCC units are acquired at the price announced at the time of purchase, with a minimum of 10 MiCC and an annual purchase limit of 30,000 SAR.", "Doubled purchasing power is reserved for health services only and is available exclusively to activated Companions Program members.", "The Companions Program membership fee is 360 SAR per year.", "Any amount paid, including the Companions Program membership fee, may be refunded within 8 days of the payment date, provided the balance has not been used and the membership has not been benefited from.", "Cumulative transfer limit to MiCC Safe: you may transfer up to 60% of all MiCC units that have entered your wallet since the account was opened (bought by card, Tamara or Emkan, or received from Companions), minus everything already transferred to MiCC Safe. The limit is cumulative over the life of the account; it does not reset monthly or yearly, units returned from MiCC Safe to the wallet are not added to the total, and returning them does not restore the limit. The minimum per transfer remains 50 MiCC (250 SAR) and the overall maximum 15,000 SAR."]], ["حقوقك كصاحب بيانات", "Your Rights as a Data Subject", "لك الحق في العلم بأسباب جمع بياناتك، وفي الوصول إليها والحصول على نسخة منها، وفي طلب تصحيحها أو تحديثها، وفي طلب إتلافها متى انتفت الحاجة إليها، وفي سحب موافقتك في أي وقت، مع العلم أن سحب الموافقة قد يوقف تقديم الخدمة. ولك الحق في حذف حسابك في أي وقت عبر خيار «حذف الحساب» في صفحة حسابك، وتُحذف بياناتك الشخصية وتُجهّل سجلات العمليات المرتبطة بها، مع مراعاة ما يلزم الاحتفاظ به نظامًا. ويُسترد رصيد ميك غير المستخدم وفق شروط البند 5 قبل إتمام الحذف. كما يحق لك التقدّم بشكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).", "You have the right to be informed of the reasons for collecting your data; to access it and obtain a copy; to request its correction or update; to request its destruction once it is no longer needed; and to withdraw your consent at any time, noting that withdrawing consent may stop the provision of the service. You may delete your account at any time through the “Delete Account” option on your account page; your personal data will be deleted and related transaction records anonymized, subject to what must be retained by law. Any unused MiCC balance is refunded under the terms of Section 5 before deletion is completed. You also have the right to lodge a complaint with the Saudi Data and Artificial Intelligence Authority (SDAIA)."], ["الاحتفاظ بالبيانات وأمنها", "Data Retention and Security", "نحتفظ ببياناتك طوال سريان حسابك وبالقدر اللازم للوفاء بالمتطلبات النظامية، ثم تُتلف أو تُجهّل. ونطبّق تدابير حماية مناسبة، منها التشفير أثناء النقل وتقييد الصلاحيات والحد من محاولات الدخول المتكررة. وفي حال وقوع أي حادث يمس بياناتك نلتزم بالإشعار وفق النظام.", "We retain your data for as long as your account is active and as necessary to meet legal requirements, after which it is destroyed or anonymized. We apply appropriate safeguards, including encryption in transit, access restrictions, and limits on repeated login attempts. In the event of any incident affecting your data, we commit to notification as required by law."], ["إخلاء المسؤولية والنظام الواجب التطبيق", "Disclaimer and Governing Law", "تُقدَّم المنصة «كما هي» و«حسب المتاح»، ولا تتحمل الشركة المسؤولية عن الأضرار غير المباشرة أو الانقطاعات الخارجة عن سيطرتها المعقولة، بما لا يُخلّ بالحقوق المقرّرة نظامًا. ويتحمل المستخدم مسؤولية صحة بياناته وسرية بيانات دخوله. وتخضع هذه السياسة لأنظمة المملكة العربية السعودية، ويكون الاختصاص للجهات القضائية المختصة فيها.", "The platform is provided “as is” and “as available”. The Company is not liable for indirect damages or interruptions beyond its reasonable control, without prejudice to rights established by law. The user is responsible for the accuracy of their data and the confidentiality of their login credentials. This Policy is governed by the laws of the Kingdom of Saudi Arabia, and the competent judicial authorities there shall have jurisdiction."], ["التعديلات والتواصل", "Amendments and Contact", "قد نحدّث هذه السياسة من وقت لآخر، وننشر النسخة المحدّثة في هذه الصفحة مع تاريخ سريانها. وللتواصل أو لممارسة حقوقك، يسعدنا خدمتك عبر ", "We may update this Policy from time to time and will publish the updated version on this page with its effective date. To contact us or exercise your rights, we are happy to assist you via "]];
+      const secs = [["مقدمة ونطاق السياسة", "Introduction and Scope", "توضّح هذه السياسة كيفية جمع الشركة للبيانات الشخصية لرفاقنا ومعالجتها وحمايتها، التزامًا بأحكام نظام حماية البيانات الشخصية ولوائحه التنفيذية. ويُعدّ استخدامك للمنصة أو إنشاؤك حسابًا فيها إقرارًا بالاطلاع على هذه السياسة والموافقة عليها. والنسخة العربية هي النسخة المعتمدة، وأي ترجمة أخرى للتيسير فقط.", "This Policy explains how the Company collects, processes, and protects the personal data of our companions, in compliance with the Personal Data Protection Law and its implementing regulations. Your use of the platform or creation of an account constitutes acknowledgment of, and consent to, this Policy. The Arabic version is the governing version; any other translation is provided for convenience only."], ["البيانات التي نجمعها", "Data We Collect", ["بيانات الحساب: الاسم ورقم الجوال والبريد الإلكتروني وكلمة المرور، وتُحفظ كلمة المرور مشفّرة.", "بيانات الخدمات: طلبات الاستشارات وحجوزات الرعاية التعاطفية والحركية وما يتصل بها من إفصاح صحي، وتُعامل بسرية تامة.", "بيانات وحدات الرفاقة: رصيد ميك وحركاته ومستوى العضوية.", "بيانات الدفع: تتم عمليات الدفع لدى مزوّدي خدمات دفع مرخّصين، ولا تصل بيانات بطاقتك إلى خوادمنا ولا نحتفظ بها، ونكتفي بمرجع العملية ومبلغها وحالتها.", "بيانات تقنية محدودة: ملفات ارتباط ضرورية لتشغيل الجلسة وحفظ تفضيلات اللغة والمظهر فقط."], ["Account data: name, mobile number, email address, and password; passwords are stored encrypted.", "Service data: consultation requests, empathic and kinetic care bookings, and related health disclosures, all treated in strict confidence.", "Companions unit data: MiCC balance and transactions, and membership level.", "Payment data: payments are processed by licensed payment service providers; your card details never reach our servers and are not retained by us. We keep only the transaction reference, amount, and status.", "Limited technical data: cookies strictly necessary to run your session and save your language and appearance preferences only."]], ["أغراض المعالجة وأساسها النظامي", "Purposes of Processing and Legal Basis", "نعالج البيانات حصرًا لإدارة حسابك، وتقديم الاستشارات والرعاية التعاطفية والحركية، وتنفيذ طلبات المتجر، وإدارة وحدات الرفاقة، ومعالجة المدفوعات، والتواصل التشغيلي، وحماية المنصة. والأساس النظامي لذلك هو تنفيذ التعاقد معك، وموافقتك الصريحة عند التسجيل، والمصلحة المشروعة في حماية المنصة ورفاقنا.", "We process data solely to manage your account, provide consultations and empathic and kinetic care, fulfill store orders, manage Companions units, process payments, handle operational communications, and protect the platform. The legal basis is the performance of our contract with you, your explicit consent at registration, and our legitimate interest in protecting the platform and our companions."], ["مشاركة البيانات", "Data Sharing", "لا نبيع بياناتك الشخصية ولا نتاجر بها، ولا نشاركها إلا في أضيق الحدود: مع مزوّدي الخدمات التشغيلية من دفع واستضافة وبالقدر اللازم لأداء الخدمة، ومع الجهات المختصة متى طُلب ذلك نظامًا.", "We do not sell or trade your personal data. We share it only to the narrowest extent necessary: with operational service providers such as payment and hosting providers, as needed to perform the service, and with competent authorities when legally required."], ["شروط وحدات الرفاقة (ميك) والعضوية", "Companions Unit (MiCC) and Membership Terms", ["تُقتنى وحدات ميك بالسعر المعلن وقت الشراء، بحدٍّ أدنى 10 ميك، وبحدّ شراء سنوي أقصاه 30,000 ريال.", "القوة الشرائية المضاعفة مخصّصة للخدمات الصحية فقط، وتُتاح حصريًا لأعضاء الرفاقة المفعّلين.", "رسوم عضوية الرفاقة 360 ريالًا سنويًا.", "يُتاح استرداد أي مبلغ مدفوع، بما في ذلك رسوم عضوية الرفاقة، خلال 8 أيام من تاريخ الدفع، شريطة عدم استخدام الرصيد أو الاستفادة من العضوية.", "حدّ التحويل التراكمي إلى الخزنة: يجوز تحويل ما لا يتجاوز 60% من إجمالي وحدات ميك التي دخلت محفظتك منذ فتح الحساب (المشتراة بالبطاقة أو تمارا أو إمكان، والمستلمة من الرفاق)، مطروحًا منه كل ما سبق تحويله إلى الخزنة. والحد تراكمي على مدى عمر الحساب، لا يتجدد شهريًا ولا سنويًا، ولا تُحتسب الوحدات المُعادة من الخزنة إلى المحفظة ضمن الإجمالي، ولا تُعيد إعادتُها الحدَّ. ويبقى الحد الأدنى للتحويل الواحد 50 ميك (250 ريال)، والحد الأقصى الإجمالي 15,000 ريال."], ["MiCC units are acquired at the price announced at the time of purchase, with a minimum of 10 MiCC and an annual purchase limit of 30,000 SAR.", "Doubled purchasing power is reserved for health services only and is available exclusively to activated Companions Program members.", "The Companions Program membership fee is 360 SAR per year.", "Any amount paid, including the Companions Program membership fee, may be refunded within 8 days of the payment date, provided the balance has not been used and the membership has not been benefited from.", "Cumulative transfer limit to Safe: you may transfer up to 60% of all MiCC units that have entered your wallet since the account was opened (bought by card, Tamara or Emkan, or received from Companions), minus everything already transferred to Safe. The limit is cumulative over the life of the account; it does not reset monthly or yearly, units returned from Safe to the wallet are not added to the total, and returning them does not restore the limit. The minimum per transfer remains 50 MiCC (250 SAR) and the overall maximum 15,000 SAR."]], ["حقوقك كصاحب بيانات", "Your Rights as a Data Subject", "لك الحق في العلم بأسباب جمع بياناتك، وفي الوصول إليها والحصول على نسخة منها، وفي طلب تصحيحها أو تحديثها، وفي طلب إتلافها متى انتفت الحاجة إليها، وفي سحب موافقتك في أي وقت، مع العلم أن سحب الموافقة قد يوقف تقديم الخدمة. ولك الحق في حذف حسابك في أي وقت عبر خيار «حذف الحساب» في صفحة حسابك، وتُحذف بياناتك الشخصية وتُجهّل سجلات العمليات المرتبطة بها، مع مراعاة ما يلزم الاحتفاظ به نظامًا. ويُسترد رصيد ميك غير المستخدم وفق شروط البند 5 قبل إتمام الحذف. كما يحق لك التقدّم بشكوى إلى الهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا).", "You have the right to be informed of the reasons for collecting your data; to access it and obtain a copy; to request its correction or update; to request its destruction once it is no longer needed; and to withdraw your consent at any time, noting that withdrawing consent may stop the provision of the service. You may delete your account at any time through the “Delete Account” option on your account page; your personal data will be deleted and related transaction records anonymized, subject to what must be retained by law. Any unused MiCC balance is refunded under the terms of Section 5 before deletion is completed. You also have the right to lodge a complaint with the Saudi Data and Artificial Intelligence Authority (SDAIA)."], ["الاحتفاظ بالبيانات وأمنها", "Data Retention and Security", "نحتفظ ببياناتك طوال سريان حسابك وبالقدر اللازم للوفاء بالمتطلبات النظامية، ثم تُتلف أو تُجهّل. ونطبّق تدابير حماية مناسبة، منها التشفير أثناء النقل وتقييد الصلاحيات والحد من محاولات الدخول المتكررة. وفي حال وقوع أي حادث يمس بياناتك نلتزم بالإشعار وفق النظام.", "We retain your data for as long as your account is active and as necessary to meet legal requirements, after which it is destroyed or anonymized. We apply appropriate safeguards, including encryption in transit, access restrictions, and limits on repeated login attempts. In the event of any incident affecting your data, we commit to notification as required by law."], ["إخلاء المسؤولية والنظام الواجب التطبيق", "Disclaimer and Governing Law", "تُقدَّم المنصة «كما هي» و«حسب المتاح»، ولا تتحمل الشركة المسؤولية عن الأضرار غير المباشرة أو الانقطاعات الخارجة عن سيطرتها المعقولة، بما لا يُخلّ بالحقوق المقرّرة نظامًا. ويتحمل المستخدم مسؤولية صحة بياناته وسرية بيانات دخوله. وتخضع هذه السياسة لأنظمة المملكة العربية السعودية، ويكون الاختصاص للجهات القضائية المختصة فيها.", "The platform is provided “as is” and “as available”. The Company is not liable for indirect damages or interruptions beyond its reasonable control, without prejudice to rights established by law. The user is responsible for the accuracy of their data and the confidentiality of their login credentials. This Policy is governed by the laws of the Kingdom of Saudi Arabia, and the competent judicial authorities there shall have jurisdiction."], ["التعديلات والتواصل", "Amendments and Contact", "قد نحدّث هذه السياسة من وقت لآخر، وننشر النسخة المحدّثة في هذه الصفحة مع تاريخ سريانها. وللتواصل أو لممارسة حقوقك، يسعدنا خدمتك عبر ", "We may update this Policy from time to time and will publish the updated version on this page with its effective date. To contact us or exercise your rights, we are happy to assist you via "]];
       const esc = x => x;
       const body = (sec, i) => {
         const ar = sec[2], en = sec[3];
@@ -1667,47 +1669,46 @@
         </div>
       </div>`;
     }
-    let tierListOpen = false; // v13.13: tier list collapsed (current tier only) / expanded (all tiers)
-    function toggleTierList() { tierListOpen = !tierListOpen; const y = window.scrollY; render(); window.scrollTo(0, y); }
-    function renderTierGuideInline() {
+    function tierProgressHtml() {
       const cur = getCurrentTier();
       const nxt = getNextTier();
       const c = state.user.walletProgressMicc;
-      return `
-        <section id="tier-guide" class="mt-6 scroll-mt-24 rounded-2xl border border-brand-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-          <h2 class="font-bold text-base mb-1">${t('دليل مستويات الرفاقة', 'Companions Tier Guide')}</h2>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">${t('تتحدّد المستويات تلقائيًا حسب النشاط في محفظة ميك.', 'Tiers are set automatically based on activity in MiCC Wallet.')}</p>
-          <div class="flex items-center justify-between mb-3 text-[11px] font-bold"><span class="text-slate-500 dark:text-slate-400">${t('المستوى', 'Tier')}</span><span class="text-amber-700 dark:text-amber-300">${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
-          <div id="tg-list" class="tg-grid">${(tierListOpen ? TIERS : TIERS.filter(x => x.id === cur.id)).map(tierGridCardHtml).join('')}</div>
-          <div class="flex justify-center mt-2.5"><button id="tg-toggle" onclick="toggleTierList()" aria-expanded="${tierListOpen}" class="px-3.5 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${tierListOpen ? t('إخفاء المستويات ▴', 'Hide tiers ▴') : t(`عرض كل المستويات (${TIERS.length}) ▾`, `Show all tiers (${TIERS.length}) ▾`)}</button></div>
-          <div class="mt-4 rounded-xl bg-slate-50 dark:bg-slate-950 p-3 text-[11px]">
+      return `<div id="tg-progress" class="mt-4 rounded-xl bg-slate-50 dark:bg-slate-950 p-3 text-[11px]">
             <div class="flex justify-between gap-2 mb-1.5"><span class="font-semibold">${t('مستواك الحالي:', 'Your tier:')} ${t(cur.ar, cur.en)}</span><span class="tabular-nums text-slate-500 dark:text-slate-400">${nxt ? t(`متبقي <bdi>${fmt(nxt.min - c)} ميك</bdi> للمستوى ${nxt.ar}`, `${fmt(nxt.min - c)} MiCC to ${nxt.en}`) : t('أعلى مستوى', 'Top Tier')}</span></div>
             <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-brand-emerald rounded-full tc-shine" style="width:${nxt ? Math.max(3, Math.min(100, ((c - cur.min) / (nxt.min - cur.min)) * 100)) : 100}%"></div></div>
-          </div>
-        </section>`;
+          </div>`;
     }
-
-    let tierGuideOpenId = null;
+    // v13.16: no inline tier list; a compact row on the wallet page opens the tier modal
+    function renderTierGuideInline() {
+      const cur = getCurrentTier();
+      return `
+        <button id="tier-guide-row" onclick="openTierGuide()" class="mt-6 w-full flex items-center justify-between gap-3 rounded-2xl border border-brand-border dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-start">
+          <span class="font-bold text-sm">${t('دليل مستويات الرفاقة', 'Companions Tier Guide')}</span>
+          <span class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">${t(cur.ar, cur.en)} <span aria-hidden="true">${state.lang === 'ar' ? '‹' : '›'}</span></span>
+        </button>`;
+    }
     function renderTierGuide() {
       const ov = document.getElementById('tier-overlay');
       if (!ov) return;
-      const openId = tierGuideOpenId || getCurrentTier().id;
       ov.setAttribute('dir', state.lang === 'ar' ? 'rtl' : 'ltr');
-      ov.innerHTML = `<div class="tg-wrap">
-        <div class="flex items-center justify-between gap-3 mb-1.5">
-          <h3 class="font-bold text-base text-white">${t('دليل مستويات الرفاقة', 'Companions Tier Guide')}</h3>
-          <button onclick="closeTierGuide()" aria-label="${t('إغلاق', 'Close')}" class="w-8 h-8 shrink-0 rounded-full bg-white/15 hover:bg-white/25 text-white text-sm font-bold">✕</button>
+      ov.innerHTML = `<div class="tg-modal-wrap"><div id="tier-modal" class="tg-modal rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-brand-border dark:border-slate-800 p-4">
+        <div class="flex items-center justify-between gap-3 mb-1">
+          <h2 class="font-bold text-base">${t('دليل مستويات الرفاقة', 'Companions Tier Guide')}</h2>
+          <button id="tier-modal-close" onclick="closeTierGuide()" aria-label="${t('إغلاق', 'Close')}" class="w-8 h-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 text-sm font-bold">✕</button>
         </div>
-        <p class="text-[11px] text-white/65 mb-2.5 leading-relaxed">${t('تتحدّد المستويات تلقائيًا حسب النشاط في محفظة ميك.', 'Tiers are set automatically based on activity in MiCC Wallet.')}</p>
-        <div class="flex items-center justify-between px-1 mb-2 text-[11px] font-bold text-white/80"><span>${t('المستوى', 'Tier')}</span><span class="gold-text">${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
-        <div>${TIERS.map((tr, i) => tierCardHtml(tr, tr.id === openId || i === TIERS.length - 1)).join('')}</div>
-      </div>`;
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">${t('تتحدّد المستويات تلقائيًا حسب النشاط في محفظة ميك.', 'Tiers are set automatically based on activity in MiCC Wallet.')}</p>
+        <div class="flex items-center justify-between mb-3 text-[11px] font-bold"><span class="text-slate-500 dark:text-slate-400">${t('المستوى', 'Tier')}</span><span class="text-amber-700 dark:text-amber-300">${t('حد الإنفاق الشهري', 'Monthly Spending Limit')}</span></div>
+        <div id="tg-list" class="tg-grid">${TIERS.map(tierGridCardHtml).join('')}</div>
+        ${tierProgressHtml()}
+      </div></div>`;
     }
     function openTierGuide() {
-      // v8: the guide is inline on the wallet page — navigate/scroll to it
-      const go = () => { const el = document.getElementById('tier-guide'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-      if (state.view !== 'wallet') { setView('wallet'); if (state.view === 'wallet') setTimeout(go, 60); }
-      else go();
+      const ov = document.getElementById('tier-overlay');
+      if (!ov) return;
+      renderTierGuide();
+      ov.classList.remove('hidden');
+      ov.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
     }
     function closeTierGuide() {
       const ov = document.getElementById('tier-overlay');
@@ -1743,29 +1744,40 @@
       const c = safeTransferCap();
       const S = m => `${fmt(m * MICC_SAR_VALUE, 2)} ${t('ريال', 'SAR')} <span class="font-normal text-slate-500">(${fmt(m, 2)} ${MU()})</span>`;
       const row = (a, b, cls) => `<div class="flex justify-between gap-3 ${cls || ''}"><span>${a}</span><strong class="tabular-nums text-end">${b}</strong></div>`;
-      openModal(t('تحويل خارجي', 'External Transfer'), `
+      openModal(t('تحويل للخزنة', 'Transfer to Safe'), `
         <div class="text-xs space-y-1.5 mb-3 rounded-xl bg-slate-50 dark:bg-slate-950 p-3">
           ${row(t('إجمالي ميك الداخل إلى المحفظة:', 'Total MiCC that entered the wallet:'), S(c.inMicc))}
           ${row(t('الحد التراكمي (60%):', 'Cumulative limit (60%):'), S(c.capMicc))}
-          ${row(t('المحوَّل سابقًا إلى MiCC Safe:', 'Already transferred to MiCC Safe:'), S(c.doneMicc))}
+          ${row(t('المحوَّل سابقًا إلى الخزنة:', 'Already transferred to Safe:'), S(c.doneMicc))}
           ${row(t('المتبقي المسموح بتحويله:', 'Remaining allowance:'), S(c.capRemain), 'text-brand-navy dark:text-sky-400 border-t border-brand-border dark:border-slate-800 pt-1.5')}
         </div>
         <p class="text-[11px] text-slate-500 mb-3">${t('الحد تراكمي: 60% من كل ما دخل محفظتك من ميك (شراءً أو استلامًا من الرفاق) مطروحًا منه كل ما حُوِّل سابقًا. الحد الأدنى للتحويل 50 ميك (250 ريال).', 'The limit is cumulative: 60% of all MiCC that entered your wallet (bought or received from Companions) minus everything transferred before. Minimum transfer 50 MiCC (250 SAR).')}</p>
-        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك المراد تحويلها', 'MiCC units to transfer')}</label>
-        <input id="to-safe-amt" type="number" min="50" step="1" value="${Math.min(50, c.allowed)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-1 tabular-nums" />
-        <div id="to-safe-sar" class="text-[11px] text-slate-500 mb-4 tabular-nums"></div>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <div>
+            <label for="to-safe-sar-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('المبلغ بالريال', 'Amount (SAR)')}</label>
+            <input id="to-safe-sar-amt" type="number" inputmode="decimal" min="250" step="5" value="${Math.min(50, c.allowed) * MICC_SAR_VALUE}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+          </div>
+          <div>
+            <label for="to-safe-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك', 'MiCC units')}</label>
+            <input id="to-safe-amt" type="number" inputmode="decimal" min="50" step="1" value="${Math.min(50, c.allowed)}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+          </div>
+        </div>
         <button id="do-to-safe" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تنفيذ التحويل', 'Transfer')}</button>
       `);
+      // v13.16: linked inputs — SAR ↔ MiCC (1 MiCC = MICC_SAR_VALUE SAR); typing in either fills the other
       const inp = document.getElementById('to-safe-amt');
-      const showSar = () => { const u = Number(inp.value) || 0; document.getElementById('to-safe-sar').textContent = t(`= ${fmt(u * MICC_SAR_VALUE, 2)} ريال`, `= ${fmt(u * MICC_SAR_VALUE, 2)} SAR`); };
-      inp.addEventListener('input', showSar); showSar();
+      const sarInp = document.getElementById('to-safe-sar-amt');
+      const r2 = n => Math.round(n * 100) / 100;
+      inp.addEventListener('input', () => { sarInp.value = inp.value === '' ? '' : String(r2((Number(inp.value) || 0) * MICC_SAR_VALUE)); });
+      sarInp.addEventListener('input', () => { inp.value = sarInp.value === '' ? '' : String(r2((Number(sarInp.value) || 0) / MICC_SAR_VALUE)); });
+      const both = m => t(`${fmt(m * MICC_SAR_VALUE, 2)} ريال (${fmt(m, 2)} ميك)`, `${fmt(m * MICC_SAR_VALUE, 2)} SAR (${fmt(m, 2)} MiCC)`);
       document.getElementById('do-to-safe').addEventListener('click', () => {
         const units = Number(inp.value) || 0;
         const cc = safeTransferCap();
-        if (!Number.isFinite(units) || Math.floor(units) !== units || units < 50) { showToast(t('الحد الأدنى للتحويل 50 ميك (250 ريال)', 'Minimum transfer is 50 MiCC (250 SAR)')); return; }
+        if (!Number.isFinite(units) || Math.floor(units) !== units || units < 50) { showToast(units >= 50 ? t(`يجب أن يكون المبلغ وحدات ميك كاملة (مضاعفات ${MICC_SAR_VALUE} ريال)`, `The amount must be whole MiCC units (multiples of ${MICC_SAR_VALUE} SAR)`) : t('الحد الأدنى للتحويل 50 ميك (250 ريال)', 'Minimum transfer is 50 MiCC (250 SAR)')); return; }
         if (units > cc.capRemain) { showToast(t(`المبلغ يتجاوز المتبقي من حد التحويل التراكمي: ${fmt(cc.capRemain * MICC_SAR_VALUE, 2)} ريال (${fmt(cc.capRemain, 2)} ميك)`, `Amount exceeds the remaining cumulative allowance: ${fmt(cc.capRemain * MICC_SAR_VALUE, 2)} SAR (${fmt(cc.capRemain, 2)} MiCC)`)); return; }
-        if (units > cc.sarCapRemain) { showToast(t('المبلغ يتجاوز الحد الأقصى الإجمالي 15,000 ريال', 'Amount exceeds the 15,000 SAR overall maximum')); return; }
-        if (units > walletAvailableMicc()) { showToast(t('الرصيد المتاح في المحفظة غير كافٍ', 'Insufficient available wallet balance')); return; }
+        if (units > cc.sarCapRemain) { showToast(t(`المبلغ يتجاوز الحد الأقصى الإجمالي 15,000 ريال (${fmt(SAFE_MAX_SAR / MICC_SAR_VALUE)} ميك)`, `Amount exceeds the 15,000 SAR (${fmt(SAFE_MAX_SAR / MICC_SAR_VALUE)} MiCC) overall maximum`)); return; }
+        if (units > walletAvailableMicc()) { showToast(t(`الرصيد المتاح في المحفظة غير كافٍ: ${both(walletAvailableMicc())}`, `Insufficient available wallet balance: ${both(walletAvailableMicc())}`)); return; }
         state.user.walletMicc -= units; state.user.transferredToSafeSar += units * MICC_SAR_VALUE; markMiccUsed();
         state.safe.micc += units; state.safe.capitalSar = (state.safe.capitalSar || 0) + units * MICC_SAR_VALUE;
         state.walletLogs.unshift({ ar: 'تحويل خارجي', en: 'External Transfer', amount: `-${units} MiCC` });
@@ -1872,7 +1884,7 @@
         <textarea id="co-reason" rows="3" maxlength="1000" placeholder="${t('مثال: أقيم خارج المملكة وأحتاج إلى صرف رصيدي نقدًا.', 'e.g. I live abroad and need my balance paid out in cash.')}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3"></textarea>
         <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('مرفقات داعمة (اختياري)', 'Supporting attachments (optional)')}</label>
         <input id="co-files" type="file" multiple accept="image/*,application/pdf" class="w-full text-xs mb-3" />
-        <p class="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mb-4">${t('يُحجز المبلغ في محفظتك فور الإرسال ولا يمكن استخدامه، ويبقى الطلب «قيد المراجعة» حتى تبتّ فيه الإدارة: عند الموافقة يُخصم من المحفظة ويُصرف، وعند الرفض يُفك الحجز. الصرف النقدي متاح من محفظة ميك فقط؛ ولصرف رصيد MiCC Safe حوِّله إلى المحفظة أولًا.', 'The amount is held in your wallet as soon as you submit and cannot be used. The request stays "Under review" until the admin decides: if approved it is deducted from the wallet and paid out; if rejected the hold is released. Cash-out is available from the MiCC Wallet only; to cash out a MiCC Safe balance, move it to the wallet first.')}</p>
+        <p class="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mb-4">${t('يُحجز المبلغ في محفظتك فور الإرسال ولا يمكن استخدامه، ويبقى الطلب «قيد المراجعة» حتى تبتّ فيه الإدارة: عند الموافقة يُخصم من المحفظة ويُصرف، وعند الرفض يُفك الحجز. الصرف النقدي متاح من محفظة ميك فقط؛ ولصرف رصيد الخزنة حوِّله إلى المحفظة أولًا.', 'The amount is held in your wallet as soon as you submit and cannot be used. The request stays "Under review" until the admin decides: if approved it is deducted from the wallet and paid out; if rejected the hold is released. Cash-out is available from the MiCC Wallet only; to cash out a Safe balance, move it to the wallet first.')}</p>
         <button id="do-cashout" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('إرسال الطلب', 'Submit Request')}</button>
       `);
       const sarInp = document.getElementById('co-sar');
@@ -2139,7 +2151,7 @@
       const src = supportChatSource;
       const msgs = supChatMessages();
       const welcome = src === 'safe'
-        ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وبنرد عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
+        ? t('أهلًا بك في دعم الخزنة. اكتب استفسارك وبنرد عليك.', 'Welcome to Safe Support. Type your question and we will get back to you.')
         : t('أهلًا بك في الدعم. اكتب استفسارك وبنرد عليك.', 'Welcome to Support. Type your question and we will get back to you.');
       const tm = iso => { try { return new Date(iso).toLocaleTimeString(state.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
       box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
@@ -2158,7 +2170,7 @@
       wrap.innerHTML = `<div class="sc-panel">
         <div class="sc-head">
           <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
-          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('نرد عليك في أقرب وقت', 'We reply as soon as possible')}</div></div>
+          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم الخزنة', 'Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('نرد عليك في أقرب وقت', 'We reply as soon as possible')}</div></div>
           <button type="button" class="sc-x sc-mbtn" onclick="minimizeSupportChat()" aria-label="${t('تصغير', 'Minimize')}">—</button>
           <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
         </div>
@@ -2296,7 +2308,7 @@
     document.getElementById('auth-btn').addEventListener('click', toggleAuth);
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') closeModal(); });
-    document.getElementById('tier-overlay').addEventListener('click', e => { if (e.target.id === 'tier-overlay' || e.target.classList.contains('tg-wrap')) closeTierGuide(); });
+    document.getElementById('tier-overlay').addEventListener('click', e => { if (e.target.id === 'tier-overlay' || e.target.classList.contains('tg-wrap') || e.target.classList.contains('tg-modal-wrap')) closeTierGuide(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTierGuide(); });
 
     function applyHashRoute() {
