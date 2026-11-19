@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.14" />
+  <meta name="ami-version" content="v13.15" />
   <title>AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1078,6 +1078,8 @@
     // v13.14: stock (Infinity = not limited)
     function stockLeft(prod) { const st = state.user.storeStock || {}; return typeof st[prod.id] === 'number' ? st[prod.id] : (typeof prod.stock === 'number' ? prod.stock : Infinity); }
     const inCartQty = id => (state.cart.find(i => i.id === id) || {}).qty || 0;
+    // v13.15: visible stock quantity («متوفر: N»); out of stock uses OOS_BADGE
+    const INSTOCK_BADGE = (n) => `<span class="instock-badge inline-block px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 tabular-nums">${t('متوفر: ', 'In stock: ')}${n}</span>`;
     const OOS_BADGE = () => `<span class="oos-badge inline-block px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300">${t('غير متوفر', 'Out of stock')}</span>`;
     function canAddToCart(prod, qty) {
       const left = stockLeft(prod);
@@ -1113,6 +1115,7 @@
                 <div class="p-3">
                   <h2 class="font-bold text-xs sm:text-sm line-clamp-2 mb-1">${t(prod.nameAr, prod.nameEn)}</h2>
                   <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">${t(prod.descAr, prod.descEn)}</p>
+                  ${stockLeft(prod) > 0 && stockLeft(prod) !== Infinity ? `<div class="mt-1.5">${INSTOCK_BADGE(stockLeft(prod))}</div>` : ''}
                 </div>
               </div>
               <div class="px-3 pb-3 w-full flex items-center justify-between gap-1">
@@ -1272,7 +1275,7 @@
               <h1 class="text-xl sm:text-2xl font-bold mb-2">${t(foundProd.nameAr, foundProd.nameEn)}</h1>
               ${productSourceHtml(foundProd)}
               <div class="text-2xl font-bold text-brand-emerald dark:text-emerald-400 tabular-nums mb-1">${fmt(foundProd.priceSar)} ${t('ريال', 'SAR')}</div>
-              ${stockLeft(foundProd) <= 0 ? `<div id="prod-oos" class="mb-2">${OOS_BADGE()}</div>` : ''}
+              ${stockLeft(foundProd) <= 0 ? `<div id="prod-oos" class="mb-2">${OOS_BADGE()}</div>` : (stockLeft(foundProd) !== Infinity ? `<div id="prod-stock" class="mb-2">${INSTOCK_BADGE(stockLeft(foundProd))}</div>` : '')}
               <div class="text-xs text-slate-500 dark:text-slate-400 mb-4">${t(`أو ما يعادل ${miccEq} ميك عبر محفظة ميك (بدون مضاعفة للمنتجات)`, `Or ${miccEq} MiCC via MiCC Wallet (standard 1:1 rate for store items)`)}</div>
               <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5">${t(foundProd.descAr, foundProd.descEn)}</p>
             </div>
