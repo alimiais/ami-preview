@@ -422,12 +422,25 @@
     // v13.5: a page that missed updates (background/suspended tab, back-forward cache on iOS Safari) must not
     // overwrite newer data written by the other page. If storage changed since our last sync, merge field by field:
     // keep the other page's values and apply only the fields this page actually changed.
+    // v13.20: when BOTH pages changed the same balance (e.g. a transfer in one tab and a buy in a stale tab),
+    // apply this page's change as a delta on top of the other page's value instead of overwriting it;
+    // log arrays keep both sides' new entries.
+    const SHARED_DELTA_KEYS = new Set(['micc', 'capitalSar', 'walletMicc', 'transferredToSafeSar', 'miccPurchasedTotal', 'miccReceivedTotal', 'annualPurchasedSar', 'walletProgressMicc']);
+    function sharedMergeVal(k, b, m, th) {
+      if (SHARED_DELTA_KEYS.has(k) && typeof b === 'number' && typeof m === 'number' && typeof th === 'number') return th + (m - b);
+      if (Array.isArray(b) && Array.isArray(m) && Array.isArray(th) && m.length >= b.length && JSON.stringify(m.slice(m.length - b.length)) === JSON.stringify(b)) return m.slice(0, m.length - b.length).concat(th);
+      return m;
+    }
     function sharedMergeObj(base, mine, theirs) {
       const out = {};
       const keys = new Set([...Object.keys(theirs || {}), ...Object.keys(mine || {})]);
       keys.forEach(k => {
-        const mineChanged = JSON.stringify((mine || {})[k]) !== JSON.stringify((base || {})[k]);
-        out[k] = mineChanged || !(theirs && k in theirs) ? (mine || {})[k] : theirs[k];
+        const b = (base || {})[k], m = (mine || {})[k];
+        const mineChanged = JSON.stringify(m) !== JSON.stringify(b);
+        if (!(theirs && k in theirs)) { out[k] = m; return; }
+        if (!mineChanged) { out[k] = theirs[k]; return; }
+        const theirsChanged = JSON.stringify(theirs[k]) !== JSON.stringify(b);
+        out[k] = theirsChanged ? sharedMergeVal(k, b, m, theirs[k]) : m;
       });
       return out;
     }
