@@ -1653,7 +1653,6 @@
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
           <ul class="sw-list">${SAFE_FEATS.map(x => `<li class="sw-row"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[2]}</svg></span><span>${t(x[0], x[1])}</span></li>`).join('')}</ul>
         </div>
-        ${safeLegalLinksHtml()}
         <div class="sw-chest-wrap">${safeChestHtml()}</div></div>
       `;
     }
