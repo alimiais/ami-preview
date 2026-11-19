@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.6" />
+  <meta name="ami-version" content="v13.7" />
   <title>AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -298,6 +298,7 @@
           <button data-nav="ekc" class="drawer-link w-full text-start px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"></button>
           <button data-nav="store" class="drawer-link w-full text-start px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"></button>
           <button data-nav="wallet" class="drawer-link w-full text-start px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"></button>
+          <button data-nav="supportchats" class="drawer-link w-full text-start px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-medium"></button>
           <div class="pt-2 border-t border-brand-border dark:border-slate-800 mt-2">
             <button data-nav="privacy" class="drawer-link w-full text-start px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-600 dark:text-slate-300"></button>
           </div>
@@ -349,7 +350,7 @@
     const MIN_PURCHASE_MICC = 10;
     const SAFE_WITHDRAW_FEE = 0.02;
 
-    const PUBLIC_VIEWS = new Set(['home', 'aboutus', 'privacy', 'goodguest', 'store', 'category', 'product', 'consulting', 'ekc']);
+    const PUBLIC_VIEWS = new Set(['home', 'aboutus', 'privacy', 'goodguest', 'store', 'category', 'product', 'consulting', 'ekc', 'supportchats']);
 
     const state = {
       lang: 'ar',
@@ -409,9 +410,12 @@
     const SHARED_KEY = 'ami.shared.v1';
     const FLASH_KEY = 'ami.flash';
     let sharedLast = null;
+    // v13.7: key-order-independent JSON, so The MiCC and Safe (whose user objects list fields in a different order)
+    // produce identical text for identical data — otherwise two open tabs keep re-writing the key to each other.
+    const sharedSort = v => Array.isArray(v) ? v.map(sharedSort) : (v && typeof v === 'object') ? Object.keys(v).sort().reduce((o, k) => (o[k] = sharedSort(v[k]), o), {}) : v;
     function sharedSnapshot() {
       const safe = Object.assign({}, state.safe); delete safe.prices; // live prices are per page, not shared
-      return JSON.stringify({ v: 1, loggedIn: state.loggedIn, lang: state.lang, dark: state.dark, user: state.user, safe: safe, walletLogs: state.walletLogs });
+      return JSON.stringify(sharedSort({ v: 1, loggedIn: state.loggedIn, lang: state.lang, dark: state.dark, user: state.user, safe: safe, walletLogs: state.walletLogs, supportThreads: state.supportThreads || {} }));
     }
     // v13.5: a page that missed updates (background/suspended tab, back-forward cache on iOS Safari) must not
     // overwrite newer data written by the other page. If storage changed since our last sync, merge field by field:
@@ -427,7 +431,7 @@
     }
     function sharedMerge(base, mine, theirs) {
       const out = sharedMergeObj(base, mine, theirs);
-      ['user', 'safe'].forEach(k => { if (mine[k] && theirs[k]) out[k] = sharedMergeObj((base || {})[k], mine[k], theirs[k]); });
+      ['user', 'safe', 'supportThreads'].forEach(k => { if (mine[k] && theirs[k]) out[k] = sharedMergeObj((base || {})[k], mine[k], theirs[k]); });
       return out;
     }
     function saveShared() {
@@ -436,7 +440,7 @@
         if (s === sharedLast) return;
         const cur = localStorage.getItem(SHARED_KEY);
         if (cur && sharedLast && cur !== sharedLast) {
-          s = JSON.stringify(sharedMerge(JSON.parse(sharedLast), JSON.parse(s), JSON.parse(cur)));
+          s = JSON.stringify(sharedSort(sharedMerge(JSON.parse(sharedLast), JSON.parse(s), JSON.parse(cur))));
           localStorage.setItem(SHARED_KEY, s);
           loadShared(s);
           return;
@@ -465,6 +469,7 @@
         if (d.user && typeof d.user === 'object') Object.assign(state.user, d.user);
         if (d.safe && typeof d.safe === 'object') { const prices = state.safe.prices; state.safe = Object.assign(JSON.parse(SAFE_INITIAL), d.safe); state.safe.prices = prices; }
         if (Array.isArray(d.walletLogs)) state.walletLogs = d.walletLogs;
+        if (d.supportThreads && typeof d.supportThreads === 'object') state.supportThreads = d.supportThreads;
         sharedLast = raw;
         return true;
       } catch (e) { return false; }
@@ -696,6 +701,7 @@
         store: t('المتجر', 'Store'),
         wallet: t('محفظة ميك', 'MiCC Wallet'),
         privacy: t('سياسة الخصوصية', 'Privacy Policy'),
+        supportchats: t('محادثاتي مع الدعم', 'My Support Chats'),
       };
 
       document.querySelectorAll('.nav-link, .drawer-link').forEach(btn => {
@@ -1876,15 +1882,101 @@
       list.push(msg);
       list.push({ id: msg.id + '-r', ts: new Date().toISOString(), source: src, from: 'support', user: null, text: t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.'), auto: true });
       saveSupportMessages(list);
+      if (state.loggedIn) { const th = supAddToThread(src, list.slice(-2).map(m => ({ id: m.id, ts: Date.parse(m.ts) || Date.now(), from: m.from, text: m.text, auto: !!m.auto }))); if (th) msg.threadId = th.id; if (state.view === 'supportchats') render(); }
       // TODO(admin dashboard): forward `msg` to backend here, e.g. fetch('/api/support', { method: 'POST', body: JSON.stringify(msg) })
       return msg;
     }
     function escSupport(x) { return String(x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+    // ---- v13.7: support conversations stored in the shared account (ami.shared.v1 → supportThreads) ----
+    // Each conversation: { id, source: 'ami'|'safe', createdAt, updatedAt, status: 'open'|'closed', messages: [{ id, ts, from, text, auto }] }.
+    // supportMessages (localStorage) stays as the flat feed for the future admin dashboard.
+    let supportActiveThreadId = null; // null = latest open thread of the source, '__new__' = start a new one
+    let supportViewThreadId = null;   // thread shown on the «محادثاتي مع الدعم» page
+    const supThreads = () => Object.values(state.supportThreads || {});
+    const supLatestOpen = src => supThreads().filter(x => x.source === src && x.status === 'open').sort((a, b) => b.updatedAt - a.updatedAt)[0] || null;
+    function supEnsureThreads() {
+      if (state.supportThreads && typeof state.supportThreads === 'object') return;
+      state.supportThreads = {};
+      // one-time import of earlier signed-in chats from this browser
+      if (!state.loggedIn) return;
+      ['ami', 'safe'].forEach(src => {
+        const old = loadSupportMessages().filter(m => m.source === src && (m.loggedIn || m.from === 'support'));
+        if (!old.some(m => m.from === 'user' && m.loggedIn)) return;
+        const msgs = old.map(m => ({ id: m.id, ts: Date.parse(m.ts) || Date.now(), from: m.from, text: m.text, auto: !!m.auto }));
+        const id = 'th-import-' + src;
+        state.supportThreads[id] = { id, source: src, createdAt: msgs[0].ts, updatedAt: msgs[msgs.length - 1].ts, status: 'closed', messages: msgs };
+      });
+    }
+    function supAddToThread(src, msgs) {
+      if (!state.loggedIn) return null;
+      supEnsureThreads();
+      let th = supportActiveThreadId && supportActiveThreadId !== '__new__' ? state.supportThreads[supportActiveThreadId] : null;
+      if (supportActiveThreadId !== '__new__' && (!th || th.source !== src)) th = supLatestOpen(src);
+      if (!th) th = { id: 'th' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), source: src, createdAt: Date.now(), updatedAt: Date.now(), status: 'open', messages: [] };
+      th = Object.assign({}, th, { messages: th.messages.concat(msgs), updatedAt: Date.now(), status: 'open' });
+      state.supportThreads = Object.assign({}, state.supportThreads, { [th.id]: th });
+      supportActiveThreadId = th.id;
+      saveShared();
+      return th;
+    }
+    // messages shown in the floating chat
+    function supChatMessages() {
+      const src = supportChatSource;
+      if (!state.loggedIn) return loadSupportMessages().filter(m => m.source === src);
+      supEnsureThreads();
+      if (supportActiveThreadId === '__new__') return [];
+      const th = (supportActiveThreadId && state.supportThreads[supportActiveThreadId]) || supLatestOpen(src);
+      return th ? th.messages : [];
+    }
+    function closeSupportThread(id) {
+      const th = state.supportThreads && state.supportThreads[id]; if (!th) return;
+      state.supportThreads = Object.assign({}, state.supportThreads, { [id]: Object.assign({}, th, { status: 'closed', updatedAt: Date.now() }) });
+      if (supportActiveThreadId === id) supportActiveThreadId = null;
+      render();
+    }
+    function openSupportThread(id) { supportViewThreadId = id; render(); window.scrollTo({ top: 0 }); }
+    function continueSupportThread(id) { const th = state.supportThreads && state.supportThreads[id]; if (th) openSupportChat(th.source, id); }
+    function renderSupportHistory() {
+      const card = inner => `<div id="support-history" class="max-w-2xl mx-auto rounded-2xl border border-brand-border dark:border-slate-800 p-4 sm:p-6 bg-white dark:bg-slate-900">
+        <h1 class="text-xl font-bold mb-3">${t('محادثاتي مع الدعم', 'My Support Chats')}</h1>${inner}</div>`;
+      if (!state.loggedIn) return card(`<p id="sh-guest" class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى تسجيل الدخول لعرض محادثاتك مع الدعم.', 'Please sign in to view your support chats.')}</p>
+        <button onclick="toggleAuth()" class="px-4 py-2 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('تسجيل الدخول', 'Sign In')}</button>`);
+      supEnsureThreads();
+      const srcLabel = s => s === 'safe' ? 'MiCC Safe' : 'The MiCC';
+      const srcCls = s => s === 'safe' ? 'bg-slate-100 text-brand-navy dark:bg-slate-800 dark:text-sky-300' : 'bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300';
+      const when = ms => new Date(ms).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const autoTxt = () => t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.');
+      const msgText = m => m.auto ? autoTxt() : escSupport(m.text);
+      const status = th => `<span class="sh-status px-2 py-0.5 rounded-full text-[10.5px] font-semibold ${th.status === 'open' ? 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}">${th.status === 'open' ? t('مفتوحة', 'Open') : t('مغلقة', 'Closed')}</span>`;
+      const badge = th => `<span class="sh-source px-2 py-0.5 rounded-full text-[10.5px] font-semibold ${srcCls(th.source)}">${srcLabel(th.source)}</span>`;
+      const th = supportViewThreadId && state.supportThreads[supportViewThreadId];
+      if (th) {
+        return card(`
+          <button onclick="openSupportThread(null)" class="text-xs font-semibold text-brand-emerald dark:text-emerald-400 mb-3 inline-flex items-center gap-1">${state.lang === 'ar' ? '→' : '←'} ${t('العودة إلى المحادثات', 'Back to chats')}</button>
+          <div class="flex flex-wrap items-center gap-2 mb-3">${badge(th)}${status(th)}<span class="text-[11px] text-slate-500 tabular-nums"><bdi dir="ltr">${when(th.createdAt)}</bdi></span></div>
+          <div id="sh-thread" class="sc-${th.source === 'safe' ? 'safe' : 'ami'} rounded-2xl border border-brand-border dark:border-slate-800 overflow-hidden mb-4"><div class="sc-list" style="max-height:55vh">${th.messages.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${msgText(m)}<span class="sc-time"><bdi dir="ltr">${when(m.ts)}</bdi></span></div>`).join('')}</div></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button id="sh-continue" onclick="continueSupportThread('${th.id}')" class="py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('متابعة المحادثة', 'Continue chat')}</button>
+            ${th.status === 'open' ? `<button onclick="closeSupportThread('${th.id}')" class="py-2.5 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('إغلاق المحادثة', 'Close chat')}</button>` : ''}
+          </div>`);
+      }
+      const list = supThreads().sort((a, b) => b.updatedAt - a.updatedAt);
+      const pageSrc = PAGE === 'safe' ? 'safe' : 'ami';
+      return card(`
+        <button onclick="supportActiveThreadId = '__new__'; openSupportChat('${pageSrc}', '__new__')" class="mb-4 px-4 py-2 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('محادثة جديدة', 'New chat')}</button>
+        ${list.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-6 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد محادثات بعد', 'No chats yet')}</div>` :
+        `<div id="sh-list" class="space-y-2">${list.map(x => { const last = x.messages[x.messages.length - 1]; return `<button onclick="openSupportThread('${x.id}')" data-thread="${x.id}" class="sh-item w-full text-start rounded-xl border border-brand-border dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 p-3">
+          <div class="flex flex-wrap items-center gap-2 mb-1">${badge(x)}${status(x)}<span class="ms-auto text-[11px] text-slate-500 tabular-nums"><bdi dir="ltr">${when(x.updatedAt)}</bdi></span></div>
+          <div class="sh-last text-xs text-slate-600 dark:text-slate-300 truncate">${last ? (last.from === 'user' ? '' : t('الدعم: ', 'Support: ')) + msgText(last) : ''}</div>
+        </button>`; }).join('')}</div>`}`);
+    }
+
     function renderSupportChatList() {
       const box = document.getElementById('sc-list');
       if (!box) return;
       const src = supportChatSource;
-      const msgs = loadSupportMessages().filter(m => m.source === src);
+      const msgs = supChatMessages();
       const welcome = src === 'safe'
         ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وبنرد عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
         : t('أهلًا بك في الدعم. اكتب استفسارك وبنرد عليك.', 'Welcome to Support. Type your question and we will get back to you.');
@@ -1892,9 +1984,10 @@
       box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
       box.scrollTop = box.scrollHeight;
     }
-    function openSupportChat(source) {
+    function openSupportChat(source, threadId) {
       supportChatSource = source === 'safe' ? 'safe' : 'ami';
       closeSupportChat();
+      supportActiveThreadId = threadId || null;
       const isSafe = supportChatSource === 'safe';
       const wrap = document.createElement('div');
       wrap.id = 'support-chat';
@@ -1929,7 +2022,7 @@
     function closeSupportChat() { const el = document.getElementById('support-chat'); if (el) { el.remove(); scLockPage(false); } scStopWatch(); }
     // v13.5: minimize / restore (the panel stays in the DOM, so the typed draft and the history are kept)
     let scSeenReplies = 0, scWatchTimer = null;
-    const scReplyCount = () => loadSupportMessages().filter(m => m.source === supportChatSource && m.from === 'support').length;
+    const scReplyCount = () => supChatMessages().filter(m => m.from === 'support').length;
     function scStopWatch() { if (scWatchTimer) { clearInterval(scWatchTimer); scWatchTimer = null; } }
     function scCheckNew() {
       const el = document.getElementById('support-chat');
@@ -1984,7 +2077,7 @@
       renderHeader();
       renderFooter();
       const main = document.getElementById('main-content');
-      const views = { home: renderHome, about: renderAboutUs, aboutus: renderAboutUs, consulting: renderConsulting, ekc: renderEkc, booking: renderBooking, store: renderStore, category: renderCategory, product: renderProduct, goodguest: renderGoodGuest, wallet: renderWallet, privacy: renderPrivacy };
+      const views = { home: renderHome, about: renderAboutUs, aboutus: renderAboutUs, consulting: renderConsulting, ekc: renderEkc, booking: renderBooking, store: renderStore, category: renderCategory, product: renderProduct, goodguest: renderGoodGuest, wallet: renderWallet, privacy: renderPrivacy, supportchats: renderSupportHistory };
       main.classList.toggle('main-home', state.view === 'home' || state.view === 'store' || !views[state.view]);
       main.innerHTML = (views[state.view] || renderHome)();
 
@@ -2059,6 +2152,7 @@
       if (!loadShared(e.newValue)) return;
       if (PAGE === 'main' && !state.loggedIn && !PUBLIC_VIEWS.has(state.view)) state.view = 'home';
       const y = window.scrollY; render(); if (window.scrollY !== y) window.scrollTo(0, y);
+      const scEl = document.getElementById('support-chat'); if (scEl && !scEl.classList.contains('sc-min')) renderSupportChatList(); scCheckNew();
     });
     window.addEventListener('pageshow', resyncShared);
     window.addEventListener('focus', resyncShared);
