@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.11" />
+  <meta name="ami-version" content="v13.12" />
   <title>MiCC Safe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -142,13 +142,11 @@
     body:has(.sw-page) #app-footer { margin-top:0 !important; }
     .safe-welcome { background: linear-gradient(160deg, #FFF8E7 0%, #F6E7B8 100%); border: 1px solid rgba(212,175,55,.35); }
     .dark .safe-welcome { background: linear-gradient(160deg, #0A1A31 0%, #132A4A 60%, rgba(212,175,55,.16) 100%); border-color: rgba(212,175,55,.25); }
-    .sw-feat { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border-radius: 14px; background: rgba(255,255,255,.7); border: 1px solid rgba(212,175,55,.35); font-size: 12px; font-weight: 700; color: #0A1A31; }
-    .dark .sw-feat { background: rgba(15,23,42,.6); color: #F1F5F9; border-color: rgba(212,175,55,.3); }
-    .sw-feat.on { border-color: #D4AF37; box-shadow: 0 0 0 2px rgba(212,175,55,.35); }
+    .sw-list { display: flex; flex-direction: column; gap: 8px; text-align: start; }
+    .sw-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 12px; background: rgba(255,255,255,.7); border: 1px solid rgba(212,175,55,.35); font-size: 14px; font-weight: 700; color: #0A1A31; }
+    .dark .sw-row { background: rgba(15,23,42,.6); color: #F1F5F9; border-color: rgba(212,175,55,.3); }
     .sw-ic { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #0A1A31; background: linear-gradient(135deg, #F3D98B 0%, #D4AF37 55%, #B8912A 100%); }
     .sw-ic svg { width: 16px; height: 16px; }
-    .sw-line { font-size: 14px; line-height: 1.6; font-weight: 600; color: #0A1A31; background: rgba(255,255,255,.75); border: 1px solid rgba(212,175,55,.35); border-radius: 12px; padding: 8px 12px; }
-    .dark .sw-line { color: #F1F5F9; background: rgba(15,23,42,.65); border-color: rgba(212,175,55,.3); }
     .main-welcome + .ami-footer { margin-top: 0; }
     .safe-act .sa-sub { margin-top: auto; font-size: 9.5px; font-weight: 600; line-height: 1.2; color: #E9C46A; }
     /* Footers (v10) */
@@ -364,7 +362,7 @@
     const MIN_PURCHASE_MICC = 10;
     const SAFE_WITHDRAW_FEE = 0.02;
 
-    const PUBLIC_VIEWS = new Set(['home', 'aboutus', 'privacy', 'goodguest', 'store', 'category', 'product', 'consulting', 'ekc', 'supportchats']);
+    const PUBLIC_VIEWS = new Set(['home', 'aboutus', 'privacy', 'goodguest', 'store', 'category', 'product', 'consulting', 'ekc', 'supportchats', 'safe', 'safeprivacy', 'safeterms']);
 
     const state = {
       lang: 'ar',
@@ -417,7 +415,7 @@
     // Both pages are same-origin, so the account state lives in localStorage['ami.shared.v1'] and is
     // loaded on start, saved on every render (each change ends with render()), and synced across tabs via 'storage'.
     const PAGE = 'safe';
-    const SAFE_VIEWS = new Set(['safe', 'safeprivacy', 'supportchats']);
+    const SAFE_VIEWS = new Set(['safe', 'safeprivacy', 'safeterms', 'supportchats']);
     const SHARED_KEY = 'ami.shared.v1';
     const FLASH_KEY = 'ami.flash';
     let sharedLast = null;
@@ -526,6 +524,15 @@
     const btcCoinImg = (cls) => `<img src="${BTC_COIN}" alt="Bitcoin" class="btc-coin ${cls || ''}" />`;
     // Total Safe portfolio (SAR) and net paid-in capital
     const safeTotalSar = () => state.safe.micc * MICC_SAR_VALUE + state.safe.holdings.btc.qty * state.safe.prices.btcUsd * SAR_PER_USD;
+    // v13.12: protected capital = original deposits into Safe (from the wallet) minus MiCC transferred back to the wallet.
+    // Profits re-used for buying are not protected. Stored in ami.shared.v1 → safe.protectedCapitalSar (merged per key).
+    function syncProtectedCapital() {
+      const s = state.safe, dep = state.user.transferredToSafeSar || 0;
+      if (typeof s.protectedCapitalSar !== 'number') { s.protectedCapitalSar = s.capitalSar || 0; s.protectedDepositSeenSar = dep; }
+      if (typeof s.protectedDepositSeenSar !== 'number') s.protectedDepositSeenSar = dep;
+      if (dep > s.protectedDepositSeenSar) { s.protectedCapitalSar += dep - s.protectedDepositSeenSar; s.protectedDepositSeenSar = dep; }
+      return s.protectedCapitalSar;
+    }
     const safeCapitalOut = (outSar) => { const tot = safeTotalSar(); const c = state.safe.capitalSar || 0; state.safe.capitalSar = tot > 0 ? Math.max(0, c * (1 - Math.min(1, outSar / tot))) : 0; };
     const plHtml = (valSar, costSar, cls) => { if (!(costSar > 0)) return `<span class="text-slate-400">—</span>`; const d = valSar - costSar, pct = (d / costSar) * 100, up = d >= 0; const sg = up ? '+' : '−'; return `<span class="${up ? 'pl-up' : 'pl-down'} ${cls || ''} tabular-nums whitespace-nowrap">${up ? '▲' : '▼'} <bdi dir="ltr">${sg}${fmt(Math.abs(d), 2)}</bdi> ${t('ريال', 'SAR')} (<bdi dir="ltr">${sg}${fmt(Math.abs(pct), 2)}%</bdi>)</span>`; };
     const MICC_COIN_SM = 'data:image/webp;base64,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';
@@ -757,6 +764,7 @@
 
     function openSafeTerms() {
       const go = () => { const el = document.getElementById('safe-terms'); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
+      if (!state.loggedIn || !memEver()) { setView('safeterms'); window.scrollTo(0, 0); return; }
       if (state.view !== 'safe') { setView('safe'); setTimeout(go, 150); } else go();
     }
 
@@ -778,7 +786,7 @@
           <div id="safe-delete" class="mt-6 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/30 p-4">
             <h3 class="font-bold text-sm mb-1 text-red-700 dark:text-red-400">${t('حذف الحساب', 'Delete Account')}</h3>
             <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mb-3">${t('يحذف بيانات حسابك في MiCC Safe وتُجهَّل سجلات العمليات المرتبطة به، مع الاحتفاظ بما يلزم نظامًا.', 'Deletes your MiCC Safe account data and anonymizes related transaction records, keeping only what the law requires.')}</p>
-            <button id="safe-delete-btn" onclick="openSafeDeleteModal()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold">${t('حذف حسابي', 'Delete My Account')}</button>
+            ${state.loggedIn ? `<button id="safe-delete-btn" onclick="openSafeDeleteModal()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold">${t('حذف حسابي', 'Delete My Account')}</button>` : ''}
           </div>
           <button onclick="setView('safe')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('← العودة إلى MiCC Safe', '← Back to MiCC Safe')}</button>
         </div>
@@ -852,7 +860,7 @@
     const memEver = () => !!state.user.membershipActive || !!state.user.membershipExpiresAt;
     const safeFrozen = () => !memActive();
     const fmtDate = ms => new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const FROZEN_MSG = () => t('عضويتك في برنامج الرفاقة غير سارية، لذا جُمِّد MiCC Safe: يمكنك الاطلاع على أرصدتك فقط، ولا يمكن الشراء أو البيع أو التحويل حتى تجديد العضوية.', 'Your Companions Program membership is not active, so MiCC Safe is frozen: you can view your balances only. Buying, selling and transfers are unavailable until the membership is renewed.');
+    const FROZEN_MSG = () => t('عضويتك في برنامج الرفاقة غير سارية؛ لذا أُوقف الشراء فقط حتى تجديد العضوية. يمكنك بيع Bitcoin وتحويل ميك إلى محفظة ميك دون خصم أي اشتراك متأخر، وتُطبَّق رسوم 20% من صافي الربح على البيع الرابح كالمعتاد.', 'Your Companions Program membership is not active, so only buying is paused until the membership is renewed. You can sell Bitcoin and transfer MiCC to the MiCC Wallet with no deduction of any overdue subscription; the 20% net-profit fee applies to profitable sales as usual.');
     function extendMembership() {
       const u = state.user;
       u.membershipActive = true;
@@ -910,7 +918,7 @@
       const u = state.user, active = memActive();
       const status = active
         ? (u.membershipExpiresAt ? t(`سارية حتى ${fmtDate(u.membershipExpiresAt)}`, `Active until ${fmtDate(u.membershipExpiresAt)}`) : t('سارية', 'Active'))
-        : t('غير سارية — MiCC Safe مجمّد', 'Not active — MiCC Safe is frozen');
+        : t('غير سارية — الشراء موقوف حتى التجديد', 'Not active — buying is paused until renewal');
       const chk = (id, on, fn, label, note) => `<label class="flex items-start gap-2 text-xs cursor-pointer"><input id="${id}" type="checkbox" ${on ? 'checked' : ''} onchange="${fn}(this.checked)" class="mt-0.5 accent-[#0B5C4A]" /><span><span class="font-semibold">${label}</span>${note ? `<span class="block text-[11px] text-slate-500 dark:text-slate-400">${note}</span>` : ''}</span></label>`;
       return `
         <div id="safe-membership" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900 mb-3">
@@ -947,9 +955,12 @@
       const fee = profit > 0 ? profit * SAFE_FEE_RATE : 0;
       let payout = saleSar - fee, comp = 0;
       if (full && profit < 0 && costPart > 0) {
-        const lossPct = -profit / costPart;
-        const target = lossPct <= SAFE_PROTECT_RATE ? costPart : saleSar + SAFE_PROTECT_RATE * costPart;
-        comp = target - saleSar; payout = target;
+        const base = Math.min(costPart, syncProtectedCapital()); // v13.12: original deposited capital only
+        if (base > 0 && saleSar < base) {
+          const lossPct = (base - saleSar) / base;
+          const target = lossPct <= SAFE_PROTECT_RATE ? base : saleSar + SAFE_PROTECT_RATE * base;
+          comp = target - saleSar; payout = target;
+        }
       }
       return { full, qty, saleSar, frac, costPart, profit, fee, comp, payout, payoutMicc: payout / MICC_SAR_VALUE, value, price };
     }
@@ -962,7 +973,23 @@
       return true;
     }
     const BTC_LOCK_MSG = () => t(`الشراء مغلق مؤقتًا حتى يبلغ سعر Bitcoin متوسط شرائك السابق: ${fmt(btcLockSar(), 2)} ريال`, `Buying is temporarily locked until the Bitcoin price reaches your previous average buy price: ${fmt(btcLockSar(), 2)} SAR`);
+    // v13.12: the Safe terms block, shared by the dashboard and the stand-alone terms view (open without signing in)
+    const safeTermsHtml = () => `
+          <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
+            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية لـ MiCC Safe', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
+            <ul class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
+              <li>${t('رسوم الأداء: 20% من صافي الربح عند البيع، محسوبة مقابل متوسط التكلفة. لا رسوم عند الخسارة، ولا تمسّ الرسوم رأس المال.', 'Performance fee: 20% of net profit on a sale, measured against the average cost. No fee on a loss, and the fee never touches capital.')}</li>
+              <li id="safe-protect-note">${t('حماية 30% عند الخروج الكامل فقط: إذا كانت الخسارة 30% أو أقل يُسترد رأس المال كاملًا، وإذا تجاوزت 30% تُصرف القيمة الحالية مضافًا إليها 30% من رأس المال. لا تعويض في البيع الجزئي.', '30% protection on a full exit only: a loss of 30% or less returns the full capital; above 30% you receive the current value plus 30% of capital. No compensation on a partial sale.')}</li>
+              <li id="safe-protect-capital-note">${t('تُحتسب الحماية على رأس المال الأصلي المُودَع فقط، ولا تشمل الأرباح المُعاد استخدامها في الشراء؛ لأن الأرباح مكسب تحقق لك بالفعل، والحماية وُجدت لصون ما أودعته، لا لضمان ما ربحته.', 'Protection is calculated on the original deposited capital only and does not cover profits used again for buying, because profits are a gain you have already realized; protection exists to safeguard what you deposited, not to guarantee what you earned.')}<br>${t('مثال: أودعتَ 1,000 ريال، وبعتَ بربح حتى صار رصيدك 1,400 ريال، ثم أعدتَ الشراء بكامل الرصيد؛ تبقى الحماية على 1,000 ريال الأصلية فقط.', 'Example: you deposited 1,000 SAR, sold at a profit until your balance reached 1,400 SAR, then bought again with the full balance; protection remains on the original 1,000 SAR only.')}</li>
+              <li id="safe-buy-lock-note">${t('بعد الخروج الكامل بخسارة يُغلق شراء Bitcoin مؤقتًا، ويُفتح تلقائيًا عندما يبلغ سعر Bitcoin متوسط شرائك السابق أو يتجاوزه.', 'After a full exit at a loss, buying Bitcoin is temporarily locked; it reopens automatically once the Bitcoin price reaches or exceeds your previous average buy price.')}</li>
+              <li>${t('يتطلب الشراء عضوية سارية في برنامج الرفاقة. عند انتهاء العضوية يُوقَف الشراء فقط، ويبقى بيع Bitcoin وتحويل ميك إلى محفظة ميك متاحَين دون خصم أي اشتراك متأخر، وتُطبَّق رسوم 20% من صافي الربح على البيع الرابح كالمعتاد. التجديد مطلوب للشراء مجددًا فقط.', 'Buying requires an active Companions Program membership. When the membership expires, only buying is paused; selling Bitcoin and transferring MiCC to the MiCC Wallet remain available with no deduction of any overdue subscription, and the 20% net-profit fee applies to profitable sales as usual. Renewal is needed only to buy again.')}</li>
+            </ul>
+            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
+          </div>
+`;
+    function renderSafeTermsPage() { return `<div class="max-w-3xl mx-auto">${safeTermsHtml()}</div>`; }
     function renderSafe() {
+      syncProtectedCapital();
       const s = state.safe, p = s.prices, h = s.holdings.btc;
       const btcPriceSar = p.btcUsd * SAR_PER_USD;
       const heldValSar = h.qty * btcPriceSar, avgSar = h.avgSar || 0;
@@ -991,7 +1018,7 @@
               </div>
               <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-11 h-11 shrink-0" />
             </div>
-            <button id="safe-xfer-btn" onclick="openReturnToWalletModal()" ${dis(frozen)} class="safe-xfer ${disCls(frozen)}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>${t('تحويل داخلي', 'Internal Transfer')}</button>
+            <button id="safe-xfer-btn" onclick="openReturnToWalletModal()" class="safe-xfer"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>${t('تحويل داخلي', 'Internal Transfer')}</button>
           </div>
 
           <div class="asset-card rounded-2xl p-3.5 flex flex-col justify-between">
@@ -1012,7 +1039,7 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="openStockTradeModal('btc','buy')" ${dis(h.locked || frozen)} class="btn-navy py-2.5 rounded-xl text-xs font-semibold ${disCls(h.locked || frozen)}">${t('شراء', 'Buy')}</button>
-              <button onclick="openStockTradeModal('btc','sell')" ${dis(h.qty <= 0 || frozen)} class="btn-outline-gold py-2.5 rounded-xl text-xs font-semibold ${disCls(h.qty <= 0 || frozen)}">${t('بيع', 'Sell')}</button>
+              <button onclick="openStockTradeModal('btc','sell')" ${dis(h.qty <= 0)} class="btn-outline-gold py-2.5 rounded-xl text-xs font-semibold ${disCls(h.qty <= 0)}">${t('بيع', 'Sell')}</button>
             </div>
           </div>
         </div>
@@ -1020,16 +1047,7 @@
         ${renderMembershipPanel()}
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-          <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية لـ MiCC Safe', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
-            <ul class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
-              <li>${t('رسوم الأداء: 20% من صافي الربح عند البيع، محسوبة مقابل متوسط التكلفة. لا رسوم عند الخسارة، ولا تمسّ الرسوم رأس المال.', 'Performance fee: 20% of net profit on a sale, measured against the average cost. No fee on a loss, and the fee never touches capital.')}</li>
-              <li id="safe-protect-note">${t('حماية 30% عند الخروج الكامل فقط: إذا كانت الخسارة 30% أو أقل يُسترد رأس المال كاملًا، وإذا تجاوزت 30% تُصرف القيمة الحالية مضافًا إليها 30% من رأس المال. لا تعويض في البيع الجزئي.', '30% protection on a full exit only: a loss of 30% or less returns the full capital; above 30% you receive the current value plus 30% of capital. No compensation on a partial sale.')}</li>
-              <li id="safe-buy-lock-note">${t('بعد الخروج الكامل بخسارة يُغلق شراء Bitcoin مؤقتًا، ويُفتح تلقائيًا عندما يبلغ سعر Bitcoin متوسط شرائك السابق أو يتجاوزه.', 'After a full exit at a loss, buying Bitcoin is temporarily locked; it reopens automatically once the Bitcoin price reaches or exceeds your previous average buy price.')}</li>
-              <li>${t('تتطلب الخدمة عضوية سارية في برنامج الرفاقة، وعند انتهائها يُجمَّد MiCC Safe حتى التجديد.', 'The service requires an active Companions Program membership; when it expires, MiCC Safe is frozen until renewal.')}</li>
-            </ul>
-            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
-          </div>
+${safeTermsHtml()}
           <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
             <h3 class="font-bold text-sm mb-2">${t('سجل عمليات MiCC Safe', 'MiCC Safe Log')}</h3>
             ${safeLogs().length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${safeLogs().map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between gap-2"><span>${arU(btcWord(t(l.ar, l.en)))}</span><span class="tabular-nums font-semibold text-end">${safeLogAmt(l.amount)}</span></div>`).join('')}</div>`}
@@ -1178,7 +1196,6 @@
 
 
     function openReturnToWalletModal() {
-      if (safeFrozen()) { showToast(FROZEN_MSG()); return; }
       openModal(t('تحويل إلى محفظة ميك (0%)', 'Transfer to MiCC Wallet (0%)'), `
         <p class="text-xs text-slate-500 mb-3">${t(`المتاح: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} ريال (${fmt(state.safe.micc, 2)} ميك)`, `Available: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} SAR (${fmt(state.safe.micc, 2)} MiCC)`)}</p>
         <input id="ret-micc" type="number" min="1" max="${Math.floor(state.safe.micc)}" value="${Math.min(20, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
@@ -1188,6 +1205,7 @@
         const micc = Number(document.getElementById('ret-micc').value) || 0;
         if (micc <= 0 || micc > state.safe.micc) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         safeCapitalOut(micc * MICC_SAR_VALUE);
+        syncProtectedCapital(); { const remBook = (state.safe.micc - micc) * MICC_SAR_VALUE + (state.safe.holdings.btc.costSar || 0); state.safe.protectedCapitalSar = Math.max(0, Math.min(state.safe.protectedCapitalSar, remBook)); } // profits withdrawn first; protected capital only drops when the remaining book value falls below it
         state.safe.micc -= micc; state.user.walletMicc += micc;
         state.safe.logs.unshift({ ar: 'تحويل إلى محفظة ميك', en: 'To MiCC Wallet', amount: `-${micc} MiCC` });
         state.walletLogs.unshift({ ar: 'استلام رصيد', en: 'Balance received', amount: `+${micc} MiCC` });
@@ -1208,7 +1226,7 @@
     const stkFld = (id, label, extra) => `<label class="block mb-1.5"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-0.5">${label}</span>${extra ? '<div class="flex gap-2">' : ''}<input id="${id}" type="number" inputmode="decimal" min="0" step="any" class="stk-fld ${extra ? 'flex-1 min-w-0' : 'w-full'} px-3 py-1.5 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />${extra ? extra + '</div>' : ''}</label>`;
     function openStockTradeModal(assetId, side) {
       if (!SAFE_ACTIVE_ASSETS.has(assetId)) { showToast(t('قريبًا', 'Coming soon')); return; }
-      if (safeFrozen()) { showToast(FROZEN_MSG()); return; }
+      if (side === 'buy' && safeFrozen()) { showToast(FROZEN_MSG()); return; }
       const p = state.safe.prices;
       const h = state.safe.holdings[assetId];
       const unitPriceSar = p.btcUsd * SAR_PER_USD;
@@ -1522,24 +1540,16 @@
     // =========================================================
     // v13.9: welcome / sign-in page — title, subtitle, sign-in, 3 features (tap to reveal), chest
     const SAFE_FEATS = [
-      ['سهولة', 'Easy', 'سهولة: شراء وبيع بضغطة واحدة', 'Easy: buy and sell in one tap', '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'],
-      ['وضوح', 'Clear', 'وضوح: رصيدك وسجل عملياتك أمامك دائمًا', 'Clear: your balance and history always in view', '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'],
-      ['دعم مباشر', 'Live support', 'دعم مباشر: فريق الدعم معك في أي وقت', 'Live support: our team is here anytime', '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'],
+      ['خصوصية وأمان', 'Privacy & Security', '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9.5a2 2 0 0 1 4 0V11"/>'],
+      ['وضوح وبساطة', 'Clarity & Simplicity', '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'],
+      ['دعم مخصص', 'Dedicated Support', '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/>'],
     ];
-    function safeFeatToggle(i) {
-      const line = document.getElementById('sw-line'); if (!line) return;
-      const btns = document.querySelectorAll('.sw-feat'); const open = btns[i].classList.contains('on');
-      btns.forEach(b => b.classList.remove('on'));
-      if (open) { line.classList.add('hidden'); return; }
-      btns[i].classList.add('on'); line.textContent = t(SAFE_FEATS[i][2], SAFE_FEATS[i][3]); line.classList.remove('hidden');
-    }
     function renderSafeSignedOut() {
       return `<div class="sw-page">
         <div class="safe-welcome max-w-md mx-auto mt-4 rounded-2xl p-5 text-center">
           <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">MiCC Safe</h1>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
-          <div class="grid grid-cols-3 gap-2">${SAFE_FEATS.map((x, i) => `<button type="button" class="sw-feat" onclick="safeFeatToggle(${i})"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[4]}</svg></span>${t(x[0], x[1])}</button>`).join('')}</div>
-          <div id="sw-line" class="sw-line hidden mt-2"></div>
+          <ul class="sw-list">${SAFE_FEATS.map(x => `<li class="sw-row"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[2]}</svg></span><span>${t(x[0], x[1])}</span></li>`).join('')}</ul>
         </div>
         <div class="sw-chest-wrap">${safeChestHtml()}</div></div>
       `;
@@ -1559,14 +1569,16 @@
 
     function render() {
       processAutoRenew(); // v13.5: before saving, so a renewal is persisted
+      syncProtectedCapital(); // v13.12: pick up new wallet → Safe deposits before saving
       saveShared();
       renderHeader();
       renderFooter();
       const main = document.getElementById('main-content');
-      const views = { safe: renderSafe, safeprivacy: renderSafePrivacy, supportchats: renderSupportHistory };
+      const views = { safe: renderSafe, safeprivacy: renderSafePrivacy, safeterms: renderSafeTermsPage, supportchats: renderSupportHistory };
       main.classList.toggle('main-home', state.view === 'home' || state.view === 'store' || !views[state.view]);
-      main.classList.toggle('main-welcome', state.view !== 'supportchats' && !state.loggedIn);
-      main.innerHTML = state.view === 'supportchats' ? renderSupportHistory() : !state.loggedIn ? renderSafeSignedOut() : !memEver() ? renderSafeMembersOnly() : (views[state.view] || renderSafe)();
+      const openView = state.view === 'safeprivacy' || state.view === 'safeterms';
+      main.classList.toggle('main-welcome', state.view !== 'supportchats' && !openView && !state.loggedIn);
+      main.innerHTML = state.view === 'supportchats' ? renderSupportHistory() : openView ? views[state.view]() : !state.loggedIn ? renderSafeSignedOut() : !memEver() ? renderSafeMembersOnly() : (views[state.view] || renderSafe)();
 
       const fcForm = document.getElementById('free-consult-form');
       if (fcForm) fcForm.addEventListener('submit', e => {
