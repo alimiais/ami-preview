@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="ami-version" content="v13.12" />
-  <title>MiCC Safe</title>
+  <title>الخزنة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
@@ -78,7 +78,7 @@
     @media (prefers-reduced-motion: reduce) { .tc-bar > div::after, .tc-shine::after { animation: none; display: none; } }
     /* MiCC logo coin */
     .micc-coin { border-radius: 999px; object-fit: cover; box-shadow: 0 0 0 1.5px rgba(212,175,55,.75), 0 6px 14px -6px rgba(0,0,0,.55); background: #111; }
-    /* MiCC Safe hero (navy + gold) */
+    /* Safe hero (navy + gold) */
     .safe-hero { position: relative; overflow: hidden; color: #fff; border: 1px solid rgba(212,175,55,.35); background: radial-gradient(110% 80% at 100% 0%, rgba(212,175,55,.30) 0%, rgba(212,175,55,0) 55%), linear-gradient(135deg, #0A1A31 0%, #13294B 55%, #0B1A30 100%); box-shadow: 0 14px 30px -14px rgba(10,26,49,.7); }
     .safe-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(120deg, rgba(212,175,55,.06) 0 1px, rgba(212,175,55,0) 1px 14px); }
     .safe-hero::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 999px; inset-inline-end: -70px; bottom: -110px; border: 1px solid rgba(212,175,55,.22); box-shadow: 0 0 0 18px rgba(212,175,55,.04), 0 0 0 40px rgba(212,175,55,.03); pointer-events: none; }
@@ -330,6 +330,12 @@
     .sw-page { justify-content: center; }
     .sw-page > .safe-welcome { margin-top: 0; }
     .sw-chest-wrap { display: none; }
+    .mem-banner.is-active { background: #FFFFFF; color: #0E1A2B; border: 1px solid rgba(176,143,85,.45); box-shadow: inset 4px 0 0 #2F7D5B, 0 10px 24px -20px rgba(14,26,43,.35); }
+    [dir="rtl"] .mem-banner.is-active { box-shadow: inset -4px 0 0 #2F7D5B, 0 10px 24px -20px rgba(14,26,43,.35); }
+    .dark .mem-banner.is-active { background: #10161F; color: #ECE7DC; border-color: rgba(176,143,85,.35); }
+    .mem-banner.is-expired { background: #FBF1F0; color: #8E2A2A; border: 1px solid rgba(142,42,42,.35); box-shadow: inset 4px 0 0 #8E2A2A; }
+    [dir="rtl"] .mem-banner.is-expired { box-shadow: inset -4px 0 0 #8E2A2A; }
+    .dark .mem-banner.is-expired { background: rgba(142,42,42,.18); color: #F2B8B5; border-color: rgba(242,184,181,.3); }
 </style>
 </head>
 <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
@@ -343,7 +349,7 @@
         <button id="brand-btn" class="flex items-center gap-2 text-start focus:outline-none">
           <div id="brand-mark" class="hidden"></div>
           <div>
-            <div id="brand-title" class="font-bold text-sm leading-tight">MiCC Safe</div>
+            <div id="brand-title" class="font-bold text-sm leading-tight">الخزنة</div>
             <div id="brand-sub" class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight hidden sm:block"></div>
           </div>
         </button>
@@ -377,7 +383,7 @@
     <aside class="w-72 max-w-[82vw] h-full bg-white dark:bg-slate-950 border-e border-brand-border dark:border-slate-800 p-4 flex flex-col justify-between shadow-xl">
       <div>
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-brand-border dark:border-slate-800">
-          <span id="drawer-brand" class="font-bold text-sm">MiCC Safe</span>
+          <span id="drawer-brand" class="font-bold text-sm">الخزنة</span>
           <button id="side-menu-close" class="w-7 h-7 rounded-lg border border-brand-border dark:border-slate-700 text-xs font-bold">✕</button>
         </div>
 
@@ -426,7 +432,6 @@
     const MICC_SAR_VALUE = 5;
     const ANNUAL_PURCHASE_CAP_SAR = 30000;
     const SAFE_MIN_SAR = 250;
-    const SAFE_MAX_SAR = 15000;
     const SAFE_MAX_RATIO = 0.6;
     const MEMBERSHIP_FEE_MICC = 72;
     const MIN_PURCHASE_MICC = 10;
@@ -481,11 +486,11 @@
 
     const SAFE_INITIAL = JSON.stringify(state.safe);
 
-    // ---- v13: two pages (index.html = main site, safe.html = MiCC Safe), one account, shared state ----
+    // ---- v13: two pages (index.html = main site, safe.html = Safe), one account, shared state ----
     // Both pages are same-origin, so the account state lives in localStorage['ami.shared.v1'] and is
     // loaded on start, saved on every render (each change ends with render()), and synced across tabs via 'storage'.
     const PAGE = 'safe';
-    const SAFE_VIEWS = new Set(['safe', 'safeprivacy', 'safeterms', 'supportchats']);
+    const SAFE_VIEWS = new Set(['safe', 'safeprivacy', 'safeterms', 'supportchats', 'safemembership']);
     const SHARED_KEY = 'ami.shared.v1';
     const FLASH_KEY = 'ami.flash';
     let sharedLast = null;
@@ -600,6 +605,11 @@
       if (typeof s.protectedCapitalSar !== 'number') { s.protectedCapitalSar = s.capitalSar || 0; s.protectedDepositSeenSar = dep; }
       if (typeof s.protectedDepositSeenSar !== 'number') s.protectedDepositSeenSar = dep;
       if (dep > s.protectedDepositSeenSar) { s.protectedCapitalSar += dep - s.protectedDepositSeenSar; s.protectedDepositSeenSar = dep; }
+      // Protection cap per customer = total SAR actually paid from their own pocket for MiCC (card / Tamara / Emkan),
+      // read from the shared user record written by the wallet page (miccPurchasedTotal, the same paid total used by the 60% limit).
+      const paidSar = Math.max(0, (Number(state.user.miccPurchasedTotal) || 0) * MICC_SAR_VALUE);
+      state.user.protectionCapSar = paidSar; // stored in ami.shared.v1 → user.protectionCapSar
+      if (s.protectedCapitalSar > paidSar) s.protectedCapitalSar = paidSar;
       return s.protectedCapitalSar;
     }
     const safeCapitalOut = (outSar) => { const tot = safeTotalSar(); const c = state.safe.capitalSar || 0; state.safe.capitalSar = tot > 0 ? Math.max(0, c * (1 - Math.min(1, outSar / tot))) : 0; };
@@ -732,7 +742,7 @@
       if (isSafe) {
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
-        brandTitle.textContent = 'MiCC Safe';
+        brandTitle.textContent = t('الخزنة', 'Safe');
         brandSub.textContent = '';
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
@@ -741,7 +751,7 @@
       } else {
         brandMark.textContent = '';
         brandMark.className = 'hidden';
-        brandTitle.textContent = 'MiCC Safe';
+        brandTitle.textContent = t('الخزنة', 'Safe');
         brandSub.textContent = t('الخدمات المهنية · الرعاية التعاطفية والحركية · المتجر', 'Professional Services · Empathic Kinetic Care · Store');
         mainNav.classList.add('md:flex');
         sideMenuBtn.classList.remove('hidden');
@@ -769,7 +779,7 @@
         btn.classList.toggle('dark:text-emerald-400', active);
       });
 
-      document.getElementById('drawer-brand').textContent = 'MiCC Safe';
+      document.getElementById('drawer-brand').textContent = t('الخزنة', 'Safe');
       document.getElementById('drawer-services-label').textContent = t('الخدمات', 'Services');
       document.getElementById('drawer-footer-note').textContent = t('الشركة', 'The Company');
 
@@ -793,14 +803,14 @@
       const ft = document.getElementById('app-footer');
       if (ft) { ft.classList.toggle('safe-footer', isSafe); ft.classList.toggle('ami-footer', !isSafe); ft.style.marginTop = (state.view === 'home' || state.view === 'store') ? '0' : ''; }
       if (isSafe) {
-        name.textContent = 'MiCC Safe';
+        name.textContent = t('الخزنة', 'Safe');
         links.innerHTML = `<button ${lk} onclick="setView('safeprivacy')">${t('الخصوصية', 'Privacy')}</button><button ${lk} onclick="openSafeTerms()">${t('الشروط', 'Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
-        copy.innerHTML = '<bdi dir="ltr">© MiCC Safe 2026</bdi>';
-        document.title = 'MiCC Safe';
+        copy.innerHTML = `<bdi>${t('© الخزنة 2026', '© Safe 2026')}</bdi>`;
+        document.title = t('الخزنة', 'Safe');
       } else {
         name.textContent = '';
         links.innerHTML = `<button ${lk} onclick="setView('aboutus')">${t('الرسالة', 'Mission')}</button><button ${lk} onclick="setView('privacy')">${t('سياسة الخصوصية', 'Privacy Policy')}</button><button ${lk} onclick="openSupportChat('ami')">${t('تواصل معنا', 'Contact')}</button>`;
-        copy.innerHTML = '<bdi dir="ltr">© MiCC Safe 2026</bdi>';
+        copy.innerHTML = `<bdi>${t('© الخزنة 2026', '© Safe 2026')}</bdi>`;
         document.title = 'AMi | الخدمات والاستشارات والمتجر وبرنامج الرفاقة';
       }
       name.classList.toggle('hidden', !name.textContent);
@@ -831,40 +841,39 @@
 
 
 
-    function openSafeTerms() {
-      const go = () => { const el = document.getElementById('safe-terms'); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
-      if (!state.loggedIn || !memEver()) { setView('safeterms'); window.scrollTo(0, 0); return; }
-      if (state.view !== 'safe') { setView('safe'); setTimeout(go, 150); } else go();
+    function openSafeTerms(anchorId) {
+      setView('safeterms'); window.scrollTo(0, 0);
+      if (anchorId) setTimeout(() => { const el = document.getElementById(anchorId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
     }
 
     function renderSafePrivacy() {
       const secs = [
         ['البيانات التي نجمعها', 'Data we collect', 'بيانات الحساب (الاسم ورقم الجوال والبريد الإلكتروني)، وعناوين المحافظ وسجل العمليات، والبيانات التقنية اللازمة لأمان الدخول.', 'Account details (name, phone number, email), wallet addresses and transaction history, and the technical data needed to keep sign-in secure.'],
-        ['كيف نستخدمها', 'How we use it', 'لتشغيل MiCC Safe وتنفيذ عملياتك وحماية حسابك والالتزام بالأنظمة المعمول بها.', 'To run MiCC Safe, process your transactions, protect your account, and comply with applicable regulations.'],
+        ['كيف نستخدمها', 'How we use it', 'لتشغيل الخزنة وتنفيذ عملياتك وحماية حسابك والالتزام بالأنظمة المعمول بها.', 'To run Safe, process your transactions, protect your account, and comply with applicable regulations.'],
         ['المشاركة', 'Sharing', 'لا نبيع بياناتك. لا نشاركها إلا مع مزوّدي الخدمة اللازمين للتشغيل، أو مع الجهات المختصة عند وجود إلزام نظامي.', 'We do not sell your data. We share it only with service providers needed to operate the service, or with competent authorities when legally required.'],
         ['الحماية والاحتفاظ', 'Protection & retention', 'نحمي بياناتك بالتشفير وضوابط الوصول، ونحتفظ بسجلات العمليات المدة التي يتطلبها النظام فقط.', 'We protect your data with encryption and access controls, and keep transaction records only as long as the law requires.'],
-        ['حقوقك', 'Your rights', 'يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها. للاستفسار تواصل مع دعم MiCC Safe.', 'You may access, correct, or request deletion of your data. For any question, contact MiCC Safe Support.'],
+        ['حقوقك', 'Your rights', 'يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها. للاستفسار تواصل مع دعم الخزنة.', 'You may access, correct, or request deletion of your data. For any question, contact Safe Support.'],
       ];
       return `
         <div class="max-w-3xl mx-auto rounded-2xl border border-brand-border dark:border-slate-800 p-5 sm:p-8 bg-white dark:bg-slate-900">
-          <h1 class="text-xl font-bold mb-1 text-brand-navy dark:text-sky-300">${t('خصوصية MiCC Safe', 'MiCC Safe Privacy')}</h1>
+          <h1 class="text-xl font-bold mb-1 text-brand-navy dark:text-sky-300">${t('خصوصية الخزنة', 'Safe Privacy')}</h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">${t('سارية اعتبارًا من 18 نوفمبر 2026', 'Effective as of 18 November 2026')}</p>
           <div class="border-t border-brand-border dark:border-slate-800 pt-4 space-y-4">
             ${secs.map(x => `<section class="sp-sec"><h3>${t(x[0], x[1])}</h3><p>${t(x[2], x[3])}</p></section>`).join('')}
           </div>
           <div id="safe-delete" class="mt-6 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/30 p-4">
             <h3 class="font-bold text-sm mb-1 text-red-700 dark:text-red-400">${t('حذف الحساب', 'Delete Account')}</h3>
-            <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mb-3">${t('يحذف بيانات حسابك في MiCC Safe وتُجهَّل سجلات العمليات المرتبطة به، مع الاحتفاظ بما يلزم نظامًا.', 'Deletes your MiCC Safe account data and anonymizes related transaction records, keeping only what the law requires.')}</p>
+            <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300 mb-3">${t('يحذف بيانات حسابك في الخزنة وتُجهَّل سجلات العمليات المرتبطة به، مع الاحتفاظ بما يلزم نظامًا.', 'Deletes your Safe account data and anonymizes related transaction records, keeping only what the law requires.')}</p>
             ${state.loggedIn ? `<button id="safe-delete-btn" onclick="openSafeDeleteModal()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold">${t('حذف حسابي', 'Delete My Account')}</button>` : ''}
           </div>
-          <button onclick="setView('safe')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('← العودة إلى MiCC Safe', '← Back to MiCC Safe')}</button>
+          <button onclick="setView('safe')" class="mt-6 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('← العودة إلى الخزنة', '← Back to Safe')}</button>
         </div>
       `;
     }
 
     function openSafeDeleteModal() {
-      openModal(t('حذف حساب MiCC Safe', 'Delete MiCC Safe Account'), `
-        <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">${t('سيتم حذف بيانات حسابك في MiCC Safe وتجهيل سجل عملياتك، وسيتم تسجيل خروجك.', 'Your MiCC Safe account data will be deleted, your transaction history anonymized, and you will be signed out.')}</p>
+      openModal(t('حذف حساب الخزنة', 'Delete Safe Account'), `
+        <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">${t('سيتم حذف بيانات حسابك في الخزنة وتجهيل سجل عملياتك، وسيتم تسجيل خروجك.', 'Your Safe account data will be deleted, your transaction history anonymized, and you will be signed out.')}</p>
         <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى سحب أي رصيد قبل المتابعة. لا يمكن التراجع عن هذا الإجراء.', 'Please withdraw any balance first. This action cannot be undone.')}</p>
         <div class="flex gap-2">
           <button id="sdel-cancel" type="button" class="flex-1 py-2.5 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('إلغاء', 'Cancel')}</button>
@@ -881,7 +890,7 @@
         state.loggedIn = false; state.view = 'safe';
         render();
         window.scrollTo({ top: 0 });
-        showToast(t('تم استلام طلب حذف حساب MiCC Safe', 'MiCC Safe account deletion request received'));
+        showToast(t('تم استلام طلب حذف حساب الخزنة', 'Safe account deletion request received'));
       });
     }
 
@@ -966,7 +975,7 @@
     function openRenewModal(source) {
       const fee = MEMBERSHIP_RENEW_SAR;
       const body = source === 'micc'
-        ? t(`يُخصم ${fmt(fee, 2)} ريال (${fmt(fee / MICC_SAR_VALUE, 2)} ميك) من رصيد ميك في MiCC Safe، وتُمدَّد العضوية سنة كاملة.`, `${fmt(fee, 2)} SAR (${fmt(fee / MICC_SAR_VALUE, 2)} MiCC) will be deducted from your MiCC Safe balance and the membership extended by one year.`)
+        ? t(`يُخصم ${fmt(fee, 2)} ريال (${fmt(fee / MICC_SAR_VALUE, 2)} ميك) من رصيد ميك في الخزنة، وتُمدَّد العضوية سنة كاملة.`, `${fmt(fee, 2)} SAR (${fmt(fee / MICC_SAR_VALUE, 2)} MiCC) will be deducted from your Safe balance and the membership extended by one year.`)
         : t(`يُباع من رصيد Bitcoin ما قيمته ${fmt(fee, 2)} ريال لسداد التجديد، دون رسوم، ولا يُحتسب ربحًا، ويُخفَّض رأس المال بالنسبة نفسها. تُمدَّد العضوية سنة كاملة.`, `Bitcoin worth ${fmt(fee, 2)} SAR will be sold to pay the renewal, with no fee; it is not counted as profit and capital is reduced proportionally. The membership is extended by one year.`);
       openModal(t('تجديد عضوية برنامج الرفاقة (360 ريال)', 'Renew Companions Membership (360 SAR)'), `
         <p class="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">${body}</p>
@@ -982,6 +991,21 @@
     function processAutoRenew() {
       if (!state.loggedIn || !memEver() || memActive() || !state.user.autoRenew) return;
       if (renewMembership('micc', true) || (state.user.autoRenewFromBitcoin && renewMembership('btc', true))) setTimeout(() => showToast(t('تم تجديد العضوية تلقائيًا', 'Membership renewed automatically')), 60);
+    }
+    // v13.18: membership banner on the main screen; full details on the membership page
+    function renderMembershipBanner() {
+      const u = state.user, active = memActive();
+      const arrow = state.lang === 'ar' ? '‹' : '›';
+      const label = active
+        ? (u.membershipExpiresAt ? t(`العضوية نشطة · تنتهي في ${fmtDate(u.membershipExpiresAt)}`, `Membership active · Expires ${fmtDate(u.membershipExpiresAt)}`) : t('العضوية نشطة', 'Membership active'))
+        : t('العضوية منتهية · جدّد الآن', 'Membership expired · Renew now');
+      return `<button type="button" id="mem-banner" onclick="setView('safemembership')" class="mem-banner ${active ? 'is-active' : 'is-expired'} w-full flex items-center justify-between gap-3 rounded-2xl px-4 py-3 mb-3 text-start text-[13px] font-semibold"><span class="tabular-nums">${label}</span><span aria-hidden="true" class="text-base leading-none">${arrow}</span></button>`;
+    }
+    function renderSafeMembershipPage() {
+      return `<div class="max-w-3xl mx-auto">
+        <button id="mem-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى الخزنة', '← Back to Safe')}</button>
+        ${renderMembershipPanel()}
+      </div>`;
     }
     function renderMembershipPanel() {
       const u = state.user, active = memActive();
@@ -1045,7 +1069,7 @@
     // v13.12: the Safe terms block, shared by the dashboard and the stand-alone terms view (open without signing in)
     const safeTermsHtml = () => `
           <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية لـ MiCC Safe', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
+            <h3 class="font-bold text-sm mb-2">${t('شروط السحب والخصوصية للخزنة', 'Safe Withdrawal & Privacy Terms')}</h3>
             <ul class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
               <li>${t('رسوم الأداء: 20% من صافي الربح عند البيع، محسوبة مقابل متوسط التكلفة. لا رسوم عند الخسارة، ولا تمسّ الرسوم رأس المال.', 'Performance fee: 20% of net profit on a sale, measured against the average cost. No fee on a loss, and the fee never touches capital.')}</li>
               <li id="safe-protect-note">${t('حماية 30% عند الخروج الكامل فقط: إذا كانت الخسارة 30% أو أقل يُسترد رأس المال كاملًا، وإذا تجاوزت 30% تُصرف القيمة الحالية مضافًا إليها 30% من رأس المال. لا تعويض في البيع الجزئي.', '30% protection on a full exit only: a loss of 30% or less returns the full capital; above 30% you receive the current value plus 30% of capital. No compensation on a partial sale.')}</li>
@@ -1053,10 +1077,10 @@
               <li id="safe-buy-lock-note">${t('بعد الخروج الكامل بخسارة يُغلق شراء Bitcoin مؤقتًا، ويُفتح تلقائيًا عندما يبلغ سعر Bitcoin متوسط شرائك السابق أو يتجاوزه.', 'After a full exit at a loss, buying Bitcoin is temporarily locked; it reopens automatically once the Bitcoin price reaches or exceeds your previous average buy price.')}</li>
               <li>${t('يتطلب الشراء عضوية سارية في برنامج الرفاقة. عند انتهاء العضوية يُوقَف الشراء فقط، ويبقى بيع Bitcoin وتحويل ميك إلى محفظة ميك متاحَين دون خصم أي اشتراك متأخر، وتُطبَّق رسوم 20% من صافي الربح على البيع الرابح كالمعتاد. التجديد مطلوب للشراء مجددًا فقط.', 'Buying requires an active Companions Program membership. When the membership expires, only buying is paused; selling Bitcoin and transferring MiCC to the MiCC Wallet remain available with no deduction of any overdue subscription, and the 20% net-profit fee applies to profitable sales as usual. Renewal is needed only to buy again.')}</li>
             </ul>
-            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
+            <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني للخزنة', 'Contact Safe Support')}</button>
           </div>
 `;
-    function renderSafeTermsPage() { return `<div class="max-w-3xl mx-auto">${safeTermsHtml()}</div>`; }
+    function renderSafeTermsPage() { return `<div class="max-w-3xl mx-auto">${state.loggedIn && memEver() ? `<button id="terms-back" type="button" onclick="setView('safe')" class="mb-3 px-4 py-2 rounded-xl border border-brand-border dark:border-slate-700 text-xs font-semibold">${t('→ العودة إلى الخزنة', '← Back to Safe')}</button>` : ''}${safeTermsHtml()}</div>`; }
     function renderSafe() {
       syncProtectedCapital();
       const s = state.safe, p = s.prices, h = s.holdings.btc;
@@ -1068,14 +1092,14 @@
       const cell = (label, main, sub, hl) => `<div class="rounded-xl ${hl ? 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/60' : 'bg-slate-50 dark:bg-slate-950'} px-3 py-2"><div class="text-[10.5px] ${hl ? 'font-semibold text-amber-800 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}">${label}</div><div class="font-bold text-[13px] tabular-nums">${main}</div>${sub ? `<div class="text-[10px] text-slate-500 tabular-nums">${sub}</div>` : ''}</div>`;
 
       return `
+        ${renderMembershipBanner()}
+
         <div class="rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">MiCC Safe</div>
-          <button type="button" id="safe-protect-badge" onclick="document.getElementById('safe-protect-note').scrollIntoView({ behavior: 'smooth', block: 'center' })" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية 30% من الخسارة عند الخروج الكامل', '30% loss protection on full exit')}</button>
+          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('الخزنة', 'Safe')}</div>
+          <button type="button" id="safe-protect-badge" onclick="openSafeTerms('safe-protect-note')" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية 30% من الخسارة عند الخروج الكامل', '30% loss protection on full exit')}</button>
         </div>
 
         ${frozen ? `<div id="safe-frozen" class="rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 p-4 mb-3 text-sm leading-relaxed font-semibold text-brand-crimson dark:text-rose-300">${FROZEN_MSG()}</div>` : ''}
-
-        ${renderSafeDashboard()}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div class="safe-hero rounded-2xl p-3.5">
@@ -1113,15 +1137,15 @@
           </div>
         </div>
 
-        ${renderMembershipPanel()}
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-${safeTermsHtml()}
-          <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
-            <h3 class="font-bold text-sm mb-2">${t('سجل عمليات MiCC Safe', 'MiCC Safe Log')}</h3>
+        <div class="grid grid-cols-1 gap-3 mb-4">
+          <div id="safe-log" class="rounded-2xl border border-brand-border dark:border-slate-800 p-3.5 bg-white dark:bg-slate-900">
+            <h3 class="font-bold text-sm mb-2">${t('سجل عمليات الخزنة', 'Safe Log')}</h3>
             ${safeLogs().length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${safeLogs().map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between gap-2"><span>${arU(btcWord(t(l.ar, l.en)))}</span><span class="tabular-nums font-semibold text-end">${safeLogAmt(l.amount)}</span></div>`).join('')}</div>`}
           </div>
         </div>
+        <div class="text-center mb-4"><button id="safe-terms-link" type="button" onclick="openSafeTerms()" class="text-xs font-semibold text-brand-navy dark:text-sky-400 underline underline-offset-4">${t('الشروط والحماية', 'Terms & Protection')}</button></div>
+
+        ${renderSafeDashboard()}
 
       `;
     }
@@ -1478,7 +1502,7 @@ ${safeTermsHtml()}
       if (!state.loggedIn) return card(`<p id="sh-guest" class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى تسجيل الدخول لعرض محادثاتك مع الدعم.', 'Please sign in to view your support chats.')}</p>
         <button onclick="toggleAuth()" class="px-4 py-2 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-xs font-semibold">${t('تسجيل الدخول', 'Sign In')}</button>`);
       supEnsureThreads();
-      const srcLabel = () => 'MiCC Safe';
+      const srcLabel = () => t('الخزنة', 'Safe');
       const srcCls = s => s === 'safe' ? 'bg-slate-100 text-brand-navy dark:bg-slate-800 dark:text-sky-300' : 'bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300';
       const when = ms => new Date(ms).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       const autoTxt = () => t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.');
@@ -1513,7 +1537,7 @@ ${safeTermsHtml()}
       const src = supportChatSource;
       const msgs = supChatMessages();
       const welcome = src === 'safe'
-        ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وسنردّ عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
+        ? t('أهلًا بك في دعم الخزنة. اكتب استفسارك وسنردّ عليك.', 'Welcome to Safe Support. Type your question and we will get back to you.')
         : t('أهلًا بك في الدعم. اكتب استفسارك وسنردّ عليك.', 'Welcome to Support. Type your question and we will get back to you.');
       const tm = iso => { try { return new Date(iso).toLocaleTimeString(state.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
       box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
@@ -1532,7 +1556,7 @@ ${safeTermsHtml()}
       wrap.innerHTML = `<div class="sc-panel">
         <div class="sc-head">
           <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
-          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('سنردّ عليك في أقرب وقت ممكن', 'We reply as soon as possible')}</div></div>
+          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم الخزنة', 'Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('سنردّ عليك في أقرب وقت ممكن', 'We reply as soon as possible')}</div></div>
           <button type="button" class="sc-x sc-mbtn" onclick="minimizeSupportChat()" aria-label="${t('تصغير', 'Minimize')}">—</button>
           <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
         </div>
@@ -1616,7 +1640,7 @@ ${safeTermsHtml()}
     function renderSafeSignedOut() {
       return `<div class="sw-page">
         <div class="safe-welcome max-w-md mx-auto mt-4 rounded-2xl p-5 text-center">
-          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">MiCC Safe</h1>
+          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">${t('الخزنة', 'Safe')}</h1>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
           <ul class="sw-list">${SAFE_FEATS.map(x => `<li class="sw-row"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[2]}</svg></span><span>${t(x[0], x[1])}</span></li>`).join('')}</ul>
         </div>
@@ -1624,7 +1648,7 @@ ${safeTermsHtml()}
       `;
     }
 
-    // v13.3: MiCC Safe is for برنامج الرفاقة members only (state.user.membershipActive, shared via ami.shared.v1)
+    // v13.3: Safe is for برنامج الرفاقة members only (state.user.membershipActive, shared via ami.shared.v1)
     const safeChestHtml = () => ''; // v13.17: chest image removed from the Safe UI
     function renderSafeMembersOnly() {
       return `
@@ -1643,7 +1667,7 @@ ${safeTermsHtml()}
       renderHeader();
       renderFooter();
       const main = document.getElementById('main-content');
-      const views = { safe: renderSafe, safeprivacy: renderSafePrivacy, safeterms: renderSafeTermsPage, supportchats: renderSupportHistory };
+      const views = { safe: renderSafe, safemembership: renderSafeMembershipPage, safeprivacy: renderSafePrivacy, safeterms: renderSafeTermsPage, supportchats: renderSupportHistory };
       main.classList.toggle('main-home', state.view === 'home' || state.view === 'store' || !views[state.view]);
       const openView = state.view === 'safeprivacy' || state.view === 'safeterms';
       main.classList.toggle('main-welcome', state.view !== 'supportchats' && !openView && !state.loggedIn);
