@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.9" />
+  <meta name="ami-version" content="v13.10" />
   <title>MiCC Safe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1529,8 +1529,7 @@
     function renderSafeSignedOut() {
       return `
         <div class="safe-welcome max-w-md mx-auto mt-4 rounded-2xl p-5 text-center">
-          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300">MiCC Safe</h1>
-          <p class="text-sm font-semibold gold-text mt-1 mb-4">${t('ميك مستقبل المال', 'MiCC the future of finance')}</p>
+          <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">MiCC Safe</h1>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
           <div class="grid grid-cols-3 gap-2">${SAFE_FEATS.map((x, i) => `<button type="button" class="sw-feat" onclick="safeFeatToggle(${i})"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[4]}</svg></span>${t(x[0], x[1])}</button>`).join('')}</div>
           <div id="sw-line" class="sw-line hidden mt-2"></div>
