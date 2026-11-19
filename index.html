@@ -1948,11 +1948,27 @@
     function openPeerTransferModal() {
       openModal(t('تحويل للرفاقة', 'Transfer To Companions'), `
         <input id="peer-id" type="text" placeholder="${t('رقم الجوال أو البريد', 'Mobile or email')}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3" />
-        <input id="peer-amt" type="number" min="1" max="${walletAvailableMicc()}" value="20" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <div>
+            <label for="peer-sar-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('المبلغ بالريال', 'Amount (SAR)')}</label>
+            <input id="peer-sar-amt" type="number" inputmode="decimal" min="${MICC_SAR_VALUE}" step="${MICC_SAR_VALUE}" max="${walletAvailableMicc() * MICC_SAR_VALUE}" value="${20 * MICC_SAR_VALUE}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+          </div>
+          <div>
+            <label for="peer-amt" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('عدد وحدات ميك', 'MiCC units')}</label>
+            <input id="peer-amt" type="number" inputmode="decimal" min="1" step="1" max="${walletAvailableMicc()}" value="20" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-base tabular-nums" />
+          </div>
+        </div>
         <button id="do-peer-tr" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('إرسال مجاناً', 'Send Free')}</button>
       `);
+      // linked inputs — SAR ↔ MiCC (1 MiCC = MICC_SAR_VALUE SAR), same as the buy and transfer-to-Safe windows
+      const inp = document.getElementById('peer-amt');
+      const sarInp = document.getElementById('peer-sar-amt');
+      const r2 = n => Math.round(n * 100) / 100;
+      inp.addEventListener('input', () => { sarInp.value = inp.value === '' ? '' : String(r2((Number(inp.value) || 0) * MICC_SAR_VALUE)); });
+      sarInp.addEventListener('input', () => { inp.value = sarInp.value === '' ? '' : String(r2((Number(sarInp.value) || 0) / MICC_SAR_VALUE)); });
       document.getElementById('do-peer-tr').addEventListener('click', () => {
         const amt = Number(document.getElementById('peer-amt').value) || 0;
+        if (amt > 0 && Math.floor(amt) !== amt) { showToast(t(`يجب أن يكون المبلغ وحدات ميك كاملة (مضاعفات ${MICC_SAR_VALUE} ريال)`, `The amount must be whole MiCC units (multiples of ${MICC_SAR_VALUE} SAR)`)); return; }
         if (amt <= 0 || amt > walletAvailableMicc()) { showToast(t('الرصيد غير كافٍ', 'Insufficient balance')); return; }
         state.user.walletMicc -= amt; markMiccUsed();
         state.walletLogs.unshift({ ar: 'تحويل للرفاقة', en: 'Transfer To Companions', amount: `-${amt} MiCC` });
