@@ -163,9 +163,6 @@
     /* Gold Bitcoin coin logo (v9) */
     .btc-coin { flex-shrink: 0; border-radius: 999px; object-fit: cover; box-shadow: 0 0 0 1px rgba(212,175,55,.55), 0 6px 14px -6px rgba(0,0,0,.5); }
     .safe-dash-total.on-navy .pl-up { color: #34D399; } .safe-dash-total.on-navy .pl-down { color: #F87171; }
-    /* Safe reserve block (v9) */
-    .safe-reserve { border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #FFFBEB 0%, #fff 70%); }
-    .dark .safe-reserve { border-color: rgba(212,175,55,.35); background: linear-gradient(180deg, #14213A 0%, #0F172A 70%); }
     .demo-tag { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
     .dark .demo-tag { background: rgba(146,64,14,.25); color: #FCD34D; border-color: rgba(252,211,77,.4); }
     /* Company assets — dark green & gold, serif display (v9) */
@@ -334,11 +331,10 @@
     // 1. STATE & CONSTANTS
     // =========================================================
     const MICC_SAR_VALUE = 5;
-    const MICC_USDT_RATE = 5 / 3.75;
     const ANNUAL_PURCHASE_CAP_SAR = 30000;
     const SAFE_MIN_SAR = 250;
     const SAFE_MAX_SAR = 15000;
-    const SAFE_MAX_RATIO = 0.5;
+    const SAFE_MAX_RATIO = 0.6;
     const MEMBERSHIP_FEE_MICC = 72;
     const MIN_PURCHASE_MICC = 10;
     const SAFE_WITHDRAW_FEE = 0.02;
@@ -367,7 +363,7 @@
       },
       safe: {
         micc: 120,
-        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): إيداعات USDT + تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net invested capital (SAR)
+        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net invested capital (SAR)
         prices: {
           btcUsd: 64539,
         },
@@ -620,7 +616,7 @@
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
         brandTitle.textContent = 'MiCC Safe';
-        brandSub.textContent = t('شبكة Polygon', 'Polygon Network');
+        brandSub.textContent = t('استثمار طويل الأمد', 'Long-term investment');
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
         sideMenuBtn.classList.add('hidden');
@@ -1197,7 +1193,7 @@
               <h3 class="font-bold text-sm mb-2">${t('حد الشراء السنوي (30,000 ريال)', 'Annual Purchase Limit (30,000 SAR)')}</h3>
               <div class="flex justify-between text-xs text-slate-500 mb-1.5"><span class="tabular-nums">${fmt(state.user.annualPurchasedSar, 2)} ${t('ريال', 'SAR')}</span><span class="tabular-nums">${fmt(remainingCapSar, 2)} ${t('ريال', 'SAR')} ${t('متبقي', 'left')}</span></div>
               <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3"><div class="h-full bg-brand-emerald rounded-full" style="width:${capUsedPct}%"></div></div>
-              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتاح للتحويل (50% — من 250 إلى 15,000 ريال):', 'Available to transfer (50% — 250 to 15,000 SAR):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
+              <div class="text-xs text-slate-600 dark:text-slate-400">${t('المتاح للتحويل (60% — من 250 إلى 15,000 ريال):', 'Available to transfer (60% — 250 to 15,000 SAR):')}<strong class="block text-sm text-brand-navy dark:text-sky-400 tabular-nums mt-1">${fmt(maxSafeAllowanceSar)} ${t('ريال', 'SAR')} (${fmt(Math.floor(maxSafeAllowanceSar / MICC_SAR_VALUE))} ${MU()})</strong></div>
             </div>
 
             <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60">

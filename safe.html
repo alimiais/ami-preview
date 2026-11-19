@@ -163,9 +163,6 @@
     /* Gold Bitcoin coin logo (v9) */
     .btc-coin { flex-shrink: 0; border-radius: 999px; object-fit: cover; box-shadow: 0 0 0 1px rgba(212,175,55,.55), 0 6px 14px -6px rgba(0,0,0,.5); }
     .safe-dash-total.on-navy .pl-up { color: #34D399; } .safe-dash-total.on-navy .pl-down { color: #F87171; }
-    /* Safe reserve block (v9) */
-    .safe-reserve { border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #FFFBEB 0%, #fff 70%); }
-    .dark .safe-reserve { border-color: rgba(212,175,55,.35); background: linear-gradient(180deg, #14213A 0%, #0F172A 70%); }
     .demo-tag { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
     .dark .demo-tag { background: rgba(146,64,14,.25); color: #FCD34D; border-color: rgba(252,211,77,.4); }
     /* Company assets — dark green & gold, serif display (v9) */
@@ -334,11 +331,10 @@
     // 1. STATE & CONSTANTS
     // =========================================================
     const MICC_SAR_VALUE = 5;
-    const MICC_USDT_RATE = 5 / 3.75;
     const ANNUAL_PURCHASE_CAP_SAR = 30000;
     const SAFE_MIN_SAR = 250;
     const SAFE_MAX_SAR = 15000;
-    const SAFE_MAX_RATIO = 0.5;
+    const SAFE_MAX_RATIO = 0.6;
     const MEMBERSHIP_FEE_MICC = 72;
     const MIN_PURCHASE_MICC = 10;
     const SAFE_WITHDRAW_FEE = 0.02;
@@ -367,7 +363,7 @@
       },
       safe: {
         micc: 120,
-        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): إيداعات USDT + تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net invested capital (SAR)
+        capitalSar: 600, // رأس المال الفعلي المدفوع (ريال): تحويلات MiCC بالتكلفة، ناقص المسحوب بالتناسب / Net invested capital (SAR)
         prices: {
           btcUsd: 64539,
         },
@@ -585,7 +581,7 @@
         brandMark.textContent = 'SAFE';
         brandMark.className = 'w-8 h-8 rounded-lg bg-brand-navy text-white flex items-center justify-center font-bold text-[11px] tracking-tight';
         brandTitle.textContent = 'MiCC Safe';
-        brandSub.textContent = t('شبكة Polygon', 'Polygon Network');
+        brandSub.textContent = t('استثمار طويل الأمد', 'Long-term investment');
         mainNav.classList.add('hidden');
         mainNav.classList.remove('md:flex');
         sideMenuBtn.classList.add('hidden');
@@ -763,6 +759,16 @@
         </div>`;
     }
 
+    // v13.3: Safe log display — no USDT entries, "Bitcoin" instead of "BTC", SAR as the primary amount (MiCC secondary)
+    const btcWord = x => String(x).replace(/\bBTC\b/g, 'Bitcoin');
+    const safeLogs = () => state.safe.logs.filter(l => !/USDT/.test(String(l.ar) + String(l.en) + String(l.amount)));
+    function safeLogAmt(a) {
+      const m = /^([+-]?)([\d,]*\.?\d+)\s*MiCC$/.exec(String(a).trim());
+      if (!m) return arU(btcWord(a));
+      const n = Number(m[2].replace(/,/g, ''));
+      return `${m[1]}${fmt(n * MICC_SAR_VALUE, 2)} ${t('ريال', 'SAR')} <span class="font-normal text-slate-500">· ${fmt(n, 2)} ${MU()}</span>`;
+    }
+
     function renderSafe() {
       const s = state.safe, p = s.prices, h = s.holdings.btc;
       const btcPriceSar = p.btcUsd * SAR_PER_USD;
@@ -771,7 +777,7 @@
 
       return `
         <div class="rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-slate-50 dark:bg-slate-900/70 px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">${t('MiCC Safe · شبكة Polygon', 'MiCC Safe · Polygon Network')}</div>
+          <div class="text-xs font-bold text-brand-navy dark:text-sky-400">MiCC Safe · ${t('استثمار طويل الأمد', 'Long-term investment')}</div>
           <span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-brand-emerald dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">${t('حماية الهبوط 10% مفعّلة', '10% Downside Protection Active')}</span>
         </div>
 
@@ -782,15 +788,13 @@
             <div class="flex items-center justify-between gap-3 mb-3">
               <div class="min-w-0">
                 <div class="text-[11px] font-semibold tracking-wide gold-text mb-0.5">${t('رصيد ميك', 'MiCC Balance')}</div>
-                <div class="text-2xl font-bold tabular-nums leading-tight">${fmt(s.micc, 2)} <span class="text-sm font-medium gold-text">${MU()}</span></div>
-                <div class="text-xs text-white/75 tabular-nums">≈ <bdi dir="ltr">${fmt(s.micc * MICC_USDT_RATE, 2)} USDT</bdi></div>
+                <div class="text-2xl font-bold tabular-nums leading-tight">${fmt(s.micc * MICC_SAR_VALUE, 2)} <span class="text-sm font-medium gold-text">${t('ريال', 'SAR')}</span></div>
+                <div class="text-xs text-white/75 tabular-nums">${fmt(s.micc, 2)} ${MU()}</div>
               </div>
               <img src="${MICC_LOGO}" alt="MiCC" class="micc-coin w-11 h-11 shrink-0" />
             </div>
-            <div class="safe-acts">
-              <button onclick="openReceiveUsdtModal()" class="safe-act"><span class="sa-ic sa-ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg></span><span class="sa-lb">${t('إيداع <bdi dir="ltr">USDT</bdi>', 'Deposit USDT')}</span><span class="sa-sub">${t('يتحول إلى ميك', 'Converts to MiCC')}</span></button>
-              <button onclick="openWithdrawUsdtModal()" class="safe-act"><span class="sa-ic sa-ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 19h16"/></svg></span><span class="sa-lb">${t('سحب <bdi dir="ltr">USDT</bdi>', 'Withdraw USDT')}</span><span class="sa-sub">${t('رسوم 2%', '2% fee')}</span></button>
-              <button onclick="openReturnToWalletModal()" class="safe-act"><span class="sa-ic sa-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M15 14.5h3"/><path d="M7 3.5h8l-2-1.5M15 3.5l-2 1.5"/></svg></span><span class="sa-lb">${t('تحويل إلى محفظة ميك', 'Transfer to <span class="whitespace-nowrap">MiCC Wallet</span>')}</span><span class="sa-sub">${t('بدون رسوم', 'No fee')}</span></button>
+            <div class="safe-acts" style="grid-template-columns: minmax(0, 1fr);">
+              <button onclick="openReturnToWalletModal()" class="safe-act"><span class="sa-ic sa-ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M15 14.5h3"/><path d="M7 3.5h8l-2-1.5M15 3.5l-2 1.5"/></svg></span><span class="sa-lb">${t('تحويل إلى محفظة ميك', 'Transfer to <span class="whitespace-nowrap">MiCC Wallet</span>')}</span><span class="sa-sub">${t('دون رسوم', 'No fee')}</span></button>
             </div>
           </div>
 
@@ -798,17 +802,17 @@
             <div>
               <div class="flex items-center gap-3 mb-3">
                 ${btcCoinImg('w-11 h-11')}
-                <div class="min-w-0 flex-1"><h3 class="font-bold text-[15px] leading-tight">${t('بيتكوين', 'Bitcoin')}</h3><div class="text-[11px] text-slate-500 dark:text-slate-400">${t('شراء وبيع بـميك · بدون رسوم', 'Buy & sell with MiCC · no fee')}</div></div>
+                <div class="min-w-0 flex-1"><h3 class="font-bold text-[15px] leading-tight">${t('بيتكوين', 'Bitcoin')}</h3><div class="text-[11px] text-slate-500 dark:text-slate-400">${t('الشراء والبيع بعملة ميك · دون رسوم', 'Buy & sell with MiCC · no fee')}</div></div>
               </div>
               <div class="grid grid-cols-2 gap-2 mb-2">
-                ${cell(t('الكمية', 'Quantity'), `<bdi dir="ltr">${fmt(h.qty, 6)} <span class="text-[11px] font-medium text-slate-500">BTC</span></bdi>`, `${fmt(heldValSar, 2)} ${t('ريال', 'SAR')}`)}
-                ${cell(t('السعر الحالي', 'Current Price'), `<bdi dir="ltr">$${fmt(p.btcUsd)}</bdi>`, `${fmt(btcPriceSar)} ${t('ريال', 'SAR')}`)}
+                ${cell(t('القيمة / الكمية', 'Value / Quantity'), `${fmt(heldValSar, 2)} ${t('ريال', 'SAR')}`, `<bdi dir="ltr">${fmt(h.qty, 6)} Bitcoin</bdi>`)}
+                ${cell(t('السعر الحالي', 'Current Price'), `${fmt(btcPriceSar)} ${t('ريال', 'SAR')}`, `<bdi dir="ltr">$${fmt(p.btcUsd)}</bdi>`)}
               </div>
               <div class="grid grid-cols-2 gap-2 mb-3">
-                ${cell(t('متوسط سعر الشراء', 'Avg. Buy Price'), h.qty > 0 && avgSar > 0 ? `<bdi dir="ltr">$${fmt(avgSar / SAR_PER_USD)}</bdi>` : `<span class="text-slate-400">—</span>`, h.qty > 0 && avgSar > 0 ? `${fmt(avgSar)} ${t('ريال', 'SAR')}` : '', true)}
+                ${cell(t('متوسط سعر الشراء', 'Avg. Buy Price'), h.qty > 0 && avgSar > 0 ? `${fmt(avgSar)} ${t('ريال', 'SAR')}` : `<span class="text-slate-400">—</span>`, h.qty > 0 && avgSar > 0 ? `<bdi dir="ltr">$${fmt(avgSar / SAR_PER_USD)}</bdi>` : '', true)}
                 ${cell(t('الربح / الخسارة', 'Profit / Loss'), h.qty > 0 ? plHtml(heldValSar, h.qty * avgSar, 'text-[11.5px] font-bold') : `<span class="text-slate-400">—</span>`, '')}
               </div>
-              ${h.locked ? `<div class="mb-3 p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-[11px] text-brand-crimson dark:text-rose-300 font-medium">${t(`مقفل حتى عودة السعر إلى $${fmt(h.lockTargetUsd)} أو أعلى`, `Locked until $${fmt(h.lockTargetUsd)}+`)}</div>` : ''}
+              ${h.locked ? `<div class="mb-3 p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-[11px] text-brand-crimson dark:text-rose-300 font-medium">${t(`مُقفل حتى يعود السعر إلى ${fmt(h.lockTargetUsd * SAR_PER_USD)} ريال أو أعلى`, `Locked until ${fmt(h.lockTargetUsd * SAR_PER_USD)} SAR+`)}</div>` : ''}
             </div>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="openStockTradeModal('btc','buy')" ${h.locked ? 'disabled' : ''} class="btn-navy py-2.5 rounded-xl text-xs font-semibold ${h.locked ? 'opacity-40 cursor-not-allowed' : ''}">${t('شراء', 'Buy')}</button>
@@ -821,14 +825,13 @@
           <div id="safe-terms" class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
             <h3 class="font-bold text-base mb-2">${t('شروط السحب والخصوصية لـ MiCC Safe', 'MiCC Safe Withdrawal & Privacy Terms')}</h3>
             <ul class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 space-y-1.5 mb-3 list-disc list-inside">
-              <li>${t('رسوم السحب الخارجي (USDT Polygon): 2% موحدة للجميع.', 'External USDT (Polygon) withdrawal fee: flat 2%.')}</li>
-              <li>${t('عند البيع بخسارة وتطبيق تعويض الـ 10%، يُقفل الشراء الجديد حتى عودة السعر لمستوى الشراء الأول أو أعلى.', 'If 10% protection applies on sell, new buys lock until price recovers.')}</li>
+              <li>${t('عند البيع بخسارة وتطبيق تعويض الـ 10%، يُقفل الشراء الجديد حتى يعود السعر إلى مستوى الشراء الأول أو أعلى.', 'If 10% protection applies on sell, new buys lock until price recovers.')}</li>
             </ul>
             <button onclick="openSupportChat('safe')" class="px-4 py-2 rounded-xl border border-brand-navy dark:border-sky-700 text-brand-navy dark:text-sky-400 text-sm font-semibold">${t('تواصل مع الدعم الفني لـ MiCC Safe', 'Contact MiCC Safe Support')}</button>
           </div>
           <div class="rounded-2xl border border-brand-border dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
             <h3 class="font-bold text-sm mb-2">${t('سجل عمليات MiCC Safe', 'MiCC Safe Log')}</h3>
-            ${s.logs.length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${s.logs.map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between"><span>${arU(t(l.ar, l.en))}</span><span class="tabular-nums font-semibold">${arU(l.amount)}</span></div>`).join('')}</div>`}
+            ${safeLogs().length === 0 ? `<div class="rounded-xl border border-dashed border-brand-border dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 py-5 text-center text-xs text-slate-500 dark:text-slate-400">${t('لا توجد عمليات بعد', 'No transactions yet')}</div>` : `<div class="space-y-1.5 max-h-36 overflow-y-auto">${safeLogs().map(l => `<div class="text-xs py-1 border-b border-brand-border dark:border-slate-800 last:border-0 flex justify-between gap-2"><span>${arU(btcWord(t(l.ar, l.en)))}</span><span class="tabular-nums font-semibold text-end">${safeLogAmt(l.amount)}</span></div>`).join('')}</div>`}
           </div>
         </div>
 
@@ -973,44 +976,9 @@
 
 
 
-    function openReceiveUsdtModal() {
-      openModal(t('إيداع USDT على Polygon', 'Deposit USDT on Polygon'), `
-        <p class="text-xs text-slate-500 mb-3">${t('يتحول تلقائيًا إلى ميك · 1 ميك = 1.33 USDT', 'Auto-converts to MiCC · 1 MiCC = 1.33 USDT')}</p>
-        <input id="rec-usdt" type="number" min="10" value="100" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
-        <button id="do-rec-usdt" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('محاكاة وصول التحويل', 'Simulate Deposit')}</button>
-      `);
-      document.getElementById('do-rec-usdt').addEventListener('click', () => {
-        const usdt = Number(document.getElementById('rec-usdt').value) || 0;
-        if (usdt <= 0) return;
-        const addedMicc = usdt / MICC_USDT_RATE; // يتحول تلقائيًا إلى MiCC
-        state.safe.micc += addedMicc; state.safe.capitalSar = (state.safe.capitalSar || 0) + usdt * SAR_PER_USD;
-        state.safe.logs.unshift({ ar: `إيداع ${fmt(usdt, 2)} USDT`, en: `Deposit ${fmt(usdt, 2)} USDT`, amount: `+${fmt(addedMicc, 2)} MiCC` });
-        closeModal(); render(); showToast(t(`تمت إضافة ${fmt(addedMicc, 2)} ميك`, `Added ${fmt(addedMicc, 2)} MiCC`));
-      });
-    }
-
-    function openWithdrawUsdtModal() {
-      const tier = getCurrentTier();
-      openModal(t('سحب USDT خارجي (رسوم 2%)', 'External USDT Withdrawal (2% Fee)'), `
-        <p class="text-xs text-slate-500 mb-3">${t(`رسوم 2% · المتاح: ${fmt(state.safe.micc, 2)} ميك`, `2% fee · Available: ${fmt(state.safe.micc, 2)} MiCC`)}</p>
-        <input id="wd-micc" type="number" min="10" max="${Math.floor(state.safe.micc)}" value="${Math.min(50, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-3 tabular-nums" />
-        <input id="wd-addr" type="text" placeholder="0x..." class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4" />
-        <button id="do-wd-usdt" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تأكيد السحب', 'Confirm Withdrawal')}</button>
-      `);
-      document.getElementById('do-wd-usdt').addEventListener('click', () => {
-        const micc = Number(document.getElementById('wd-micc').value) || 0;
-        const grossUsdt = micc * MICC_USDT_RATE;
-        if (micc <= 0 || micc > state.safe.micc || grossUsdt * SAR_PER_USD > capSar(tier)) { showToast(t('المبلغ أكبر من الرصيد المتاح', 'Amount exceeds available balance')); return; }
-        const netUsdt = grossUsdt * (1 - SAFE_WITHDRAW_FEE);
-        safeCapitalOut(micc * MICC_SAR_VALUE);
-        state.safe.micc -= micc;
-        state.safe.logs.unshift({ ar: `سحب ($${fmt(netUsdt, 2)} USDT)`, en: `Withdraw ($${fmt(netUsdt, 2)} net)`, amount: `-${fmt(micc, 2)} MiCC` });
-        closeModal(); render(); showToast(t(`تم تسجيل السحب ($${fmt(netUsdt, 2)})`, `Withdrawal queued ($${fmt(netUsdt, 2)})`));
-      });
-    }
-
     function openReturnToWalletModal() {
       openModal(t('تحويل إلى محفظة ميك (0%)', 'Transfer to MiCC Wallet (0%)'), `
+        <p class="text-xs text-slate-500 mb-3">${t(`المتاح: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} ريال (${fmt(state.safe.micc, 2)} ميك)`, `Available: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} SAR (${fmt(state.safe.micc, 2)} MiCC)`)}</p>
         <input id="ret-micc" type="number" min="1" max="${Math.floor(state.safe.micc)}" value="${Math.min(20, Math.floor(state.safe.micc))}" class="w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm mb-4 tabular-nums" />
         <button id="do-ret-micc" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تحويل مجاني', 'Transfer Free')}</button>
       `);
@@ -1043,8 +1011,8 @@
 
       if (side === 'buy') {
         openModal(t('شراء في MiCC Stock (0% رسوم)', 'Buy in MiCC Stock (0% Fee)'), `
-          <p class="text-xs text-slate-500 mb-3">${t(`رصيدك: ${fmt(state.safe.micc, 2)} ميك`, `Balance: ${fmt(state.safe.micc, 2)} MiCC`)}</p>
-          <label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('بيتكوين (BTC)', 'Bitcoin (BTC)')}</span><input id="stk-btc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ريال سعودي', 'Saudi Riyal (SAR)')}</span><input id="stk-sar" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('دولار أمريكي', 'US Dollar (USD)')}</span><input id="stk-usd" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><div class="mb-4"><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ميك (المخصوم من رصيدك)', 'MiCC (deducted from your balance)')}</span><input id="stk-buy-micc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label></div>
+          <p class="text-xs text-slate-500 mb-3">${t(`رصيدك: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} ريال (${fmt(state.safe.micc, 2)} ميك)`, `Balance: ${fmt(state.safe.micc * MICC_SAR_VALUE, 2)} SAR (${fmt(state.safe.micc, 2)} MiCC)`)}</p>
+          <label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ريال سعودي', 'Saudi Riyal (SAR)')}</span><input id="stk-sar" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('بيتكوين', 'Bitcoin')}</span><input id="stk-btc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('دولار أمريكي', 'US Dollar (USD)')}</span><input id="stk-usd" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label><div class="mb-4"><label class="block mb-2"><span class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">${t('ميك (يُخصم من رصيدك)', 'MiCC (deducted from your balance)')}</span><input id="stk-buy-micc" type="number" inputmode="decimal" min="0" step="any" class="stk-fld w-full px-3 py-2 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tabular-nums" /></label></div>
           <button id="do-stk-buy" class="w-full py-2.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold">${t('تنفيذ الشراء', 'Buy')}</button>
         `);
         const F = { btc: document.getElementById('stk-btc'), sar: document.getElementById('stk-sar'), usd: document.getElementById('stk-usd'), micc: document.getElementById('stk-buy-micc') };
@@ -1066,7 +1034,7 @@
           state.safe.availableStock.btc -= qty; h.lastBuyPriceUsd = p.btcUsd;
           h.avgSar = (h.qty * (h.avgSar || 0) + spendSar) / (h.qty + qty); // weighted average cost (SAR per unit)
           h.qty += qty; h.costSar += spendSar;
-          state.safe.logs.unshift({ ar: `شراء ${assetId.toUpperCase()}`, en: `Bought ${assetId.toUpperCase()}`, amount: `-${spendMicc} MiCC` });
+          state.safe.logs.unshift({ ar: 'شراء بيتكوين', en: 'Bought Bitcoin', amount: `-${spendMicc} MiCC` });
           closeModal(); render(); showToast(t('تم الشراء بنجاح', 'Purchased'));
         });
       } else {
@@ -1084,14 +1052,14 @@
             <div class="flex justify-between"><span>${t('رأس المال:', 'Capital:')}</span><strong class="tabular-nums">${fmt(origCost, 0)} ${t('ريال', 'SAR')}</strong></div>
             <div class="flex justify-between"><span>${t('القيمة الحالية:', 'Current:')}</span><strong class="tabular-nums">${fmt(currentValSar, 0)} ${t('ريال', 'SAR')}</strong></div>
             <div class="flex justify-between text-brand-emerald dark:text-emerald-400"><span>${t('المسترد:', 'Payout:')}</span><strong class="tabular-nums">${fmt(payoutSar, 0)} ${t('ريال', 'SAR')} (${fmt(payoutMicc, 2)} ${MU()})</strong></div>
-            ${compensated ? `<div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-brand-emerald dark:text-emerald-300 font-semibold">${t('تم التعويض: حماية الهبوط 10% — سيُقفل الشراء حتى عودة السعر لمستوى الشراء الأول.', 'Compensated: 10% protection applied — repurchase locks until price recovers.')}</div>` : ''}
+            ${compensated ? `<div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-brand-emerald dark:text-emerald-300 font-semibold">${t('تم التعويض: حماية الهبوط 10% — سيُقفل الشراء حتى يعود السعر إلى مستوى الشراء الأول.', 'Compensated: 10% protection applied — repurchase locks until price recovers.')}</div>` : ''}
           </div>
           <button id="do-stk-sell" class="w-full py-2.5 rounded-xl bg-brand-navy text-white text-xs font-semibold">${t('تأكيد البيع', 'Confirm Sell')}</button>
         `);
         document.getElementById('do-stk-sell').addEventListener('click', () => {
           state.safe.availableStock.btc += h.qty; if (compensated) { h.locked = true; h.lockTargetUsd = h.lastBuyPriceUsd; }
           state.safe.micc += payoutMicc; h.qty = 0; h.costSar = 0; h.avgSar = 0;
-          state.safe.logs.unshift({ ar: compensated ? `بيع ${assetId.toUpperCase()} (تم التعويض 10%)` : `بيع ${assetId.toUpperCase()}`, en: compensated ? `Sold ${assetId.toUpperCase()} (Compensated)` : `Sold ${assetId.toUpperCase()}`, amount: `+${fmt(payoutMicc, 2)} MiCC` });
+          state.safe.logs.unshift({ ar: compensated ? 'بيع بيتكوين (تم التعويض 10%)' : 'بيع بيتكوين', en: compensated ? 'Sold Bitcoin (Compensated)' : 'Sold Bitcoin', amount: `+${fmt(payoutMicc, 2)} MiCC` });
           closeModal(); render(); showToast(compensated ? t('تم البيع وتعويض الـ 10%', 'Sold with 10% protection') : t('تم البيع بنجاح', 'Sold'));
         });
       }
@@ -1121,7 +1089,7 @@
       const list = loadSupportMessages();
       const msg = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: new Date().toISOString(), source: src, from: 'user', user: supportUserName(), loggedIn: !!state.loggedIn, view: state.view, text, status: 'new' };
       list.push(msg);
-      list.push({ id: msg.id + '-r', ts: new Date().toISOString(), source: src, from: 'support', user: null, text: t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.'), auto: true });
+      list.push({ id: msg.id + '-r', ts: new Date().toISOString(), source: src, from: 'support', user: null, text: t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.'), auto: true });
       saveSupportMessages(list);
       // TODO(admin dashboard): forward `msg` to backend here, e.g. fetch('/api/support', { method: 'POST', body: JSON.stringify(msg) })
       return msg;
@@ -1133,10 +1101,10 @@
       const src = supportChatSource;
       const msgs = loadSupportMessages().filter(m => m.source === src);
       const welcome = src === 'safe'
-        ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وبنرد عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
-        : t('أهلًا بك في الدعم. اكتب استفسارك وبنرد عليك.', 'Welcome to Support. Type your question and we will get back to you.');
+        ? t('أهلًا بك في دعم MiCC Safe. اكتب استفسارك وسنردّ عليك.', 'Welcome to MiCC Safe Support. Type your question and we will get back to you.')
+        : t('أهلًا بك في الدعم. اكتب استفسارك وسنردّ عليك.', 'Welcome to Support. Type your question and we will get back to you.');
       const tm = iso => { try { return new Date(iso).toLocaleTimeString(state.lang === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
-      box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وبيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
+      box.innerHTML = `<div class="sc-msg sc-bot">${welcome}</div>` + msgs.map(m => `<div class="sc-msg ${m.from === 'user' ? 'sc-user' : 'sc-bot'}">${m.auto ? t('تم استلام رسالتك، وسيتواصل معك فريق الدعم قريبًا.', 'We received your message. Our support team will contact you soon.') : escSupport(m.text)}<span class="sc-time">${tm(m.ts)}</span></div>`).join('');
       box.scrollTop = box.scrollHeight;
     }
     function openSupportChat(source) {
@@ -1151,7 +1119,7 @@
       wrap.innerHTML = `<div class="sc-panel">
         <div class="sc-head">
           <span class="sc-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M19.5 19a3 3 0 0 1-3 3H13"/></svg></span>
-          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('نرد عليك في أقرب وقت', 'We reply as soon as possible')}</div></div>
+          <div class="min-w-0"><div class="font-bold text-sm leading-tight">${isSafe ? t('دعم MiCC Safe', 'MiCC Safe Support') : t('الدعم الفني', 'Support')}</div><div class="text-[11px] text-white/70">${t('سنردّ عليك في أقرب وقت ممكن', 'We reply as soon as possible')}</div></div>
           <button type="button" class="sc-x" onclick="closeSupportChat()" aria-label="${t('إغلاق', 'Close')}">×</button>
         </div>
         <div id="sc-list" class="sc-list"></div>
@@ -1200,9 +1168,19 @@
     function renderSafeSignedOut() {
       return `
         <div class="max-w-md mx-auto mt-6 rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-white dark:bg-slate-900 p-6 text-center">
-          <h1 class="text-lg font-bold mb-2 text-brand-navy dark:text-sky-300">MiCC Safe</h1>
+          <h1 class="text-lg font-bold mb-1 text-brand-navy dark:text-sky-300">MiCC Safe</h1>
+          <div class="text-xs font-bold text-brand-emerald dark:text-emerald-300 mb-3">${t('استثمار طويل الأمد', 'Long-term investment')}</div>
           <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى تسجيل الدخول للمتابعة.', 'Please sign in to continue.')}</p>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
+        </div>
+      `;
+    }
+
+    // v13.3: MiCC Safe is for برنامج الرفاقة members only (state.user.membershipActive, shared via ami.shared.v1)
+    function renderSafeMembersOnly() {
+      return `
+        <div class="max-w-md mx-auto mt-6 rounded-2xl border border-brand-navy/30 dark:border-sky-900/60 bg-white dark:bg-slate-900 p-6 text-center">
+          <p class="text-sm font-semibold text-brand-navy dark:text-sky-300">${t('هذه الخدمة متاحة فقط لبرنامج الرفاقة', 'This service is available only to the Companions Program')}</p>
         </div>
       `;
     }
@@ -1214,7 +1192,7 @@
       const main = document.getElementById('main-content');
       const views = { safe: renderSafe, safeprivacy: renderSafePrivacy };
       main.classList.toggle('main-home', state.view === 'home' || state.view === 'store' || !views[state.view]);
-      main.innerHTML = state.loggedIn ? (views[state.view] || renderSafe)() : renderSafeSignedOut();
+      main.innerHTML = !state.loggedIn ? renderSafeSignedOut() : !state.user.membershipActive ? renderSafeMembersOnly() : (views[state.view] || renderSafe)();
 
       const fcForm = document.getElementById('free-consult-form');
       if (fcForm) fcForm.addEventListener('submit', e => {
