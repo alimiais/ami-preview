@@ -987,7 +987,12 @@
       `;
     }
 
+    // Health page (EKC + its booking): temporarily replaced by a single centered «قريباً» / "Coming soon"
+    function renderHealthComingSoon() {
+      return `<div id="health-soon" class="min-h-[55vh] flex items-center justify-center"><p class="text-3xl font-bold text-brand-emerald dark:text-emerald-400">${t('قريباً', 'Coming soon')}</p></div>`;
+    }
     function renderEkc() {
+      return renderHealthComingSoon(); // health page temporarily «قريباً»
       return `
         <div class="mb-5">
           <h1 class="text-2xl font-bold mb-1.5">${t('الرعاية التعاطفية والحركية', 'Empathic Kinetic Care')}</h1>
@@ -1025,6 +1030,7 @@
     }
 
     function renderBooking() {
+      return renderHealthComingSoon(); // health page temporarily «قريباً»
       const offer = state.selectedEkcOffer || { track: EKC_TRACKS[0], opt: EKC_TRACKS[0].options[0] };
       const priceSar = offer.opt.priceSar;
       const miccNeeded = Math.ceil(priceSar / (MICC_SAR_VALUE * 2));
