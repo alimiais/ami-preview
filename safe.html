@@ -134,9 +134,9 @@
     .safe-footer { background: #1E3A5F; border-top: 0; }
     .dark .ami-footer { background: linear-gradient(180deg, #08301F 0%, #04231A 100%); }
     /* Support chat (v10) */
-    .sc-wrap { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; background: rgba(2,6,23,.32); }
-    .sc-panel { width: 100%; max-width: 100%; height: 58vh; max-height: 560px; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px 20px 0 0; background: #fff; box-shadow: 0 -12px 40px -12px rgba(0,0,0,.5); }
-    @media (min-width: 640px) { .sc-wrap { align-items: flex-end; justify-content: flex-end; padding: 16px; background: transparent; pointer-events: none; } .sc-panel { pointer-events: auto; width: 380px; max-width: calc(100vw - 32px); height: 520px; max-height: calc(100vh - 32px); border-radius: 20px; box-shadow: 0 18px 50px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(15,23,42,.08); } }
+    /* v13.1: support chat = small floating window in a bottom corner (all screen sizes) */
+    .sc-wrap { position: fixed; bottom: 16px; inset-inline-end: 16px; z-index: 70; pointer-events: none; }
+    .sc-panel { pointer-events: auto; width: min(320px, 82vw); height: min(460px, 50vh); display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: #fff; box-shadow: 0 18px 50px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(15,23,42,.08); }
     .dark .sc-panel { background: #0F172A; }
     .sc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: #fff; border-bottom: 2px solid #D4AF37; }
     .sc-safe .sc-head { background: linear-gradient(135deg, #0A1A31 0%, #13294B 60%, #1E3A5F 100%); }
@@ -244,7 +244,7 @@
         <button id="brand-btn" class="flex items-center gap-2 text-start focus:outline-none">
           <div id="brand-mark" class="hidden"></div>
           <div>
-            <div id="brand-title" class="font-bold text-sm leading-tight">The MiCC</div>
+            <div id="brand-title" class="font-bold text-sm leading-tight">MiCC Safe</div>
             <div id="brand-sub" class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight hidden sm:block"></div>
           </div>
         </button>
@@ -278,7 +278,7 @@
     <aside class="w-72 max-w-[82vw] h-full bg-white dark:bg-slate-950 border-e border-brand-border dark:border-slate-800 p-4 flex flex-col justify-between shadow-xl">
       <div>
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-brand-border dark:border-slate-800">
-          <span id="drawer-brand" class="font-bold text-sm">The MiCC</span>
+          <span id="drawer-brand" class="font-bold text-sm">MiCC Safe</span>
           <button id="side-menu-close" class="w-7 h-7 rounded-lg border border-brand-border dark:border-slate-700 text-xs font-bold">✕</button>
         </div>
 
@@ -420,12 +420,6 @@
       } catch (e) { return false; }
     }
     function flashNext(msg) { try { sessionStorage.setItem(FLASH_KEY, msg); } catch (e) {} }
-    // Leave this page for the other one (same tab), saving state first
-    function goToPage(url, msg) { saveShared(); if (msg) flashNext(msg); location.href = url; }
-    function goToSafe(view) {
-      if (!state.loggedIn) { openLoginGateModal(view || 'safe'); return; }
-      goToPage('safe.html' + (view === 'safeprivacy' ? '#privacy' : ''));
-    }
     loadShared();
     if (PAGE === 'safe') state.view = 'safe';
     const TIERS = [
@@ -558,7 +552,7 @@
     function setView(viewName) {
       if (viewName === 'about') viewName = 'aboutus';
       closeDrawer();
-      if (!SAFE_VIEWS.has(viewName)) { goToPage('index.html' + (viewName && viewName !== 'home' ? '#' + viewName : '')); return; } // The MiCC lives in index.html
+      if (!SAFE_VIEWS.has(viewName)) return; // Safe-only page: no navigation to other pages
       if (!state.loggedIn && !PUBLIC_VIEWS.has(viewName)) {
         openLoginGateModal(viewName);
         return;
@@ -625,7 +619,7 @@
         btn.classList.toggle('dark:text-emerald-400', active);
       });
 
-      document.getElementById('drawer-brand').textContent = 'The MiCC';
+      document.getElementById('drawer-brand').textContent = 'MiCC Safe';
       document.getElementById('drawer-services-label').textContent = t('الخدمات', 'Services');
       document.getElementById('drawer-footer-note').textContent = t('الشركة', 'The Company');
 
@@ -651,7 +645,7 @@
       if (isSafe) {
         name.textContent = 'MiCC Safe';
         links.innerHTML = `<button ${lk} onclick="setView('safeprivacy')">${t('الخصوصية', 'Privacy')}</button><button ${lk} onclick="openSafeTerms()">${t('الشروط', 'Terms')}</button><button ${lk} onclick="openSupportChat('safe')">${t('تواصل معنا', 'Contact')}</button>`;
-        copy.innerHTML = '<bdi dir="ltr">© The MiCC 2026</bdi>';
+        copy.innerHTML = '<bdi dir="ltr">© MiCC Safe 2026</bdi>';
         document.title = 'MiCC Safe';
       } else {
         name.textContent = '';
@@ -732,8 +726,10 @@
         // Demo behavior: clear local Safe data and sign out
         try { state.safe = JSON.parse(SAFE_INITIAL); } catch (e) {}
         try { saveSupportMessages(loadSupportMessages().filter(m => m.source !== 'safe')); } catch (e) {}
-        state.loggedIn = false;
-        goToPage('index.html', t('تم استلام طلب حذف حساب MiCC Safe', 'MiCC Safe account deletion request received'));
+        state.loggedIn = false; state.view = 'safe';
+        render();
+        window.scrollTo({ top: 0 });
+        showToast(t('تم استلام طلب حذف حساب MiCC Safe', 'MiCC Safe account deletion request received'));
       });
     }
 
@@ -835,9 +831,6 @@
           </div>
         </div>
 
-        <div class="text-center">
-          <button onclick="setView('wallet')" class="px-6 py-2.5 rounded-xl border border-brand-border dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm font-semibold">${t('← العودة إلى محفظة ميك', '← Back to MiCC Wallet')}</button>
-        </div>
       `;
     }
 
@@ -847,7 +840,7 @@
     // =========================================================
     function toggleAuth() {
       state.loggedIn = !state.loggedIn;
-      if (!state.loggedIn) { goToPage('index.html', t('تم تسجيل الخروج', 'Signed out')); return; }
+      if (!state.loggedIn) state.view = 'safe';
       showToast(state.loggedIn ? t('تم تسجيل الدخول التجريبي بنجاح', 'Signed in to demo account') : t('تم تسجيل الخروج', 'Signed out'));
       render();
     }
@@ -1187,7 +1180,6 @@
           <h1 class="text-lg font-bold mb-2 text-brand-navy dark:text-sky-300">MiCC Safe</h1>
           <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">${t('يرجى تسجيل الدخول للمتابعة.', 'Please sign in to continue.')}</p>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
-          <a href="index.html" class="inline-block mt-4 text-xs font-semibold text-brand-navy dark:text-sky-400 hover:underline">${t('← العودة إلى The MiCC', '← Back to The MiCC')}</a>
         </div>
       `;
     }
@@ -1249,7 +1241,6 @@
     document.getElementById('side-menu-btn').addEventListener('click', () => document.getElementById('side-drawer-backdrop').classList.remove('hidden'));
     document.getElementById('side-menu-close').addEventListener('click', closeDrawer);
     document.getElementById('side-drawer-backdrop').addEventListener('click', e => { if (e.target.id === 'side-drawer-backdrop') closeDrawer(); });
-    document.getElementById('cart-btn').addEventListener('click', () => setView('store')); // cart is in The MiCC (button hidden on Safe)
     document.getElementById('theme-btn').addEventListener('click', () => { state.dark = !state.dark; render(); });
     document.getElementById('lang-btn').addEventListener('click', () => { state.lang = state.lang === 'ar' ? 'en' : 'ar'; render(); });
     document.getElementById('auth-btn').addEventListener('click', toggleAuth);
