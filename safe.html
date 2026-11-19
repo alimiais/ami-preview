@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ami-version" content="v13.10" />
+  <meta name="ami-version" content="v13.11" />
   <title>MiCC Safe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -133,6 +133,13 @@
     .safe-xfer:hover { background: rgba(233,196,106,.12); }
     .modal-compact { padding: 14px 16px !important; }
     .modal-compact > div:first-child { margin-bottom: 10px !important; padding-bottom: 8px !important; }
+    .sw-page { display:flex; flex-direction:column; min-height: calc(100svh - 215px); margin: 0 -1rem; padding: 0 1rem 1.25rem; background: linear-gradient(180deg, transparent 0%, transparent 45%, #FBF1D6 100%); }
+    .dark .sw-page { background: linear-gradient(180deg, transparent 0%, transparent 45%, rgba(212,175,55,.12) 100%); }
+    .sw-chest-wrap { flex:1; display:flex; align-items:center; justify-content:center; }
+    .sw-page > .safe-welcome, .sw-chest-wrap > div { width:100%; }
+    main:has(.sw-page) { padding-bottom:0 !important; display:flex; flex-direction:column; }
+    main > .sw-page { flex:1; }
+    body:has(.sw-page) #app-footer { margin-top:0 !important; }
     .safe-welcome { background: linear-gradient(160deg, #FFF8E7 0%, #F6E7B8 100%); border: 1px solid rgba(212,175,55,.35); }
     .dark .safe-welcome { background: linear-gradient(160deg, #0A1A31 0%, #132A4A 60%, rgba(212,175,55,.16) 100%); border-color: rgba(212,175,55,.25); }
     .sw-feat { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border-radius: 14px; background: rgba(255,255,255,.7); border: 1px solid rgba(212,175,55,.35); font-size: 12px; font-weight: 700; color: #0A1A31; }
@@ -1527,14 +1534,14 @@
       btns[i].classList.add('on'); line.textContent = t(SAFE_FEATS[i][2], SAFE_FEATS[i][3]); line.classList.remove('hidden');
     }
     function renderSafeSignedOut() {
-      return `
+      return `<div class="sw-page">
         <div class="safe-welcome max-w-md mx-auto mt-4 rounded-2xl p-5 text-center">
           <h1 class="text-2xl font-bold text-brand-navy dark:text-sky-300 mb-4">MiCC Safe</h1>
           <button onclick="toggleAuth()" class="w-full py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emeraldHover text-white text-sm font-semibold mb-4">${t('تسجيل الدخول التجريبي الآن', 'Demo Sign In Now')}</button>
           <div class="grid grid-cols-3 gap-2">${SAFE_FEATS.map((x, i) => `<button type="button" class="sw-feat" onclick="safeFeatToggle(${i})"><span class="sw-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${x[4]}</svg></span>${t(x[0], x[1])}</button>`).join('')}</div>
           <div id="sw-line" class="sw-line hidden mt-2"></div>
         </div>
-        ${safeChestHtml()}
+        <div class="sw-chest-wrap">${safeChestHtml()}</div></div>
       `;
     }
 
